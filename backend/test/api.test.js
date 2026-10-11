@@ -78,3 +78,14 @@ test("profile schema strips protected fields and rejects bad input", () => {
   assert.ok(schemas.updateProfile.validate({ ...ok, firstName: "" }).error);
   assert.ok(schemas.updateProfile.validate({ ...ok, dob: "2999-01-01" }).error);
 });
+
+test("student IDs have the PET-XXXXXXXX format and are not repeated", () => {
+  const { generate } = require("../utils/studentId");
+  const ids = new Set();
+  for (let i = 0; i < 500; i++) {
+    const id = generate();
+    assert.match(id, /^PET-[2-9A-HJKMNP-Z]{8}$/);
+    ids.add(id);
+  }
+  assert.equal(ids.size, 500);
+});

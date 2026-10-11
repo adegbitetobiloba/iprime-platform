@@ -1,0 +1,60 @@
+import { Link } from "react-router-dom";
+import PageHero from "../components/PageHero.jsx";
+import Reveal from "../components/Reveal.jsx";
+import EmptyState from "../components/EmptyState.jsx";
+
+const VALUES = [
+  { title: "Academic excellence", text: "A commitment to rigorous preparation and high standards in every subject." },
+  { title: "Integrity", text: "Honest work, fair assessment and trustworthy records." },
+];
+
+export default function About() {
+  return (
+    <>
+      <PageHero eyebrow="About" title="Prime Excelerate Tutelage">
+        An educational institution focused on academic excellence and examination preparation, particularly the JAMB UTME.
+      </PageHero>
+
+      <section className="section">
+        <div className="container prose-grid">
+          <Reveal className="prose">
+            <h2>Our identity</h2>
+            <p>
+              Prime Excelerate Tutelage works under the tagline <strong>"The Peak of Academic Excellence and Integrity"</strong>.
+              Its focus is helping students prepare for the Joint Admissions and Matriculation Board Unified Tertiary Matriculation Examination (JAMB UTME).
+            </p>
+            <h2>What iPrime is</h2>
+            <p>
+              iPrime is the institution's digital platform. It is being built to bring together learning resources, computer-based practice examinations,
+              progress tracking, and a place for students and parents to stay informed. Features are released step by step, and each page says clearly what is available now.
+            </p>
+          </Reveal>
+          <Reveal delay={100}>
+            <ul className="value-list">
+              {VALUES.map((v) => (
+                <li key={v.title} className="value card-hover">
+                  <h3>{v.title}</h3>
+                  <p>{v.text}</p>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section section-tint">
+        <div className="container">
+          <Reveal>
+            <EmptyState
+              icon="user"
+              title="Mission, vision and leadership"
+              action={<Link to="/contact" className="btn btn-secondary">How to reach the institution</Link>}
+            >
+              The institution's mission statement, vision and leadership details will be published here once they are supplied by Prime Excelerate Tutelage.
+            </EmptyState>
+          </Reveal>
+        </div>
+      </section>
+    </>
+  );
+}

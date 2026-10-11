@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Otp = require("../models/Otp");
 const sendEmail = require("../utils/sendEmail");
 const generateOtp = require("../utils/generateOtp");
+const { ensureStudentId } = require("../utils/studentId");
 
 const MAX_OTP_ATTEMPTS = 5;
 const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -87,10 +88,11 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ error: "Invalid or expired code" });
     }
 
-    const user = await User.findOneAndUpdate({ email }, { isVerified: true });
+    const user = await User.findOneAndUpdate({ email }, { isVerified: true }, { new: true });
     await Otp.deleteMany({ email });
 
     if (!user) return res.status(400).json({ error: "Account not found" });
+    await ensureStudentId(user);
     res.json({ message: "Account verified" });
   } catch (err) {
     serverError(res, err);
@@ -140,8 +142,9 @@ exports.login = async (req, res) => {
       return res.status(403).json({ error: "Please verify your email first", code: "NOT_VERIFIED" });
     }
 
+    const full = await ensureStudentId(user); // existing students get their ID on first login after this update
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
-    res.json({ token, user: publicUser(user) });
+    res.json({ token, user: publicUser(full) });
   } catch (err) {
     serverError(res, err);
   }
@@ -152,7 +155,7 @@ exports.me = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(401).json({ error: "Account no longer exists" });
-    res.json({ user: publicUser(user) });
+    res.json({ user: publicUser(await ensureStudentId(user)) });
   } catch (err) {
     serverError(res, err);
   }

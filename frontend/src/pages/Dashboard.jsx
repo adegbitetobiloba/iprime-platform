@@ -61,6 +61,7 @@ function AccountPanel({ user }) {
   const joined = formatDate(user.createdAt);
   const details = [
     ["Name", [user.firstName, user.lastName].filter(Boolean).join(" ")],
+    ...(user.studentId ? [["Student ID", user.studentId]] : []),
     ...(user.otherNames ? [["Other names", user.otherNames]] : []),
     ["Email", user.email],
     ["Phone", user.phone],
