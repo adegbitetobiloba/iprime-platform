@@ -2,7 +2,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const router = express.Router();
 
-const { register, verifyOtp, resendOtp, login, me } = require("../controllers/authController");
+const { register, verifyOtp, resendOtp, login, me, updateMe } = require("../controllers/authController");
 const { schemas, validate } = require("../validations/authValidation");
 const protect = require("../middleware/authMiddleware");
 
@@ -20,5 +20,6 @@ router.post("/verify-otp", limiter, validate(schemas.verifyOtp), verifyOtp);
 router.post("/resend-otp", limiter, validate(schemas.resendOtp), resendOtp);
 router.post("/login", limiter, validate(schemas.login), login);
 router.get("/me", protect, me);
+router.patch("/me", protect, limiter, validate(schemas.updateProfile), updateMe);
 
 module.exports = router;

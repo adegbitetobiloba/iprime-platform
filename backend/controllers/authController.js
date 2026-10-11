@@ -157,3 +157,22 @@ exports.me = async (req, res) => {
     serverError(res, err);
   }
 };
+
+// PATCH /api/auth/me (protected): edit the signed-in user's own profile.
+// The account is identified ONLY by the verified token (req.user.id), never by an id sent by the browser,
+// and only the fields listed below are written, so role, email, password and isVerified cannot be changed here.
+exports.updateMe = async (req, res) => {
+  try {
+    const { firstName, lastName, otherNames, phone, state, dob } = req.body;
+    const set = { firstName, lastName, phone, state, otherNames: otherNames || "" };
+    const update = { $set: set };
+    if (dob) set.dob = dob;
+    else update.$unset = { dob: "" };
+
+    const user = await User.findByIdAndUpdate(req.user.id, update, { new: true, runValidators: true });
+    if (!user) return res.status(401).json({ error: "Account no longer exists" });
+    res.json({ user: publicUser(user) });
+  } catch (err) {
+    serverError(res, err);
+  }
+};

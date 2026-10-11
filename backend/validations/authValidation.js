@@ -24,6 +24,17 @@ const schemas = {
   verifyOtp: Joi.object({ email, otp: Joi.string().pattern(/^\d{6}$/).required() }),
   resendOtp: Joi.object({ email }),
   login: Joi.object({ email, password: Joi.string().max(72).required() }),
+  // Fields a signed-in user may edit. Email, role, password and verification status are NOT editable here.
+  updateProfile: Joi.object({
+    firstName: Joi.string().trim().min(1).max(50).required(),
+    lastName: Joi.string().trim().min(1).max(50).required(),
+    otherNames: Joi.string().trim().max(100).allow("").optional(),
+    phone: Joi.string().trim().pattern(/^\+?[\d\s-]{7,20}$/).required()
+      .messages({ "string.pattern.base": "Enter a valid phone number" }),
+    dob: Joi.date().max("now").allow("", null).optional()
+      .messages({ "date.max": "Date of birth cannot be in the future" }),
+    state: Joi.string().trim().max(60).required(),
+  }),
 };
 
 // Express middleware: validates req.body, strips unknown fields (so nobody can
