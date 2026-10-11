@@ -4,6 +4,7 @@ import { useAuth } from "../auth.jsx";
 import { useSubmit } from "../useSubmit.js";
 import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
+import AuthLayout from "../components/AuthLayout.jsx";
 
 export default function Login() {
   const { login } = useAuth();
@@ -22,19 +23,19 @@ export default function Login() {
   };
 
   return (
-    <section className="auth">
-      <div className="container narrow">
-        <h1>Log in</h1>
-        <form className="card form" onSubmit={onSubmit}>
-          <Field label="Email" id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" inputMode="email" />
-          <Field label="Password" id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
-          <FormStatus error={error} slow={slow} notice={location.state?.notice} />
-          <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Log in"}
-          </button>
-        </form>
-        <p className="muted center">New here? <Link to="/register">Create an account</Link></p>
-      </div>
-    </section>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Log in to continue to your dashboard."
+      footer={<>New here? <Link to="/register">Create an account</Link></>}
+    >
+      <form className="form" onSubmit={onSubmit}>
+        <Field label="Email" id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" inputMode="email" />
+        <Field label="Password" id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+        <FormStatus error={error} slow={slow} notice={location.state?.notice} />
+        <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={loading} aria-busy={loading}>
+          {loading ? "Logging in..." : "Log in"}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }

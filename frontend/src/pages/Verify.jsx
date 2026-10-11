@@ -4,6 +4,7 @@ import { api } from "../api.js";
 import { useSubmit } from "../useSubmit.js";
 import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
+import AuthLayout from "../components/AuthLayout.jsx";
 
 export default function Verify() {
   const [params] = useSearchParams();
@@ -40,33 +41,31 @@ export default function Verify() {
 
   if (!email) {
     return (
-      <section className="auth"><div className="container narrow">
-        <h1>Verify your email</h1>
-        <p className="muted">Start from <Link to="/register">registration</Link> or <Link to="/login">log in</Link>.</p>
-      </div></section>
+      <AuthLayout title="Verify your email" subtitle="Start from registration or log in.">
+        <p className="muted"><Link to="/register">Register</Link> or <Link to="/login">log in</Link>.</p>
+      </AuthLayout>
     );
   }
 
   return (
-    <section className="auth">
-      <div className="container narrow">
-        <h1>Verify your email</h1>
-        <p className="muted">Enter the 6-digit code sent to <strong>{email}</strong>. It expires after 5 minutes.</p>
-        <form className="card form" onSubmit={onVerify}>
-          <Field
-            label="Verification code" id="otp" value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6} required className="otp-input"
-          />
-          <FormStatus error={verify.error || resend.error} slow={verify.slow || resend.slow} notice={notice} />
-          <button className="btn btn-primary btn-block" type="submit" disabled={verify.loading || otp.length !== 6}>
-            {verify.loading ? "Checking..." : "Verify"}
-          </button>
-          <button className="btn btn-secondary btn-block" type="button" onClick={onResend} disabled={resend.loading || cooldown > 0}>
-            {cooldown > 0 ? `Resend code in ${cooldown}s` : resend.loading ? "Sending..." : "Resend code"}
-          </button>
-        </form>
-      </div>
-    </section>
+    <AuthLayout
+      title="Check your email"
+      subtitle={<>Enter the 6-digit code sent to <strong>{email}</strong>. It expires after 5 minutes.</>}
+    >
+      <form className="form" onSubmit={onVerify}>
+        <Field
+          label="Verification code" id="otp" value={otp}
+          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6} required className="otp-input"
+        />
+        <FormStatus error={verify.error || resend.error} slow={verify.slow || resend.slow} notice={notice} />
+        <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={verify.loading || otp.length !== 6} aria-busy={verify.loading}>
+          {verify.loading ? "Checking..." : "Verify"}
+        </button>
+        <button className="btn btn-secondary btn-block" type="button" onClick={onResend} disabled={resend.loading || cooldown > 0} aria-busy={resend.loading}>
+          {cooldown > 0 ? `Resend code in ${cooldown}s` : resend.loading ? "Sending..." : "Resend code"}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }

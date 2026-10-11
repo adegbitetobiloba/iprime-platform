@@ -2,7 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 
 export default function Header() {
-  const { token, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -17,7 +17,8 @@ export default function Header() {
           {token ? (
             <>
               <NavLink to="/dashboard" className="nav-link">Dashboard</NavLink>
-              <button type="button" className="btn btn-ghost" onClick={logout}>Log out</button>
+              {user && <span className="avatar" aria-hidden="true">{(user.firstName || "?").charAt(0).toUpperCase()}</span>}
+              <button type="button" className="btn btn-quiet btn-sm" onClick={logout}>Log out</button>
             </>
           ) : (
             <>
