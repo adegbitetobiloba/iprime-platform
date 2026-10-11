@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
+import Reveal from "../components/Reveal.jsx";
 
 const PLANNED = [
   { icon: "book", title: "Learning library", text: "Searchable study resources organised by subject and topic." },
@@ -10,7 +11,7 @@ const PLANNED = [
 const STEPS = [
   { title: "Create your account", text: "Register as a student, or as a parent or guardian." },
   { title: "Verify your email", text: "Confirm your address with a 6-digit code sent to your inbox." },
-  { title: "Open your dashboard", text: "Log in and follow each feature as it is released." },
+  { title: "Open your dashboard", text: "Log in, keep your details up to date, and follow each feature as it is released." },
 ];
 
 export default function Home() {
@@ -20,7 +21,7 @@ export default function Home() {
         <div className="container hero-inner">
           <div className="hero-copy reveal">
             <p className="pill">JAMB UTME preparation</p>
-            <h1>Prepare with discipline. Succeed with integrity.</h1>
+            <h1>Prepare with discipline. <span className="accent-text">Succeed with integrity.</span></h1>
             <p className="lead">
               iPrime is the digital platform of Prime Excelerate Tutelage, built for students who are serious about their UTME.
             </p>
@@ -47,50 +48,80 @@ export default function Home() {
 
       <section className="section">
         <div className="container">
-          <div className="section-head">
+          <Reveal className="section-head">
             <p className="eyebrow">Coming to iPrime</p>
             <h2>Built around how students prepare</h2>
             <p className="section-lead">These features are in development. Accounts are open now, so you are ready when they launch.</p>
-          </div>
+          </Reveal>
           <ul className="feature-grid">
-            {PLANNED.map((f) => (
-              <li key={f.title} className="feature card-hover">
-                <span className="icon-tile"><Icon name={f.icon} size={22} /></span>
-                <h3>{f.title}</h3>
-                <p>{f.text}</p>
-                <span className="badge">In development</span>
-              </li>
+            {PLANNED.map((f, i) => (
+              <Reveal as="li" key={f.title} delay={i * 100}>
+                <div className="feature card-hover">
+                  <span className="icon-tile"><Icon name={f.icon} size={22} /></span>
+                  <h3>{f.title}</h3>
+                  <p>{f.text}</p>
+                  <span className="badge">In development</span>
+                </div>
+              </Reveal>
             ))}
           </ul>
         </div>
       </section>
 
+      <section className="section section-split">
+        <div className="container split">
+          <Reveal className="split-copy">
+            <p className="eyebrow">One platform, two views</p>
+            <h2>Made for students, and for the parents behind them</h2>
+            <p className="section-lead">
+              Students get a focused place to study and practise. Parents and guardians get their own account to follow progress as it becomes available.
+            </p>
+          </Reveal>
+          <div className="split-panels">
+            <Reveal delay={80}>
+              <div className="panel-feature">
+                <span className="icon-tile icon-tile-light"><Icon name="user" size={22} /></span>
+                <h3>For students</h3>
+                <p>Practice, study resources and a record of your results, all in one place.</p>
+              </div>
+            </Reveal>
+            <Reveal delay={180}>
+              <div className="panel-plain card-hover">
+                <span className="icon-tile"><Icon name="shield" size={22} /></span>
+                <h3>For parents and guardians</h3>
+                <p>A separate account type, so you can stay informed about your child's preparation.</p>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       <section className="section section-tint">
         <div className="container">
-          <div className="section-head">
+          <Reveal className="section-head">
             <p className="eyebrow">Getting started</p>
             <h2>Three steps to your account</h2>
-          </div>
+          </Reveal>
           <ol className="steps">
             {STEPS.map((s, i) => (
-              <li key={s.title} className="step">
+              <Reveal as="li" key={s.title} className="step" delay={i * 100}>
                 <span className="step-num" aria-hidden="true">{i + 1}</span>
                 <h3>{s.title}</h3>
                 <p>{s.text}</p>
-              </li>
+              </Reveal>
             ))}
           </ol>
         </div>
       </section>
 
       <section className="cta-band">
-        <div className="container cta-inner">
+        <Reveal className="container cta-inner">
           <div>
             <h2>Ready to begin?</h2>
             <p>Create your account in a minute and get ready for what is coming.</p>
           </div>
           <Link to="/register" className="btn btn-gold btn-lg">Create an account</Link>
-        </div>
+        </Reveal>
       </section>
     </>
   );

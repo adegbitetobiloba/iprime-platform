@@ -5,8 +5,8 @@ import { useSubmit } from "../useSubmit.js";
 import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
+import { STATES } from "../states.js";
 
-const STATES = ["Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno","Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","FCT Abuja","Gombe","Imo","Jigawa","Kaduna","Kano","Katsina","Kebbi","Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun","Ondo","Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe","Zamfara"];
 
 export default function Register() {
   const navigate = useNavigate();
