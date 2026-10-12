@@ -18,7 +18,7 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault();
     const r = await run();
-    if (!r?.failed) navigate("/dashboard");
+    if (!r?.failed) navigate(r.role === "admin" ? "/admin" : "/dashboard");
     else if (r.error.code === "NOT_VERIFIED") navigate(`/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`);
   };
 

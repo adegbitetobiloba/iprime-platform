@@ -7,6 +7,9 @@ const mongoose = require("mongoose");
 
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const cbtRoutes = require("./routes/cbtRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 
 const isProd = process.env.NODE_ENV === "production";
 const app = express();
@@ -18,13 +21,16 @@ app.use(helmet());
 const allowedOrigins = (process.env.CORS_ORIGINS || "").split(",").map((o) => o.trim()).filter(Boolean);
 app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : !isProd }));
 
-app.use(express.json({ limit: "100kb" })); // MUST come before the routes
+app.use(express.json({ limit: "300kb" })); // MUST come before the routes (large enough for pasted question lists)
 if (process.env.NODE_ENV !== "test") app.use(morgan("tiny"));
 
 app.get("/", (req, res) => res.send("iPrime API"));
 app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connection.readyState === 1 }));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/public", publicRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api", cbtRoutes);
 
 app.use((req, res) => res.status(404).json({ error: "Not found" }));
 

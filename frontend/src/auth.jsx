@@ -16,6 +16,18 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(Boolean(readToken()));
 
+  // If another tab logs in or out, follow it, so this tab never keeps showing a stale signed-in state.
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== KEY) return;
+      const t = readToken();
+      setToken(t);
+      if (!t) { setUser(null); setLoading(false); } else setLoading(true);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const logout = useCallback(() => {
     writeToken(null);
     setToken(null);

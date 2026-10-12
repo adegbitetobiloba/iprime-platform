@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../auth.jsx";
 
 export default function Footer() {
+  const { token } = useAuth();
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
@@ -17,11 +19,10 @@ export default function Footer() {
           <Link to="/news">News</Link>
         </nav>
         <nav className="footer-col" aria-label="Help and account">
-          <h2 className="footer-heading">Help and account</h2>
+          <h2 className="footer-heading">{token ? "Your account" : "Help and account"}</h2>
           <Link to="/faq">FAQ</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/login">Log in</Link>
-          <Link to="/register">Register</Link>
+          {token ? <Link to="/dashboard">Dashboard</Link> : (<><Link to="/login">Log in</Link><Link to="/register">Sign up</Link></>)}
         </nav>
       </div>
     </footer>

@@ -7,13 +7,13 @@ import Icon from "../components/Icon.jsx";
 import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
 import Reveal from "../components/Reveal.jsx";
+import { Link } from "react-router-dom";
 
 const ROLE_LABEL = { student: "Student", parent: "Parent or guardian", teacher: "Teacher", admin: "Administrator" };
 
 const UPCOMING = [
   { icon: "book", title: "Learning library", text: "Study resources by subject and topic will appear here." },
-  { icon: "test", title: "CBT practice", text: "Practice examinations will be available here when released." },
-  { icon: "chart", title: "Results and progress", text: "Your test history and progress will be shown here." },
+  { icon: "chart", title: "Progress insights", text: "Trends across your results will be shown here as you take more examinations." },
 ];
 
 const formatDate = (value) => {
@@ -140,6 +140,22 @@ export default function Dashboard() {
           <div className="reveal reveal-2"><AccountPanel user={user} /></div>
 
           <Reveal delay={120}>
+            {(user.role === "student" || user.role === "admin") && (
+              <div className="panel" style={{ marginBottom: "var(--s5)" }}>
+                <h2 className="panel-title">Examinations</h2>
+                <p className="muted">Take the examinations published for you and review your results.</p>
+                <div className="form-actions">
+                  <Link to="/exams" className="btn btn-primary">Examination centre</Link>
+                  <Link to="/results" className="btn btn-secondary">My results</Link>
+                </div>
+              </div>
+            )}
+            {user.role === "admin" && (
+              <div className="panel" style={{ marginBottom: "var(--s5)" }}>
+                <h2 className="panel-title">Administration</h2>
+                <Link to="/admin" className="btn btn-secondary">Open administration</Link>
+              </div>
+            )}
             <div className="panel">
               <h2 className="panel-title">Coming next</h2>
               <ul className="upcoming">

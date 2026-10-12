@@ -20,6 +20,7 @@ export async function api(path, { method = "GET", body, token } = {}) {
     const err = new Error(data.error || "Something went wrong. Please try again.");
     err.status = res.status;
     err.code = data.code;
+    err.details = data.errors; // e.g. per-question problems from a failed import
     throw err;
   }
   return data;
