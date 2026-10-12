@@ -2,8 +2,9 @@
 
 Digital platform for **Prime Excelerate Tutelage** - *The Peak of Academic Excellence and Integrity*.
 
-Planned scope: public website, student / parent / administrator portals, learning library,
-JAMB UTME CBT practice and academic performance tracking.
+Prime Excelerate Tutelage prepares students, improves their academic performance and brings out the best in every student, across classes, subjects and examinations.
+
+Scope: public website, student / parent / administrator portals, learning library, computer-based tests (CBT) and academic performance tracking. See `docs/ROADMAP.md` for what is built and what is next.
 
 ## Repository layout
 
