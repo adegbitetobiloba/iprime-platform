@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import Reveal from "../components/Reveal.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import ProgrammeCards from "../components/ProgrammeCards.jsx";
 
 const VALUES = [
   { title: "Academic excellence", text: "A commitment to rigorous preparation and high standards in every subject." },
@@ -39,6 +40,18 @@ export default function About() {
               ))}
             </ul>
           </Reveal>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <Reveal className="section-head">
+            <p className="eyebrow">What we offer</p>
+            <h2>Our programmes</h2>
+            <p className="section-lead">Support across different classes, subjects and examinations.</p>
+          </Reveal>
+          <ProgrammeCards limit={6} />
+          <Reveal><p style={{ marginTop: "var(--s5)" }}><Link to="/programmes" className="btn btn-secondary">See all programme details</Link></p></Reveal>
         </div>
       </section>
 

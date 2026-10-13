@@ -22,6 +22,7 @@ import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import AdminHome from "./pages/admin/AdminHome.jsx";
 import AdminExams from "./pages/admin/AdminExams.jsx";
 import AdminExamEdit from "./pages/admin/AdminExamEdit.jsx";
+import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import { useAuth } from "./auth.jsx";
 
@@ -98,6 +99,7 @@ export default function App() {
             <Route index element={<AdminHome />} />
             <Route path="exams" element={<AdminExams />} />
             <Route path="exams/:id" element={<AdminExamEdit />} />
+            <Route path="programmes" element={<AdminProgrammes />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

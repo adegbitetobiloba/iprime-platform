@@ -26,8 +26,8 @@ export default function AdminHome() {
       )}
       <div className="panel" style={{ marginTop: "var(--s5)" }}>
         <h2 className="panel-title">Manage</h2>
-        <p><Link to="/admin/exams" className="btn btn-primary">Manage examinations</Link></p>
-        <p className="muted">Student, parent, programme, event and announcement management are planned and will appear here when they are built.</p>
+        <div className="form-actions"><Link to="/admin/exams" className="btn btn-primary">Manage examinations</Link><Link to="/admin/programmes" className="btn btn-secondary">Manage programmes</Link></div>
+        <p className="muted">Student, parent, event and announcement management are planned and will appear here when they are built.</p>
       </div>
     </div>
   );
