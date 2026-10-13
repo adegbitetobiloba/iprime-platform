@@ -25,7 +25,7 @@ app.use(express.json({ limit: "300kb" })); // MUST come before the routes (large
 if (process.env.NODE_ENV !== "test") app.use(morgan("tiny"));
 
 app.get("/", (req, res) => res.send("iPrime API"));
-app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connection.readyState === 1 }));
+app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connection.readyState === 1, commit: (process.env.RENDER_GIT_COMMIT || "").slice(0, 7) || undefined }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/public", publicRoutes);
