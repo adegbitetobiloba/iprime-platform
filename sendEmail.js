@@ -1,4 +1,3 @@
-const nodemailer = require("nodemailer");
 
 // Sends the OTP email. Which transport is used depends on the environment:
 //  1. BREVO_API_KEY (+ EMAIL_FROM)  -> Brevo HTTPS API (works on Render's free plan; SMTP is blocked there)
@@ -30,6 +29,7 @@ const sendEmail = async (to, otp) => {
   }
 
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    const nodemailer = require("nodemailer"); // loaded only here: the Brevo path (used in production) never needs it
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
