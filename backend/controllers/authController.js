@@ -5,6 +5,7 @@ const Otp = require("../models/Otp");
 const sendEmail = require("../utils/sendEmail");
 const generateOtp = require("../utils/generateOtp");
 const { ensureStudentId } = require("../utils/studentId");
+const { applyAdminAllowlist } = require("../utils/adminAllowlist");
 
 const MAX_OTP_ATTEMPTS = 5;
 const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -142,8 +143,8 @@ exports.login = async (req, res) => {
       return res.status(403).json({ error: "Please verify your email first", code: "NOT_VERIFIED" });
     }
 
-    const full = await ensureStudentId(user); // existing students get their ID on first login after this update
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const full = await ensureStudentId(await applyAdminAllowlist(user)); // existing students get their ID on first login
+    const token = jwt.sign({ id: full._id, role: full.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
     res.json({ token, user: publicUser(full) });
   } catch (err) {
     serverError(res, err);
@@ -155,7 +156,7 @@ exports.me = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(401).json({ error: "Account no longer exists" });
-    res.json({ user: publicUser(await ensureStudentId(user)) });
+    res.json({ user: publicUser(await ensureStudentId(await applyAdminAllowlist(user))) });
   } catch (err) {
     serverError(res, err);
   }
