@@ -6,11 +6,15 @@ const requireRole = require("../middleware/roleMiddleware");
 const { validate } = require("../validations/authValidation");
 const cbt = require("../validations/cbtValidation");
 const prog = require("../controllers/programmeController");
+const users = require("../controllers/adminUserController");
 const progV = require("../validations/programmeValidation");
 
 // Everything under /api/admin requires a signed-in account whose role is "admin" in the database.
 router.use(protect, requireRole("admin"));
 
+router.get("/overview", users.overview);
+router.get("/students", users.listStudents);
+router.get("/students/:id", users.getStudent);
 router.get("/exams", c.list);
 router.post("/exams", validate(cbt.createExam), c.create);
 router.get("/exams/:id", c.get);

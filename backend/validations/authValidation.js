@@ -24,6 +24,12 @@ const schemas = {
   verifyOtp: Joi.object({ email, otp: Joi.string().pattern(/^\d{6}$/).required() }),
   resendOtp: Joi.object({ email }),
   login: Joi.object({ email, password: Joi.string().max(72).required() }),
+  // Google sign-in: only a student or parent account can ever be created this way; admin can never be requested.
+  google: Joi.object({
+    credential: Joi.string().min(20).max(4096).required(),
+    role: Joi.string().valid(...SELF_SIGNUP_ROLES).default("student"),
+  }),
+  googleLink: Joi.object({ credential: Joi.string().min(20).max(4096).required() }),
   // Fields a signed-in user may edit. Email, role, password and verification status are NOT editable here.
   updateProfile: Joi.object({
     firstName: Joi.string().trim().min(1).max(50).required(),

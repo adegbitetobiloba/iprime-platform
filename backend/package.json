@@ -10,8 +10,9 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "node --test",
-    "create-admin": "node scripts/createAdmin.js"
+    "test": "node --test \"test/*.test.js\"",
+    "create-admin": "node scripts/createAdmin.js",
+    "postinstall": "npm audit --omit=dev || exit 0"
   },
   "license": "UNLICENSED",
   "dependencies": {

@@ -13,11 +13,7 @@ const RESEND_COOLDOWN_MS = 60 * 1000;
 // Compared against when the email is unknown, so login takes about the same time either way.
 const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 10);
 
-// Never send the password hash back to the browser.
-const publicUser = (user) => {
-  const { password, __v, ...safe } = user.toObject();
-  return safe;
-};
+const publicUser = require("../utils/publicUser");
 
 const serverError = (res, err) => {
   console.error(err);
@@ -134,7 +130,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
 
     // Same message and similar timing for "no such user" and "wrong password".
-    const passwordOk = await bcrypt.compare(password, user ? user.password : DUMMY_HASH);
+    const passwordOk = await bcrypt.compare(password, user && user.password ? user.password : DUMMY_HASH); // Google-only accounts have no password
     if (!user || !passwordOk) {
       return res.status(400).json({ error: "Invalid email or password" });
     }

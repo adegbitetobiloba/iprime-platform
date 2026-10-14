@@ -1,18 +1,22 @@
 const mongoose = require("mongoose");
 
+// Accounts created with Google have no password, phone or state until the user adds them.
+const unlessGoogle = function () { return !this.googleId; };
+
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true, trim: true },
-  lastName: { type: String, required: true, trim: true },
+  lastName: { type: String, required: unlessGoogle, trim: true },
   otherNames: { type: String, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  phone: { type: String, required: true },
+  phone: { type: String, required: unlessGoogle },
   dob: { type: Date },
   country: { type: String, required: true, default: "Nigeria" },
-  state: { type: String, required: true },
+  state: { type: String, required: unlessGoogle },
   role: { type: String, enum: ["student", "parent", "teacher", "admin"], default: "student" },
   // Public student identifier, e.g. PET-7K4M9Q2X. Assigned by the server only; never edited by users.
   studentId: { type: String, unique: true, sparse: true },
-  password: { type: String, required: true },
+  password: { type: String, required: unlessGoogle },
+  googleId: { type: String, unique: true, sparse: true }, // Google's stable id for the account (never shown to users)
   isVerified: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
