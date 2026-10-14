@@ -28,6 +28,12 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  useEffect(() => {
+    const onUnauthorized = () => { writeToken(null); setToken(null); setUser(null); setLoading(false); };
+    window.addEventListener("iprime:unauthorized", onUnauthorized);
+    return () => window.removeEventListener("iprime:unauthorized", onUnauthorized);
+  }, []);
+
   const logout = useCallback(() => {
     writeToken(null);
     setToken(null);
@@ -53,7 +59,7 @@ export function AuthProvider({ children }) {
     return d.user;
   };
 
-  return <AuthContext.Provider value={{ token, user, loading, login, logout, updateUser: setUser }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ token, user, loading, login, logout, updateUser: setUser, acceptSession: (t, u) => { writeToken(t); setToken(t); setUser(u); setLoading(false); } }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);

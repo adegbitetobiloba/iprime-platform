@@ -16,6 +16,7 @@ export async function api(path, { method = "GET", body, token } = {}) {
   }
 
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && token) window.dispatchEvent(new Event("iprime:unauthorized")); // an expired or revoked login: the app signs out
   if (!res.ok) {
     const err = new Error(data.error || "Something went wrong. Please try again.");
     err.status = res.status;

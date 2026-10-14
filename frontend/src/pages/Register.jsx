@@ -5,6 +5,7 @@ import { useSubmit } from "../useSubmit.js";
 import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
+import GoogleButton from "../components/GoogleButton.jsx";
 import { STATES } from "../states.js";
 
 
@@ -63,6 +64,9 @@ export default function Register() {
           {loading ? "Creating account..." : "Create account"}
         </button>
       </form>
+      <p className="auth-divider"><span>or</span></p>
+      <GoogleButton role={form.role} onDone={() => navigate("/dashboard")} />
+      <p className="hint center">With Google, you will add your phone number and state afterwards in your profile.</p>
     </AuthLayout>
   );
 }

@@ -5,6 +5,7 @@ import { useSubmit } from "../useSubmit.js";
 import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
+import GoogleButton from "../components/GoogleButton.jsx";
 
 export default function Login() {
   const { login } = useAuth();
@@ -36,6 +37,8 @@ export default function Login() {
           {loading ? "Logging in..." : "Log in"}
         </button>
       </form>
+      <p className="auth-divider"><span>or</span></p>
+      <GoogleButton onDone={(u) => navigate(u.role === "admin" ? "/admin" : "/dashboard")} />
     </AuthLayout>
   );
 }

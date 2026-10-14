@@ -552,3 +552,28 @@ strong { font-weight: 800; }
 }
 @media (prefers-reduced-motion: reduce) { .account-menu, .avatar-loading { animation: none; } }
 .note + .btn { margin-top: var(--s3); }
+
+/* ---------- Stage 1: Google sign-in, admin students ---------- */
+.auth-divider { display: flex; align-items: center; gap: var(--s3); color: var(--muted); font-weight: 600; font-size: 0.9rem; margin: var(--s5) 0 var(--s4); }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.google-wrap { display: grid; gap: var(--s2); justify-items: center; }
+.google-box { min-height: 44px; display: flex; justify-content: center; width: 100%; }
+.google-box-hidden { display: none; }
+.google-box-busy { opacity: 0.5; pointer-events: none; }
+.google-skeleton { width: 100%; max-width: 360px; min-height: 44px; border-radius: var(--r-md); }
+.btn-google { width: 100%; max-width: 360px; background: #fff; color: var(--text); border-color: var(--line-strong); }
+.btn-google:hover:not(:disabled) { background: var(--surface-2); border-color: var(--navy); }
+.google-wrap .hint, .google-wrap .alert { width: 100%; max-width: 360px; text-align: center; }
+.google-link { border-top: 1px solid var(--line); margin-top: var(--s5); padding-top: var(--s4); }
+.google-link h3 { font-size: 1rem; }
+.google-link .google-wrap { justify-items: start; }
+
+.stat-grid-3 { grid-template-columns: repeat(2, 1fr); }
+.segmented { display: inline-flex; border: 1.5px solid var(--line-strong); border-radius: 999px; overflow: hidden; background: #fff; }
+.segmented button { min-height: 40px; padding: 0 var(--s4); border: 0; background: transparent; font: inherit; font-weight: 700; color: var(--navy); cursor: pointer; }
+.segmented button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+.toolbar input { width: 100%; max-width: 420px; min-height: 48px; padding: 0 var(--s4); font: inherit; border: 1.5px solid var(--line-strong); border-radius: var(--r-md); background: #fff; }
+.toolbar input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(5, 83, 179, 0.18); outline: none; }
+.cell-wrap { overflow-wrap: anywhere; min-width: 160px; }
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3); }
+@media (min-width: 640px) { .stat-grid-3 { grid-template-columns: repeat(3, 1fr); } }

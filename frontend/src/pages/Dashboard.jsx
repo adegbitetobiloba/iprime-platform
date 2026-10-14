@@ -7,6 +7,7 @@ import Icon from "../components/Icon.jsx";
 import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
 import Reveal from "../components/Reveal.jsx";
+import GoogleButton from "../components/GoogleButton.jsx";
 import { Link } from "react-router-dom";
 
 const ROLE_LABEL = { student: "Student", parent: "Parent or guardian", teacher: "Teacher", admin: "Administrator" };
@@ -64,8 +65,8 @@ function AccountPanel({ user }) {
     ...(user.studentId ? [["Student ID", user.studentId]] : []),
     ...(user.otherNames ? [["Other names", user.otherNames]] : []),
     ["Email", user.email],
-    ["Phone", user.phone],
-    ["State", user.state],
+    ["Phone", user.phone || "Not added yet"],
+    ["State", user.state || "Not added yet"],
     ...(user.dob ? [["Date of birth", formatDate(user.dob)]] : []),
     ...(joined ? [["Member since", joined]] : []),
   ];
@@ -116,6 +117,20 @@ function AccountPanel({ user }) {
           ))}
         </dl>
       )}
+
+      {!editing && (
+        <div className="google-link">
+          <h3>Google sign-in</h3>
+          {user.googleLinked ? (
+            <p className="status-ok"><Icon name="check" size={16} /> Google account linked</p>
+          ) : user.hasPassword ? (
+            <>
+              <p className="muted">Link your Google account to sign in with one tap. It must use the same email address as this account ({user.email}).</p>
+              <GoogleButton mode="link" />
+            </>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
@@ -135,6 +150,12 @@ export default function Dashboard() {
           </div>
           {user.isVerified && <span className="status-ok"><Icon name="check" size={16} /> Email verified</span>}
         </div>
+
+        {(!user.phone || !user.state) && (
+          <p className="alert alert-info" role="status" style={{ marginBottom: "var(--s4)" }}>
+            Welcome! Add your phone number and state to finish setting up your profile. Use <strong>Edit profile</strong> below.
+          </p>
+        )}
 
         <div className="dash-grid">
           <div className="reveal reveal-2"><AccountPanel user={user} /></div>
