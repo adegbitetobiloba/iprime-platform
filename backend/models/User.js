@@ -12,7 +12,16 @@ const userSchema = new mongoose.Schema({
   dob: { type: Date },
   country: { type: String, required: true, default: "Nigeria" },
   state: { type: String, required: unlessGoogle },
-  role: { type: String, enum: ["student", "parent", "teacher", "admin"], default: "student" },
+  role: { type: String, enum: ["student", "parent", "alumni", "teacher", "admin"], default: "student" },
+  // Alumni: what they say about their time with the institution, and whether staff have confirmed it.
+  // "none" for everyone who is not alumni. Claiming to be alumni gives NO access to student records.
+  alumniStatus: { type: String, enum: ["none", "unverified", "pending", "verified", "rejected"], default: "none" },
+  alumni: {
+    graduationYear: { type: Number, min: 1950, max: 2100 },
+    lastClass: { type: String, trim: true, maxlength: 60 },
+    note: { type: String, trim: true, maxlength: 300 },
+    reviewedAt: { type: Date },
+  },
   // Public student identifier, e.g. PET-7K4M9Q2X. Assigned by the server only; never edited by users.
   studentId: { type: String, unique: true, sparse: true },
   password: { type: String, required: unlessGoogle },

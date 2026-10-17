@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 // "teacher" and "admin" are deliberately missing: nobody can give themselves those roles at signup.
 // Admins are created with `npm run create-admin`; teachers are assigned by an admin.
-const SELF_SIGNUP_ROLES = ["student", "parent"];
+const SELF_SIGNUP_ROLES = ["student", "parent", "alumni"];
 
 const email = Joi.string().trim().lowercase().email().required();
 
@@ -18,18 +18,32 @@ const schemas = {
     country: Joi.string().trim().max(60).default("Nigeria"),
     state: Joi.string().trim().max(60).required(),
     role: Joi.string().valid(...SELF_SIGNUP_ROLES).default("student"),
+    // Only used when role is "alumni"
+    graduationYear: Joi.number().integer().min(1950).max(new Date().getFullYear() + 1),
+    lastClass: Joi.string().trim().max(60).allow(""),
     // bcrypt only uses the first 72 bytes, so longer passwords add nothing.
     password: Joi.string().min(8).max(72).required(),
   }),
   verifyOtp: Joi.object({ email, otp: Joi.string().pattern(/^\d{6}$/).required() }),
   resendOtp: Joi.object({ email }),
   login: Joi.object({ email, password: Joi.string().max(72).required() }),
-  // Google sign-in: only a student or parent account can ever be created this way; admin can never be requested.
+  // Google sign-in. role is optional here: a new person who has not chosen yet is asked on the next screen.
+  // Only student, parent or alumni can ever be requested; admin cannot.
   google: Joi.object({
     credential: Joi.string().min(20).max(4096).required(),
-    role: Joi.string().valid(...SELF_SIGNUP_ROLES).default("student"),
+    role: Joi.string().valid(...SELF_SIGNUP_ROLES),
+  }),
+  googleComplete: Joi.object({
+    setupToken: Joi.string().min(20).max(4000).required(),
+    role: Joi.string().valid(...SELF_SIGNUP_ROLES).required(),
+    graduationYear: Joi.number().integer().min(1950).max(new Date().getFullYear() + 1),
+    lastClass: Joi.string().trim().max(60).allow(""),
   }),
   googleLink: Joi.object({ credential: Joi.string().min(20).max(4096).required() }),
+  linkPassword: Joi.object({ linkToken: Joi.string().min(20).max(4000).required(), password: Joi.string().min(1).max(72).required() }),
+  linkCodeSend: Joi.object({ linkToken: Joi.string().min(20).max(4000).required() }),
+  linkCodeConfirm: Joi.object({ linkToken: Joi.string().min(20).max(4000).required(), code: Joi.string().pattern(/^\d{6}$/).required() }),
+  alumniRequest: Joi.object({ note: Joi.string().trim().max(300).allow("") }),
   // Fields a signed-in user may edit. Email, role, password and verification status are NOT editable here.
   updateProfile: Joi.object({
     firstName: Joi.string().trim().min(1).max(50).required(),
@@ -40,6 +54,8 @@ const schemas = {
     dob: Joi.date().max("now").allow("", null).optional()
       .messages({ "date.max": "Date of birth cannot be in the future" }),
     state: Joi.string().trim().max(60).required(),
+    graduationYear: Joi.number().integer().min(1950).max(new Date().getFullYear() + 1),
+    lastClass: Joi.string().trim().max(60).allow(""),
   }),
 };
 

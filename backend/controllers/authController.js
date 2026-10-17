@@ -1,9 +1,6 @@
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Otp = require("../models/Otp");
-const sendEmail = require("../utils/sendEmail");
-const generateOtp = require("../utils/generateOtp");
 const { ensureStudentId } = require("../utils/studentId");
 const { applyAdminAllowlist } = require("../utils/adminAllowlist");
 
@@ -20,18 +17,18 @@ const serverError = (res, err) => {
   res.status(500).json({ error: "Something went wrong. Please try again." });
 };
 
-// Replaces any old code for this email with a fresh one and emails it.
-async function issueOtp(email) {
-  await Otp.deleteMany({ email });
-  const code = generateOtp();
-  await Otp.create({ email, otp: code });
-  await sendEmail(email, code);
-}
+const { issueOtp } = require("../utils/otpService");
+const { issueSession } = require("../utils/session");
+const RevokedToken = require("../models/RevokedToken");
 
 // POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { email, password, ...profile } = req.body;
+    const { email, password, graduationYear, lastClass, ...profile } = req.body;
+    if (profile.role === "alumni") {
+      profile.alumniStatus = "unverified"; // a claim, until staff confirm it
+      profile.alumni = { graduationYear, lastClass };
+    }
     const existing = await User.findOne({ email });
 
     if (existing && existing.isVerified) {
@@ -140,7 +137,7 @@ exports.login = async (req, res) => {
     }
 
     const full = await ensureStudentId(await applyAdminAllowlist(user)); // existing students get their ID on first login
-    const token = jwt.sign({ id: full._id, role: full.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = issueSession(full);
     res.json({ token, user: publicUser(full) });
   } catch (err) {
     serverError(res, err);
@@ -168,6 +165,13 @@ exports.updateMe = async (req, res) => {
     const update = { $set: set };
     if (dob) set.dob = dob;
     else update.$unset = { dob: "" };
+    if (req.body.graduationYear !== undefined || req.body.lastClass !== undefined) {
+      const me = await User.findById(req.user.id).select("role");
+      if (me && me.role === "alumni") { // only alumni have these details
+        if (req.body.graduationYear !== undefined) set["alumni.graduationYear"] = req.body.graduationYear;
+        if (req.body.lastClass !== undefined) set["alumni.lastClass"] = req.body.lastClass;
+      }
+    }
 
     const user = await User.findByIdAndUpdate(req.user.id, update, { new: true, runValidators: true });
     if (!user) return res.status(401).json({ error: "Account no longer exists" });
@@ -175,4 +179,39 @@ exports.updateMe = async (req, res) => {
   } catch (err) {
     serverError(res, err);
   }
+};
+
+// POST /api/auth/logout (protected): ends THIS login on the server, so the token stops working even if someone copied it.
+exports.logout = async (req, res) => {
+  try {
+    if (req.user.jti && req.user.exp) {
+      await RevokedToken.updateOne({ jti: req.user.jti }, { $setOnInsert: { jti: req.user.jti, expiresAt: new Date(req.user.exp * 1000) } }, { upsert: true });
+    }
+    res.json({ message: "Logged out" });
+  } catch (err) { serverError(res, err); }
+};
+
+// GET /api/auth/admin-status (protected): lets the signed-in person see why they do or do not have administrator access.
+// It only ever describes the caller's own account.
+exports.adminStatus = async (req, res) => {
+  try {
+    const me = await User.findById(req.user.id).select("email role isVerified");
+    if (!me) return res.status(401).json({ error: "Account no longer exists" });
+    const list = (process.env.ADMIN_EMAILS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+    res.json({ role: me.role, emailVerified: me.isVerified, adminListConfigured: list.length > 0, emailOnAdminList: list.includes(me.email) });
+  } catch (err) { serverError(res, err); }
+};
+
+// POST /api/auth/alumni/request-verification (protected, alumni only)
+exports.requestAlumniVerification = async (req, res) => {
+  try {
+    const me = await User.findById(req.user.id);
+    if (!me || me.role !== "alumni") return res.status(403).json({ error: "This is only for alumni accounts." });
+    if (me.alumniStatus === "verified") return res.status(409).json({ error: "You are already verified." });
+    if (me.alumniStatus === "pending") return res.status(409).json({ error: "Your request is already waiting for review." });
+    me.alumniStatus = "pending";
+    if (req.body.note !== undefined) me.set("alumni.note", req.body.note);
+    await me.save();
+    res.json({ user: publicUser(me) });
+  } catch (err) { serverError(res, err); }
 };

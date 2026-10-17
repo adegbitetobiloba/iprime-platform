@@ -15,6 +15,7 @@ router.use(protect, requireRole("admin"));
 router.get("/overview", users.overview);
 router.get("/students", users.listStudents);
 router.get("/students/:id", users.getStudent);
+router.patch("/alumni/:id", users.reviewAlumni);
 router.get("/exams", c.list);
 router.post("/exams", validate(cbt.createExam), c.create);
 router.get("/exams/:id", c.get);
