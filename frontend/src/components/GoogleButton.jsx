@@ -29,11 +29,12 @@ const GoogleG = () => (
 
 // "Continue with Google" using Google's own sign-in (Google Identity Services): Google shows its account chooser,
 // and our server verifies the result. We never see a Google password. mode="link" attaches Google to the signed-in account.
-export default function GoogleButton({ role = "student", mode = "signin", onDone }) {
+export default function GoogleButton({ role, mode = "signin", onDone, onSignedIn, onLinkRequired, onOnboarding }) {
   const { token, acceptSession, updateUser } = useAuth();
   const boxRef = useRef(null);
   const alive = useRef(true);
   const roleRef = useRef(role); roleRef.current = role;
+  const cb = useRef({}); cb.current = { onDone, onSignedIn, onLinkRequired, onOnboarding };
   const [state, setState] = useState("loading"); // loading | ready | notconfigured | unavailable
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -53,11 +54,14 @@ export default function GoogleButton({ role = "student", mode = "signin", onDone
             if (mode === "link") {
               const d = await api("/auth/google/link", { method: "POST", token, body: { credential: resp.credential } });
               updateUser(d.user);
-              onDone?.(d.user);
+              cb.current.onDone?.(d.user);
             } else {
-              const d = await api("/auth/google", { method: "POST", body: { credential: resp.credential, role: roleRef.current } });
-              acceptSession(d.token, d.user);
-              onDone?.(d.user);
+              const body = { credential: resp.credential };
+              if (roleRef.current) body.role = roleRef.current; // only when the person already chose an account type
+              const d = await api("/auth/google", { method: "POST", body });
+              if (d.status === "link_required") cb.current.onLinkRequired?.(d);
+              else if (d.status === "onboarding") cb.current.onOnboarding?.(d);
+              else { acceptSession(d.token, d.user); cb.current.onSignedIn?.(d.user); }
             }
           } catch (e) {
             if (alive.current) setError(e.message);
@@ -68,15 +72,15 @@ export default function GoogleButton({ role = "student", mode = "signin", onDone
       });
       boxRef.current.innerHTML = "";
       window.google.accounts.id.renderButton(boxRef.current, {
-        type: "standard", theme: "outline", size: "large", text: "continue_with", shape: "rectangular", logo_alignment: "left",
-        width: Math.min(360, boxRef.current.clientWidth || 320),
+        type: "standard", theme: "outline", size: "large", text: "continue_with", shape: "pill", logo_alignment: "left",
+        width: Math.max(200, Math.min(400, boxRef.current.clientWidth || 320)),
       });
       setState("ready");
     } catch (e) {
       if (!alive.current) return;
       setState(e.code === "GOOGLE_NOT_CONFIGURED" ? "notconfigured" : "unavailable");
     }
-  }, [mode, token, acceptSession, updateUser, onDone]);
+  }, [mode, token, acceptSession, updateUser]);
 
   useEffect(() => { alive.current = true; prepare(); return () => { alive.current = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -5,7 +5,7 @@ import { useFetch } from "../../useFetch.js";
 export default function AdminHome() {
   const { data, error, loading, reload } = useFetch("/admin/overview");
   const stats = data && [
-    ["Students", data.students], ["Verified students", data.verifiedStudents], ["Parents and guardians", data.parents],
+    ["Students", data.students], ["Verified students", data.verifiedStudents], ["Parents and guardians", data.parents], ["Alumni", data.alumni], ["Alumni waiting for review", data.pendingAlumni],
     ["Examinations", data.exams], ["Published examinations", data.publishedExams], ["Questions in total", data.questions],
     ["Submitted attempts", data.submittedAttempts], ["Attempts in the last 7 days", data.attemptsLast7Days],
     ["Published programmes", data.publishedProgrammes],
@@ -28,7 +28,7 @@ export default function AdminHome() {
       <div className="panel">
         <h2 className="panel-title">Manage</h2>
         <div className="form-actions">
-          <Link to="/admin/students" className="btn btn-primary">Students</Link>
+          <Link to="/admin/students" className="btn btn-primary">Students and alumni</Link>
           <Link to="/admin/exams" className="btn btn-secondary">Examinations</Link>
           <Link to="/admin/programmes" className="btn btn-secondary">Programmes</Link>
         </div>

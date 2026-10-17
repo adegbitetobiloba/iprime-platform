@@ -25,12 +25,16 @@ import AdminExamEdit from "./pages/admin/AdminExamEdit.jsx";
 import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
 import AdminStudents from "./pages/admin/AdminStudents.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import Onboarding from "./pages/Onboarding.jsx";
+import AdminDenied from "./pages/admin/AdminDenied.jsx";
+import Toast from "./components/Toast.jsx";
 import { useAuth } from "./auth.jsx";
 
 function Protected({ children }) {
   const { token, loading } = useAuth();
+  const { pathname } = useLocation();
   if (loading) return <p className="page-note" role="status">Loading your account...</p>;
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/login" replace state={{ from: pathname }} />; // after logging in they come back here
   return children;
 }
 
@@ -38,8 +42,8 @@ function Protected({ children }) {
 function AdminOnly({ children }) {
   const { token, user, loading } = useAuth();
   if (loading || (token && !user)) return <p className="page-note" role="status">Loading your account...</p>;
-  if (!token) return <Navigate to="/login" replace />;
-  if (user.role !== "admin") return <Navigate to="/dashboard" replace />;
+  if (!token) return <Navigate to="/login" replace state={{ from: "/admin" }} />;
+  if (user.role !== "admin") return <AdminDenied />;
   return children;
 }
 
@@ -54,6 +58,7 @@ const TITLES = {
   "/login": "Log in | iPrime",
   "/register": "Create an account | iPrime",
   "/verify": "Verify your email | iPrime",
+  "/onboarding": "Welcome | iPrime",
   "/dashboard": "Dashboard | iPrime",
   "/exams": "Examination centre | iPrime",
   "/results": "My results | iPrime",
@@ -77,6 +82,7 @@ export default function App() {
     <>
       <a className="skip-link" href="#main">Skip to content</a>
       <PageEffects />
+      <Toast />
       {!focusMode && <Header />}
       <main id="main">
         <Routes>
@@ -90,6 +96,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
           <Route path="/exams" element={<Protected><ExamCentre /></Protected>} />
           <Route path="/exams/:id" element={<Protected><ExamIntro /></Protected>} />

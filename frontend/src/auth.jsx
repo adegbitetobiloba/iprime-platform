@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { api } from "./api.js";
 
 const AuthContext = createContext(null);
@@ -15,6 +15,8 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(readToken);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(Boolean(readToken()));
+  const [notice, setNotice] = useState(null); // a short message shown to the person: { kind: "ok" | "warn", text }
+  const tokenRef = useRef(token); tokenRef.current = token;
 
   // If another tab logs in or out, follow it, so this tab never keeps showing a stale signed-in state.
   useEffect(() => {
@@ -29,15 +31,25 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const onUnauthorized = () => { writeToken(null); setToken(null); setUser(null); setLoading(false); };
+    const onUnauthorized = () => { writeToken(null); setToken(null); setUser(null); setLoading(false); setNotice({ kind: "warn", text: "Your session has ended. Please log in again." }); };
     window.addEventListener("iprime:unauthorized", onUnauthorized);
     return () => window.removeEventListener("iprime:unauthorized", onUnauthorized);
   }, []);
 
-  const logout = useCallback(() => {
+  // Ends the login on the server (so a copied token stops working), then clears this device either way.
+  const logout = useCallback(async () => {
+    const t = tokenRef.current;
+    let serverOk = true;
+    if (t) {
+      try { await api("/auth/logout", { method: "POST", token: t }); } catch (e) { serverOk = e.status === 401; } // 401 = already ended
+    }
     writeToken(null);
     setToken(null);
     setUser(null);
+    setLoading(false);
+    setNotice(serverOk
+      ? { kind: "ok", text: "You have been logged out." }
+      : { kind: "warn", text: "You are logged out on this device, but we could not reach the server to end the session fully." });
   }, []);
 
   // If a token is stored, confirm it is still valid and load the profile.
@@ -59,7 +71,7 @@ export function AuthProvider({ children }) {
     return d.user;
   };
 
-  return <AuthContext.Provider value={{ token, user, loading, login, logout, updateUser: setUser, acceptSession: (t, u) => { writeToken(t); setToken(t); setUser(u); setLoading(false); } }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ token, user, loading, login, logout, notice, setNotice, clearNotice: () => setNotice(null), updateUser: setUser, acceptSession: (t, u) => { writeToken(t); setToken(t); setUser(u); setLoading(false); } }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);

@@ -2,8 +2,8 @@ import Icon from "./Icon.jsx";
 
 const POINTS = [
   "Email-verified accounts",
-  "Separate access for students and parents",
-  "Designed for phones and low data",
+  "Accounts for students, parents and alumni",
+  "Built for phones and low data",
 ];
 
 // Shared frame for login, register and verify: a brand panel (wide screens only) beside the form.

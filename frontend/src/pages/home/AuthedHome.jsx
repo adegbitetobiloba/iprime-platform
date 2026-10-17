@@ -2,8 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../auth.jsx";
 import { useFetch, fmtDate } from "../../useFetch.js";
 import Icon from "../../components/Icon.jsx";
-
-const ROLE_LABEL = { student: "Student", parent: "Parent or guardian", teacher: "Teacher", admin: "Administrator" };
+import { TYPE_LABEL as ROLE_LABEL, ALUMNI_STATUS } from "../../accountTypes.js";
 
 function Banner({ user, children }) {
   return (
@@ -94,6 +93,29 @@ function ParentHome({ user }) {
   );
 }
 
+function AlumniHome({ user }) {
+  const status = user.alumniStatus || "unverified";
+  return (
+    <>
+      <Banner user={user}>
+        <p className="lead-on-dark">Welcome back to Prime Excelerate Tutelage.</p>
+        <div className="hero-actions">
+          <Link to="/dashboard" className="btn btn-gold btn-lg">My alumni profile</Link>
+        </div>
+      </Banner>
+      <section className="section home-panels">
+        <div className="container">
+          <div className="panel">
+            <h2 className="panel-title">Your alumni status</h2>
+            <p className={`badge ${status === "verified" ? "badge-ok" : "badge-quiet"}`}>{ALUMNI_STATUS[status] || status}</p>
+            <p className="note">{status === "verified" ? "The institution has confirmed that you studied with Prime Excelerate Tutelage." : "Ask the institution to confirm that you studied with them from your profile page."}</p>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function AdminHomeView({ user }) {
   const exams = useFetch("/admin/exams");
   const programmes = useFetch("/admin/programmes");
@@ -132,6 +154,7 @@ export default function AuthedHome() {
   if (!user) return <p className="page-note" role="status">Loading your account...</p>;
   if (user.role === "admin") return <AdminHomeView user={user} />;
   if (user.role === "parent") return <ParentHome user={user} />;
+  if (user.role === "alumni") return <AlumniHome user={user} />;
   if (user.role === "student") return <StudentHome user={user} />;
   return (
     <Banner user={user}>

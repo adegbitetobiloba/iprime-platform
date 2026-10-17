@@ -73,6 +73,7 @@ strong { font-weight: 800; }
 
 /* Entrance motion: quick and subtle; disabled for reduced-motion users */
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 .reveal { animation: rise 420ms var(--ease) both; }
 .reveal-2 { animation-delay: 80ms; }
@@ -577,3 +578,79 @@ strong { font-weight: 800; }
 .cell-wrap { overflow-wrap: anywhere; min-width: 160px; }
 .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3); }
 @media (min-width: 640px) { .stat-grid-3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* ---------- Stage 2: phone menu, account types, onboarding, polish ---------- */
+:root { --header-h: 67px; }
+.brand { min-width: 0; flex: 1 1 auto; }
+.brand-text { min-width: 0; }
+.menu-toggle { flex: none; margin-left: var(--s2); }
+
+/* Full-height phone menu. It scrolls inside itself and keeps Log out pinned in view, so it can never be cut off. */
+.drawer { display: none; position: fixed; top: var(--header-h); left: 0; right: 0; bottom: 0; z-index: 40; background: #fff;
+  flex-direction: column; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: var(--s4) var(--s4) 0; }
+.drawer-open { display: flex; animation: fade 160ms var(--ease) both; }
+.drawer-account { display: flex; align-items: center; gap: var(--s3); padding: var(--s3); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); margin-bottom: var(--s3); }
+.drawer-who { display: grid; min-width: 0; }
+.drawer-who strong, .drawer-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.avatar-lg { width: 44px; height: 44px; font-size: 1.1rem; flex: none; }
+.drawer-heading { margin: var(--s4) 0 var(--s1); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.drawer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.drawer-link { display: flex; align-items: center; min-height: 48px; padding: 0 var(--s3); border-radius: var(--r-sm); font-weight: 700; color: var(--navy); text-decoration: none; }
+.drawer-link:hover { background: var(--blue-tint); color: var(--navy); }
+.drawer-link.active { background: var(--blue-tint); box-shadow: inset 4px 0 0 var(--gold); }
+.drawer-foot { position: sticky; bottom: 0; margin-top: auto; background: #fff; border-top: 1px solid var(--line); padding: var(--s4) 0 calc(var(--s4) + env(safe-area-inset-bottom, 0px)); display: grid; gap: var(--s2); }
+@media (min-width: 900px) { .drawer, .drawer-open { display: none !important; } }
+@media (max-width: 380px) { .brand-excelerate { letter-spacing: 0.22em; } .brand-prime { font-size: 1.15rem; } }
+
+.btn-danger-outline { background: #fff; color: var(--danger); border-color: #e3a7a1; }
+.btn-danger-outline:hover:not(:disabled) { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.account-actions { border-top: 1px solid var(--line); margin-top: var(--s5); padding-top: var(--s4); }
+.account-logout { font-weight: 700; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--s4) + env(safe-area-inset-bottom, 0px)); z-index: 70; display: flex; align-items: center; gap: var(--s3);
+  max-width: min(92vw, 480px); padding: var(--s3) var(--s4); border-radius: var(--r-md); box-shadow: var(--shadow-md); font-weight: 600; animation: rise 200ms var(--ease) both; }
+.toast-ok { background: var(--navy); color: #fff; }
+.toast-warn { background: var(--warning-bg); color: var(--warning); border: 1px solid #f0d58a; }
+.toast-close { background: none; border: 0; color: inherit; font-size: 1.4rem; line-height: 1; cursor: pointer; min-width: 32px; min-height: 32px; border-radius: var(--r-sm); }
+.toast-close:hover { background: rgba(255, 255, 255, 0.15); }
+
+/* Sign-up: steps and account types */
+.stepper { list-style: none; margin: var(--s4) 0 0; padding: 0; display: flex; gap: var(--s4); font-size: 0.9rem; font-weight: 700; color: var(--muted); }
+.stepper li { display: flex; align-items: center; gap: var(--s2); }
+.stepper li span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-strong); font-size: 0.8rem; }
+.stepper li[aria-current="step"] { color: var(--navy); }
+.stepper li[aria-current="step"] span { background: var(--navy); border-color: var(--navy); color: #fff; }
+.type-cards { border: 0; margin: 0; padding: 0; display: grid; gap: var(--s3); }
+.type-card { position: relative; display: flex; align-items: flex-start; gap: var(--s3); padding: var(--s3) var(--s4); min-height: 64px; background: #fff; border: 1.5px solid var(--line-strong); border-radius: var(--r-md); cursor: pointer;
+  transition: border-color var(--t) var(--ease), background var(--t) var(--ease); }
+.type-card:hover { border-color: var(--navy-2); background: var(--surface-2); }
+.type-card input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.type-card:focus-within { outline: 3px solid var(--blue); outline-offset: 2px; }
+.type-card.is-selected { border-color: var(--blue); background: var(--blue-tint); box-shadow: inset 4px 0 0 var(--blue); }
+.type-card .icon-tile { margin: 0; }
+.type-text { display: grid; min-width: 0; }
+.type-blurb { color: var(--muted); font-size: 0.9rem; font-weight: 400; }
+.back-link { margin-top: var(--s3); }
+.onboard-email { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s3) var(--s4); margin: var(--s4) 0 0; overflow-wrap: anywhere; }
+.link-panel { display: grid; gap: var(--s3); }
+.link-panel h2 { font-size: 1.3rem; margin: 0; }
+.link-panel .link-btn { text-align: left; justify-self: start; min-height: 44px; }
+
+/* Google button: a comfortable, rounded shape */
+.btn-google { border-radius: 999px; min-height: 48px; font-weight: 700; }
+.google-box { border-radius: 999px; }
+
+/* Home */
+.who-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s4); }
+.who-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); padding: var(--s5); height: 100%; display: grid; align-content: start; gap: var(--s2); }
+.who-card p { color: var(--muted); margin: 0 0 var(--s3); }
+.who-card .btn { justify-self: start; }
+.stack { display: grid; gap: var(--s5); }
+@media (max-width: 899px) { .hero-visual { display: none; } .hero-inner { padding-top: var(--s6); padding-bottom: var(--s6); } }
+@media (min-width: 900px) { .who-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 640px) { .type-cards { grid-template-columns: 1fr; } }
+
+/* Fixes found by looking at real screenshots */
+.dash-banner p.pill-on-dark, .home-banner p.pill-on-dark { color: var(--navy); }   /* the role label was pale-on-pale and unreadable */
+.type-card.is-selected { border-color: var(--blue); background: var(--blue-tint); box-shadow: 0 0 0 3px rgba(5, 83, 179, 0.18); }
+.type-card.is-selected .icon-tile { background: #fff; }

@@ -6,22 +6,24 @@ import Photo from "../components/Photo.jsx";
 import ProgrammeCards from "../components/ProgrammeCards.jsx";
 import AuthedHome from "./home/AuthedHome.jsx";
 import { IMAGES } from "../siteImages.js";
+import { ACCOUNT_TYPES } from "../accountTypes.js";
 
 const CBT_POINTS = [
   { icon: "test", title: "Timed, realistic practice", text: "A visible countdown that keeps running even if you refresh the page." },
-  { icon: "check", title: "Your answers are saved as you go", text: "Move between questions, mark ones to review, and see what is still unanswered before you submit." },
+  { icon: "check", title: "Your answers are saved as you go", text: "Move between questions, mark ones to review, and check what is unanswered before you submit." },
   { icon: "chart", title: "Clear results and history", text: "Your score is calculated by the system and kept so you can see how you are improving." },
 ];
 
-const COMING = [
-  { icon: "book", title: "Learning library", text: "Study resources organised by subject and topic, for different classes and examinations." },
-  { icon: "chart", title: "Progress insights", text: "Trends across your results as you take more examinations." },
-];
+const WHO = {
+  student: { cta: "Sign up as a student", text: "Study, take practice examinations and keep a record of your results." },
+  parent: { cta: "Sign up as a parent", text: "Create your account now. Following a child's progress is added once the institution links your accounts." },
+  alumni: { cta: "Sign up as alumni", text: "Stay connected with Prime Excelerate Tutelage and ask the institution to confirm that you studied here." },
+};
 
 const STEPS = [
-  { title: "Create your account", text: "Sign up as a student, or as a parent or guardian." },
-  { title: "Verify your email", text: "Confirm your address with a 6-digit code sent to your inbox." },
-  { title: "Open your dashboard", text: "Log in, keep your details up to date, and use each feature as it is released." },
+  { title: "Choose your account type", text: "Student, parent or guardian, or alumni." },
+  { title: "Verify your email", text: "Confirm your address with a 6-digit code, or continue with Google." },
+  { title: "Open your dashboard", text: "Keep your details up to date and use each feature as it is released." },
 ];
 
 function PublicHero() {
@@ -40,7 +42,7 @@ function PublicHero() {
           </div>
           <ul className="trust-row">
             <li><Icon name="shield" size={18} /> Email-verified accounts</li>
-            <li><Icon name="user" size={18} /> Student and parent access</li>
+            <li><Icon name="user" size={18} /> Students, parents and alumni</li>
           </ul>
         </div>
         <div className="hero-visual reveal reveal-2">
@@ -64,7 +66,30 @@ export default function Home() {
     <>
       {token ? <AuthedHome /> : <PublicHero />}
 
-      <section className="section">
+      {!token && (
+        <section className="section">
+          <div className="container">
+            <Reveal className="section-head">
+              <p className="eyebrow">Who iPrime is for</p>
+              <h2>One platform, three ways to belong</h2>
+            </Reveal>
+            <ul className="who-grid">
+              {ACCOUNT_TYPES.map((t, i) => (
+                <Reveal as="li" key={t.id} delay={i * 90}>
+                  <div className="who-card card-hover">
+                    <span className="icon-tile"><Icon name={t.icon} size={22} /></span>
+                    <h3>{t.title}</h3>
+                    <p>{WHO[t.id].text}</p>
+                    <Link to={`/register?type=${t.id}`} className="btn btn-secondary btn-sm">{WHO[t.id].cta}</Link>
+                  </div>
+                </Reveal>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      <section className={`section${token ? "" : " section-tint"}`}>
         <div className="container">
           <Reveal className="section-head">
             <p className="eyebrow">Programmes</p>
@@ -98,31 +123,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <Reveal className="section-head">
-            <p className="eyebrow">Coming to iPrime</p>
-            <h2>More tools for learning</h2>
-            <p className="section-lead">These features are in development. They will be released step by step.</p>
-          </Reveal>
-          <ul className="feature-grid feature-grid-2">
-            {COMING.map((f, i) => (
-              <Reveal as="li" key={f.title} delay={i * 100}>
-                <div className="feature card-hover">
-                  <span className="icon-tile"><Icon name={f.icon} size={22} /></span>
-                  <h3>{f.title}</h3>
-                  <p>{f.text}</p>
-                  <span className="badge">In development</span>
-                </div>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-      </section>
-
       {!token && (
         <>
-          <section className="section section-tint">
+          <section className="section">
             <div className="container">
               <Reveal className="section-head">
                 <p className="eyebrow">Getting started</p>
@@ -141,7 +144,7 @@ export default function Home() {
           </section>
           <section className="cta-band">
             <Reveal className="container cta-inner">
-              <div><h2>Ready to begin?</h2><p>Create your account in a minute and get ready for what is coming.</p></div>
+              <div><h2>Ready to begin?</h2><p>Create your account in a minute, with email or with Google.</p></div>
               <Link to="/register" className="btn btn-gold btn-lg">Sign up</Link>
             </Reveal>
           </section>

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { TYPE_LABEL } from "../accountTypes.js";
 import { useAuth } from "../auth.jsx";
 
-const ROLE_LABEL = { student: "Student", parent: "Parent or guardian", teacher: "Teacher", admin: "Administrator" };
 
 // The signed-in user's menu: who they are, where they can go, and Log out.
 export default function AccountMenu() {
@@ -26,7 +26,7 @@ export default function AccountMenu() {
   if (!user) return <span className="avatar avatar-loading" aria-label="Loading your account" role="status" />;
 
   const canExam = user.role === "student" || user.role === "admin";
-  const doLogout = () => { setOpen(false); logout(); navigate("/"); };
+  const doLogout = async () => { setOpen(false); await logout(); navigate("/"); };
 
   return (
     <div className="account" ref={ref}>
@@ -39,7 +39,7 @@ export default function AccountMenu() {
         <div className="account-menu" role="menu">
           <div className="account-who">
             <strong>{[user.firstName, user.lastName].filter(Boolean).join(" ")}</strong>
-            <span className="muted">{ROLE_LABEL[user.role] || user.role}</span>
+            <span className="muted">{TYPE_LABEL[user.role] || user.role}</span>
             {user.studentId && <span className="muted">ID: {user.studentId}</span>}
           </div>
           <Link role="menuitem" to="/dashboard">My dashboard and profile</Link>

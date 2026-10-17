@@ -6,6 +6,7 @@ import Field from "../components/Field.jsx";
 import FormStatus from "../components/FormStatus.jsx";
 import AuthLayout from "../components/AuthLayout.jsx";
 import GoogleButton from "../components/GoogleButton.jsx";
+import GoogleLinkPanel from "../components/GoogleLinkPanel.jsx";
 
 export default function Login() {
   const { login } = useAuth();
@@ -13,21 +14,37 @@ export default function Login() {
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [link, setLink] = useState(null); // set when Google matches an existing iPrime account
+
+  // Back to the page they were trying to open, otherwise to the right home for their account.
+  const destination = (u) => {
+    const from = location.state?.from;
+    if (from && from !== "/login") return from;
+    return u.role === "admin" ? "/admin" : "/dashboard";
+  };
 
   const { run, loading, slow, error } = useSubmit(() => login(email.trim(), password));
 
   const onSubmit = async (e) => {
     e.preventDefault();
     const r = await run();
-    if (!r?.failed) navigate(r.role === "admin" ? "/admin" : "/dashboard");
+    if (!r?.failed) navigate(destination(r));
     else if (r.error.code === "NOT_VERIFIED") navigate(`/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`);
   };
+
+  if (link) {
+    return (
+      <AuthLayout title="We found your iPrime account" subtitle="Connect Google to it in one quick step.">
+        <GoogleLinkPanel info={link} onDone={(u) => navigate(destination(u))} onCancel={() => setLink(null)} />
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout
       title="Welcome back"
       subtitle="Log in to continue to your dashboard."
-      footer={<>New here? <Link to="/register">Create an account</Link></>}
+      footer={<>New to iPrime? <Link to="/register">Create an account</Link></>}
     >
       <form className="form" onSubmit={onSubmit}>
         <Field label="Email" id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" inputMode="email" />
@@ -38,7 +55,11 @@ export default function Login() {
         </button>
       </form>
       <p className="auth-divider"><span>or</span></p>
-      <GoogleButton onDone={(u) => navigate(u.role === "admin" ? "/admin" : "/dashboard")} />
+      <GoogleButton
+        onSignedIn={(u) => navigate(destination(u))}
+        onLinkRequired={setLink}
+        onOnboarding={(d) => navigate("/onboarding", { state: { setupToken: d.setupToken, profile: d.profile } })}
+      />
     </AuthLayout>
   );
 }
