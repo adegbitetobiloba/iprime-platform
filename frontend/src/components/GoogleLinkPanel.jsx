@@ -7,7 +7,7 @@ import FormStatus from "./FormStatus.jsx";
 
 // Shown when Google says "this is ada@..." and iPrime already has an account for that email.
 // Nothing is merged until the person proves the iPrime account is theirs: its password, or a code emailed to it.
-export default function GoogleLinkPanel({ info, onDone, onCancel }) {
+export default function GoogleLinkPanel({ info, onDone, onCancel, onPending }) {
   const { acceptSession, setNotice } = useAuth();
   const canPassword = info.methods.includes("password");
   const [mode, setMode] = useState(canPassword ? "password" : "code");
@@ -16,6 +16,7 @@ export default function GoogleLinkPanel({ info, onDone, onCancel }) {
   const [sent, setSent] = useState("");
 
   const finish = (d) => {
+    if (d.status === "pending_approval") { onPending?.(d); return; } // linked, but the account still waits for approval: no sign-in
     acceptSession(d.token, d.user);
     setNotice({ kind: "ok", text: "Google is now linked to your account." });
     onDone(d.user);

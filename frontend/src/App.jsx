@@ -26,6 +26,7 @@ import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
 import AdminStudents from "./pages/admin/AdminStudents.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
+import PendingApproval from "./pages/PendingApproval.jsx";
 import AdminDenied from "./pages/admin/AdminDenied.jsx";
 import Toast from "./components/Toast.jsx";
 import { useAuth } from "./auth.jsx";
@@ -59,6 +60,7 @@ const TITLES = {
   "/register": "Create an account | iPrime",
   "/verify": "Verify your email | iPrime",
   "/onboarding": "Welcome | iPrime",
+  "/pending-approval": "Waiting for approval | iPrime",
   "/dashboard": "Dashboard | iPrime",
   "/exams": "Examination centre | iPrime",
   "/results": "My results | iPrime",
@@ -97,6 +99,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/pending-approval" element={<PendingApproval />} />
           <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
           <Route path="/exams" element={<Protected><ExamCentre /></Protected>} />
           <Route path="/exams/:id" element={<Protected><ExamIntro /></Protected>} />

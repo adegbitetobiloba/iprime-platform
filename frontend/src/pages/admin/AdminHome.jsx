@@ -5,7 +5,7 @@ import { useFetch } from "../../useFetch.js";
 export default function AdminHome() {
   const { data, error, loading, reload } = useFetch("/admin/overview");
   const stats = data && [
-    ["Students", data.students], ["Verified students", data.verifiedStudents], ["Parents and guardians", data.parents], ["Alumni", data.alumni], ["Alumni waiting for review", data.pendingAlumni],
+    ["Students", data.students], ["Waiting for approval", data.pendingStudents], ["Verified students", data.verifiedStudents], ["Parents and guardians", data.parents], ["Alumni", data.alumni], ["Alumni waiting for review", data.pendingAlumni],
     ["Examinations", data.exams], ["Published examinations", data.publishedExams], ["Questions in total", data.questions],
     ["Submitted attempts", data.submittedAttempts], ["Attempts in the last 7 days", data.attemptsLast7Days],
     ["Published programmes", data.publishedProgrammes],
@@ -15,6 +15,12 @@ export default function AdminHome() {
     <div className="admin-page">
       <p className="eyebrow">Administration</p>
       <h1>Overview</h1>
+      {data && data.pendingStudents > 0 && (
+        <div className="callout" role="status">
+          <p><strong>{data.pendingStudents} student{data.pendingStudents === 1 ? " is" : "s are"} waiting for your approval.</strong> They cannot log in until you approve them.</p>
+          <Link to="/admin/students?approval=pending" className="btn btn-primary btn-sm">Review now</Link>
+        </div>
+      )}
       {error && <p className="alert alert-error" role="alert">{error} <button type="button" className="link-btn" onClick={reload}>Try again</button></p>}
       {loading && <div className="exam-card skeleton" aria-hidden="true" />}
       {stats && (

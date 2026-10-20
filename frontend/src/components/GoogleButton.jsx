@@ -29,12 +29,12 @@ const GoogleG = () => (
 
 // "Continue with Google" using Google's own sign-in (Google Identity Services): Google shows its account chooser,
 // and our server verifies the result. We never see a Google password. mode="link" attaches Google to the signed-in account.
-export default function GoogleButton({ role, mode = "signin", onDone, onSignedIn, onLinkRequired, onOnboarding }) {
+export default function GoogleButton({ role, mode = "signin", onDone, onSignedIn, onLinkRequired, onOnboarding, onPending }) {
   const { token, acceptSession, updateUser } = useAuth();
   const boxRef = useRef(null);
   const alive = useRef(true);
   const roleRef = useRef(role); roleRef.current = role;
-  const cb = useRef({}); cb.current = { onDone, onSignedIn, onLinkRequired, onOnboarding };
+  const cb = useRef({}); cb.current = { onDone, onSignedIn, onLinkRequired, onOnboarding, onPending };
   const [state, setState] = useState("loading"); // loading | ready | notconfigured | unavailable
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -61,6 +61,7 @@ export default function GoogleButton({ role, mode = "signin", onDone, onSignedIn
               const d = await api("/auth/google", { method: "POST", body });
               if (d.status === "link_required") cb.current.onLinkRequired?.(d);
               else if (d.status === "onboarding") cb.current.onOnboarding?.(d);
+              else if (d.status === "pending_approval") cb.current.onPending?.(d);
               else { acceptSession(d.token, d.user); cb.current.onSignedIn?.(d.user); }
             }
           } catch (e) {

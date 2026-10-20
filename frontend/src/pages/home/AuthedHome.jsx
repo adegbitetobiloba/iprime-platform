@@ -119,6 +119,8 @@ function AlumniHome({ user }) {
 function AdminHomeView({ user }) {
   const exams = useFetch("/admin/exams");
   const programmes = useFetch("/admin/programmes");
+  const overview = useFetch("/admin/overview");
+  const waiting = overview.data?.pendingStudents ?? 0;
   const e = exams.data?.exams || [];
   const p = programmes.data?.programmes || [];
   const stats = [
@@ -137,6 +139,12 @@ function AdminHomeView({ user }) {
       </Banner>
       <section className="section home-panels">
         <div className="container">
+          {waiting > 0 && (
+            <div className="callout" role="status" style={{ marginBottom: "var(--s4)" }}>
+              <p><strong>{waiting} student{waiting === 1 ? " is" : "s are"} waiting for your approval.</strong></p>
+              <Link to="/admin/students?approval=pending" className="btn btn-primary btn-sm">Review now</Link>
+            </div>
+          )}
           {(exams.error || programmes.error) && <p className="alert alert-info" role="status">Some figures could not be loaded right now.</p>}
           <ul className="stat-grid">
             {stats.map(([label, value]) => (

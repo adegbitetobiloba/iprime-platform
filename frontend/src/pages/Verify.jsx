@@ -27,7 +27,9 @@ export default function Verify() {
   const onVerify = async (e) => {
     e.preventDefault();
     const r = await verify.run();
-    if (!r?.failed) navigate("/login", { state: { notice: "Email verified. You can now log in." } });
+    if (r?.failed) return;
+    if (r.approval === "pending") navigate("/pending-approval", { state: { email, kind: "pending", justRegistered: true } });
+    else navigate("/login", { state: { notice: "Email verified. You can now log in." } });
   };
 
   const onResend = async () => {

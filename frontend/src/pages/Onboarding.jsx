@@ -24,6 +24,7 @@ export default function Onboarding() {
       if (lastClass.trim()) body.lastClass = lastClass.trim();
     }
     const d = await api("/auth/google/complete", { method: "POST", body });
+    if (d.status === "pending_approval") { navigate("/pending-approval", { state: { email: d.email, kind: "pending", justRegistered: true } }); return d; }
     acceptSession(d.token, d.user);
     setNotice({ kind: "ok", text: "Your account is ready." });
     navigate("/dashboard");

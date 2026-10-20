@@ -45,7 +45,7 @@ export default function Register() {
   if (link) {
     return (
       <AuthLayout title="We found your iPrime account" subtitle="Connect Google to it in one quick step.">
-        <GoogleLinkPanel info={link} onDone={() => navigate("/dashboard")} onCancel={() => setLink(null)} />
+        <GoogleLinkPanel info={link} onDone={() => navigate("/dashboard")} onCancel={() => setLink(null)} onPending={(d) => navigate("/pending-approval", { state: { email: d.email, kind: "pending" } })} />
       </AuthLayout>
     );
   }
@@ -68,6 +68,7 @@ export default function Register() {
             role={type}
             onSignedIn={() => navigate("/dashboard")}
             onLinkRequired={setLink}
+        onPending={(d) => navigate("/pending-approval", { state: { email: d.email, kind: "pending" } })}
             onOnboarding={(d) => navigate("/onboarding", { state: { setupToken: d.setupToken, profile: d.profile } })}
           />
           <p className="hint center">With Google there is no form to fill in. You can add your phone number later.</p>

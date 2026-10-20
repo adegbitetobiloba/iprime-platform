@@ -29,13 +29,14 @@ export default function Login() {
     e.preventDefault();
     const r = await run();
     if (!r?.failed) navigate(destination(r));
+    else if (r.error.code === "PENDING_APPROVAL") navigate("/pending-approval", { state: { email: email.trim().toLowerCase(), kind: "pending" } });
     else if (r.error.code === "NOT_VERIFIED") navigate(`/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`);
   };
 
   if (link) {
     return (
       <AuthLayout title="We found your iPrime account" subtitle="Connect Google to it in one quick step.">
-        <GoogleLinkPanel info={link} onDone={(u) => navigate(destination(u))} onCancel={() => setLink(null)} />
+        <GoogleLinkPanel info={link} onDone={(u) => navigate(destination(u))} onCancel={() => setLink(null)} onPending={(d) => navigate("/pending-approval", { state: { email: d.email, kind: "pending" } })} />
       </AuthLayout>
     );
   }
@@ -58,6 +59,7 @@ export default function Login() {
       <GoogleButton
         onSignedIn={(u) => navigate(destination(u))}
         onLinkRequired={setLink}
+        onPending={(d) => navigate("/pending-approval", { state: { email: d.email, kind: "pending" } })}
         onOnboarding={(d) => navigate("/onboarding", { state: { setupToken: d.setupToken, profile: d.profile } })}
       />
     </AuthLayout>

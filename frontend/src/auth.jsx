@@ -31,7 +31,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const onUnauthorized = () => { writeToken(null); setToken(null); setUser(null); setLoading(false); setNotice({ kind: "warn", text: "Your session has ended. Please log in again." }); };
+    const onUnauthorized = (e) => {
+      writeToken(null); setToken(null); setUser(null); setLoading(false);
+      const reason = e.detail?.reason;
+      setNotice({ kind: "warn", text: reason === "PENDING_APPROVAL" ? "Your account is waiting for approval by an administrator." : reason === "ACCOUNT_REJECTED" ? "Your account is no longer approved. Please contact the institution." : "Your session has ended. Please log in again." });
+    };
     window.addEventListener("iprime:unauthorized", onUnauthorized);
     return () => window.removeEventListener("iprime:unauthorized", onUnauthorized);
   }, []);
