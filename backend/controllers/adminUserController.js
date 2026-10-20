@@ -4,6 +4,7 @@ const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const Programme = require("../models/Programme");
 const { escapeRegExp, parsePaging } = require("../utils/paging");
+const { notifyApproved, notifyRejected } = require("../utils/notify");
 
 const serverError = (res, err) => {
   console.error(err);
@@ -11,17 +12,18 @@ const serverError = (res, err) => {
 };
 
 // Only these fields ever leave the server about a person. No password hash, no Google id.
-const LIST_FIELDS = "firstName lastName email phone state role studentId isVerified createdAt alumniStatus alumni";
+const LIST_FIELDS = "firstName lastName email phone state role studentId isVerified createdAt alumniStatus alumni approval";
 
 // GET /api/admin/overview : every number is counted from the database
 exports.overview = async (req, res) => {
   try {
     const since = new Date(Date.now() - 7 * 24 * 3600 * 1000);
-    const [students, parents, alumni, pendingAlumni, verifiedStudents, exams, publishedExams, programmes, attempts, recentAttempts, questionAgg] = await Promise.all([
+    const [students, parents, alumni, pendingAlumni, pendingStudents, verifiedStudents, exams, publishedExams, programmes, attempts, recentAttempts, questionAgg] = await Promise.all([
       User.countDocuments({ role: "student" }),
       User.countDocuments({ role: "parent" }),
       User.countDocuments({ role: "alumni" }),
       User.countDocuments({ role: "alumni", alumniStatus: "pending" }),
+      User.countDocuments({ role: "student", approval: "pending" }),
       User.countDocuments({ role: "student", isVerified: true }),
       Exam.countDocuments(),
       Exam.countDocuments({ status: "published" }),
@@ -31,7 +33,7 @@ exports.overview = async (req, res) => {
       Exam.aggregate([{ $project: { n: { $size: { $ifNull: ["$questions", []] } } } }, { $group: { _id: null, total: { $sum: "$n" } } }]),
     ]);
     res.json({
-      students, verifiedStudents, parents, alumni, pendingAlumni, exams, publishedExams, publishedProgrammes: programmes,
+      students, verifiedStudents, parents, alumni, pendingAlumni, pendingStudents, exams, publishedExams, publishedProgrammes: programmes,
       questions: questionAgg[0]?.total || 0, submittedAttempts: attempts, attemptsLast7Days: recentAttempts,
     });
   } catch (err) { serverError(res, err); }
@@ -43,6 +45,8 @@ exports.listStudents = async (req, res) => {
     const { page, limit, skip } = parsePaging(req.query);
     const role = ["student", "parent", "alumni"].includes(req.query.role) ? req.query.role : "student";
     const filter = { role };
+    if (["pending", "rejected"].includes(req.query.approval)) filter.approval = req.query.approval;
+    else if (req.query.approval === "approved") filter.approval = { $in: ["approved", null] }; // older accounts have no value and count as approved
     if (role === "alumni" && ["unverified", "pending", "verified", "rejected"].includes(req.query.status)) filter.alumniStatus = req.query.status;
     const search = String(req.query.search || "").trim().slice(0, 80);
     if (search) {
@@ -90,5 +94,27 @@ exports.reviewAlumni = async (req, res) => {
     if (!u) return res.status(404).json({ error: "Alumni account not found" });
     const { _id, ...rest } = u;
     res.json({ alumnus: { id: String(_id), ...rest } });
+  } catch (err) { serverError(res, err); }
+};
+
+// PATCH /api/admin/accounts/:id/approval  { status: "approved" | "rejected", note? }
+// Approve (or decline, or later change your mind about) a student's account. The student is emailed; the email is best effort.
+exports.reviewApproval = async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ error: "Account not found" });
+    const { status, note } = req.body;
+    if (!["approved", "rejected"].includes(status)) return res.status(400).json({ error: "Status must be approved or rejected." });
+    if (String(req.params.id) === String(req.user.id)) return res.status(400).json({ error: "You cannot change your own account's approval." });
+
+    const user = await User.findById(req.params.id);
+    if (!user || user.role === "admin") return res.status(404).json({ error: "Account not found" });
+
+    user.approval = status;
+    user.approvalReview = { by: req.user.id, at: new Date(), note: note || undefined };
+    await user.save();
+
+    if (status === "approved") notifyApproved(user); else notifyRejected(user, note);
+    const { _id, ...rest } = user.toObject();
+    res.json({ account: { id: String(_id), firstName: rest.firstName, lastName: rest.lastName, email: rest.email, role: rest.role, approval: rest.approval } });
   } catch (err) { serverError(res, err); }
 };

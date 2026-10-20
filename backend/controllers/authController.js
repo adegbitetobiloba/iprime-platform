@@ -20,6 +20,8 @@ const serverError = (res, err) => {
 const { issueOtp } = require("../utils/otpService");
 const { issueSession } = require("../utils/session");
 const RevokedToken = require("../models/RevokedToken");
+const { initialApproval, approvalBlock } = require("../utils/approval");
+const { notifyAdminsNewStudent } = require("../utils/notify");
 
 // POST /api/auth/register
 exports.register = async (req, res) => {
@@ -39,10 +41,10 @@ exports.register = async (req, res) => {
 
     if (existing) {
       // Signed up before but never verified: update details and send a new code.
-      Object.assign(existing, profile, { password: hashed });
+      Object.assign(existing, profile, { password: hashed, approval: initialApproval(profile.role) });
       await existing.save();
     } else {
-      await User.create({ ...profile, email, password: hashed });
+      await User.create({ ...profile, email, password: hashed, approval: initialApproval(profile.role) });
     }
 
     try {
@@ -87,7 +89,12 @@ exports.verifyOtp = async (req, res) => {
 
     if (!user) return res.status(400).json({ error: "Account not found" });
     await ensureStudentId(user);
-    res.json({ message: "Account verified" });
+    const block = approvalBlock(user);
+    if (block && block.status === "pending") {
+      notifyAdminsNewStudent(user); // best effort, never blocks the student
+      return res.json({ message: "Email verified. An administrator must approve your account before you can log in.", approval: "pending" });
+    }
+    res.json({ message: "Account verified", approval: "approved" });
   } catch (err) {
     serverError(res, err);
   }
@@ -135,6 +142,9 @@ exports.login = async (req, res) => {
     if (!user.isVerified) {
       return res.status(403).json({ error: "Please verify your email first", code: "NOT_VERIFIED" });
     }
+
+    const block = approvalBlock(user);
+    if (block) return res.status(403).json({ error: block.error, code: block.code }); // no token is issued
 
     const full = await ensureStudentId(await applyAdminAllowlist(user)); // existing students get their ID on first login
     const token = issueSession(full);

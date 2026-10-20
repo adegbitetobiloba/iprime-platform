@@ -8,6 +8,8 @@ const { verifyGoogleIdToken, createNonceStore } = require("../utils/googleAuth")
 const { signShortToken, verifyShortToken } = require("../utils/shortToken");
 const { decideGoogleOutcome, maskEmail } = require("../utils/googleOutcome");
 const { issueOtp, consumeOtp, msSinceLastOtp, COOLDOWN_MS } = require("../utils/otpService");
+const { initialApproval, approvalBlock } = require("../utils/approval");
+const { notifyAdminsNewStudent } = require("../utils/notify");
 
 const nonces = createNonceStore();
 const SETUP_TTL = 15 * 60; // seconds to finish choosing an account type
@@ -42,6 +44,12 @@ async function verifyRequest(credential) {
 
 // Signs a person in: admin allow-list and student ID are applied the same way as for a password login.
 async function signedIn(res, user, extra = {}) {
+  const block = approvalBlock(user);
+  if (block) {
+    // Google proved who they are, so it is safe to tell them where they stand. No login token is issued.
+    if (block.status === "rejected") return res.status(403).json({ error: block.error, code: block.code });
+    return res.json({ status: "pending_approval", email: user.email, message: block.error });
+  }
   const full = await ensureStudentId(await applyAdminAllowlist(user));
   res.json({ status: "signed_in", token: issueSession(full), user: publicUser(full), ...extra });
 }
@@ -52,7 +60,7 @@ const namesFrom = (g) => ({
 });
 
 function newAccountFields(g, role, alumni = {}) {
-  const fields = { ...namesFrom(g), email: g.email.toLowerCase(), googleId: g.sub, role, isVerified: true, country: "Nigeria" };
+  const fields = { ...namesFrom(g), email: g.email.toLowerCase(), googleId: g.sub, role, isVerified: true, country: "Nigeria", approval: initialApproval(role) };
   if (role === "alumni") { fields.alumniStatus = "unverified"; fields.alumni = { graduationYear: alumni.graduationYear, lastClass: alumni.lastClass }; }
   return fields;
 }
@@ -103,6 +111,7 @@ exports.signIn = async (req, res) => {
     // outcome === "create": the person already chose their account type on the sign-up page
     try {
       const created = await User.create(newAccountFields(g, req.body.role));
+      if (approvalBlock(created)) notifyAdminsNewStudent(created);
       return signedIn(res, created);
     } catch (err) {
       if (err.code !== 11000) throw err;
@@ -127,6 +136,7 @@ exports.complete = async (req, res) => {
 
     try {
       const created = await User.create(newAccountFields(g, req.body.role, { graduationYear: req.body.graduationYear, lastClass: req.body.lastClass }));
+      if (approvalBlock(created)) notifyAdminsNewStudent(created);
       return signedIn(res, created);
     } catch (err) {
       if (err.code !== 11000) throw err;

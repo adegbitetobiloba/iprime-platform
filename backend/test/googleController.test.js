@@ -20,7 +20,7 @@ class FakeUser {
   }
 }
 // ---- stand-ins ----
-let googlePayload, otpStore;
+let googlePayload, otpStore, notified = [];
 const stubs = {
   bcryptjs: { hashSync: (x) => `h:${x}`, compare: async (p, h) => h === `h:${p}` },
   "../models/User": FakeUser,
@@ -28,6 +28,7 @@ const stubs = {
   "../utils/session": { issueSession: (u) => `session-for-${u._id}` },
   "../utils/studentId": { ensureStudentId: async (u) => u },
   "../utils/adminAllowlist": { applyAdminAllowlist: async (u) => u },
+  "../utils/notify": { notifyAdminsNewStudent: async (u) => { notified.push(u.email); } },
   "../utils/googleAuth": { createNonceStore: require("../utils/googleAuth").createNonceStore, verifyGoogleIdToken: async () => googlePayload },
   "../utils/otpService": {
     COOLDOWN_MS: 60000,
@@ -48,7 +49,7 @@ const nonce = () => { const r = res(); g.nonce({}, r); return r.body.nonce; };
 const google = (over = {}) => ({ sub: "g-1", email: "ada@gmail.com", email_verified: true, given_name: "Ada", family_name: "Obi", nonce: nonce(), ...over });
 async function call(fn, body, extra = {}) { const r = res(); await fn({ body, ...extra }, r); return r; }
 
-beforeEach(() => { users = []; seq = 0; otpStore = {}; });
+beforeEach(() => { users = []; seq = 0; otpStore = {}; notified = []; });
 
 test("a brand-new Google user is asked which account type to open (nothing is created or assumed)", async () => {
   googlePayload = google();
@@ -182,4 +183,62 @@ test("a Google token reused (same nonce twice) is refused the second time", asyn
 test("a link token is useless after it expires or when tampered with", async () => {
   const r = await call(g.linkWithPassword, { linkToken: "x".repeat(40), password: "secret" });
   assert.equal(r.statusCode, 401);
+});
+
+// ---------- administrator approval ----------
+test("a NEW STUDENT who signs up with Google waits for approval: account created, NO token, admins alerted", async () => {
+  googlePayload = google();
+  const r = await call(g.signIn, { credential: "x".repeat(30), role: "student" });
+  assert.equal(r.body.status, "pending_approval");
+  assert.equal(r.body.token, undefined);
+  assert.equal(users[0].approval, "pending");
+  assert.deepEqual(notified, ["ada@gmail.com"]);
+});
+test("a new parent or alumnus with Google needs no student approval and is signed in", async () => {
+  googlePayload = google();
+  const r = await call(g.signIn, { credential: "x".repeat(30), role: "parent" });
+  assert.equal(r.body.status, "signed_in");
+  assert.equal(users[0].approval, "approved");
+  assert.deepEqual(notified, []);
+});
+test("finishing onboarding as a student also waits for approval", async () => {
+  googlePayload = google();
+  const first = await call(g.signIn, { credential: "x".repeat(30) });
+  const r = await call(g.complete, { setupToken: first.body.setupToken, role: "student" });
+  assert.equal(r.body.status, "pending_approval");
+  assert.equal(r.body.token, undefined);
+});
+test("a returning Google student who is still pending gets no token", async () => {
+  users.push(new FakeUser({ email: "ada@gmail.com", googleId: "g-1", role: "student", isVerified: true, approval: "pending" }));
+  googlePayload = google();
+  const r = await call(g.signIn, { credential: "x".repeat(30) });
+  assert.equal(r.body.status, "pending_approval");
+  assert.equal(r.body.token, undefined);
+});
+test("a declined Google student is refused clearly", async () => {
+  users.push(new FakeUser({ email: "ada@gmail.com", googleId: "g-1", role: "student", isVerified: true, approval: "rejected" }));
+  googlePayload = google();
+  const r = await call(g.signIn, { credential: "x".repeat(30) });
+  assert.equal(r.statusCode, 403);
+  assert.equal(r.body.code, "ACCOUNT_REJECTED");
+});
+test("once approved, the returning Google student signs in", async () => {
+  users.push(new FakeUser({ email: "ada@gmail.com", googleId: "g-1", role: "student", isVerified: true, approval: "approved" }));
+  googlePayload = google();
+  const r = await call(g.signIn, { credential: "x".repeat(30) });
+  assert.equal(r.body.status, "signed_in");
+});
+test("older Google students (no approval value) are not locked out", async () => {
+  users.push(new FakeUser({ email: "ada@gmail.com", googleId: "g-1", role: "student", isVerified: true }));
+  googlePayload = google();
+  const r = await call(g.signIn, { credential: "x".repeat(30) });
+  assert.equal(r.body.status, "signed_in");
+});
+test("linking Google to a pending student's account does NOT let them skip approval", async () => {
+  users.push(new FakeUser({ email: "ada@gmail.com", role: "student", isVerified: true, password: "h:secret", approval: "pending" }));
+  googlePayload = google();
+  const need = await call(g.signIn, { credential: "x".repeat(30) });
+  const r = await call(g.linkWithPassword, { linkToken: need.body.linkToken, password: "secret" });
+  assert.equal(r.body.status, "pending_approval");
+  assert.equal(r.body.token, undefined);
 });

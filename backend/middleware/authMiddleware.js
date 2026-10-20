@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const RevokedToken = require("../models/RevokedToken");
+const User = require("../models/User");
+const { approvalBlock } = require("../utils/approval");
 
 // Protects a route: requires "Authorization: Bearer <token>", and the login must not have been ended by Log out.
 module.exports = async (req, res, next) => {
@@ -17,6 +19,9 @@ module.exports = async (req, res, next) => {
     if (payload.jti && (await RevokedToken.exists({ jti: payload.jti }))) {
       return res.status(401).json({ error: "You have been logged out. Please log in again." });
     }
+    const account = await User.findById(payload.id).select("approval");
+    const blocked = account && approvalBlock(account);
+    if (blocked) return res.status(403).json({ error: blocked.error, code: blocked.code });
   } catch (err) {
     return next(err);
   }

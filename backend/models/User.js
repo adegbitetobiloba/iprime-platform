@@ -27,6 +27,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: unlessGoogle },
   googleId: { type: String, unique: true, sparse: true }, // Google's stable id for the account (never shown to users)
   isVerified: { type: Boolean, default: false },
+  // Administrator approval (new students start as "pending"). Accounts created before this existed have no value and count as approved.
+  approval: { type: String, enum: ["pending", "approved", "rejected"] },
+  approvalReview: { by: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, at: Date, note: { type: String, trim: true, maxlength: 300 } },
   createdAt: { type: Date, default: Date.now },
 });
 

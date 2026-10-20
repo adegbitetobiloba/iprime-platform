@@ -1,4 +1,5 @@
 const express = require("express");
+const Joi = require("joi");
 const router = express.Router();
 const c = require("../controllers/adminExamController");
 const protect = require("../middleware/authMiddleware");
@@ -16,6 +17,7 @@ router.get("/overview", users.overview);
 router.get("/students", users.listStudents);
 router.get("/students/:id", users.getStudent);
 router.patch("/alumni/:id", users.reviewAlumni);
+router.patch("/accounts/:id/approval", validate(Joi.object({ status: Joi.string().valid("approved", "rejected").required(), note: Joi.string().trim().max(300).allow("") })), users.reviewApproval);
 router.get("/exams", c.list);
 router.post("/exams", validate(cbt.createExam), c.create);
 router.get("/exams/:id", c.get);
