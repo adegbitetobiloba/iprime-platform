@@ -228,8 +228,7 @@ export default function AdminStudents() {
       )}
 
       {declining && (
-        <Dialog title={`Decline ${declining.firstName} ${declining.lastName}?`} onClose={() => setDeclining(null)} busy={busy}>
-          <p className="muted">They will not be able to log in, and we will email them. You can approve them later if you change your mind.</p>
+        <Dialog role="alertdialog" title={`Decline ${declining.firstName} ${declining.lastName}?`} description="They will not be able to log in, and we will email them. You can approve them later if you change your mind." onClose={() => setDeclining(null)} busy={busy}>
           <Field label="Note to the student (optional)" id="decline-note"><textarea id="decline-note" rows="3" maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
           <div className="form-actions" style={{ marginTop: "var(--s4)" }}>
             <button type="button" className="btn btn-danger-outline" onClick={confirmDecline} disabled={busy} aria-busy={busy}>{busy ? "Declining..." : "Decline registration"}</button>

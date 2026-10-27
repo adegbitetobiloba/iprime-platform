@@ -3,6 +3,8 @@ import PageHero from "../components/PageHero.jsx";
 import Reveal from "../components/Reveal.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import ProgrammeCards from "../components/ProgrammeCards.jsx";
+import Photo from "../components/Photo.jsx";
+import { IMAGES } from "../siteImages.js";
 
 const VALUES = [
   { title: "Academic excellence", text: "A commitment to rigorous preparation and high standards in every subject." },
@@ -17,20 +19,28 @@ export default function About() {
       </PageHero>
 
       <section className="section">
-        <div className="container prose-grid">
+        <div className="container split split-media">
           <Reveal className="prose">
             <h2>Our identity</h2>
             <p>
               Prime Excelerate Tutelage works under the tagline <strong>"The Peak of Academic Excellence and Integrity"</strong>.
               Its work is to prepare students and improve their academic performance across different classes, subjects and examinations, and to bring out the best in every student.
             </p>
+          </Reveal>
+          <Reveal delay={100}>
+            <Photo image={IMAGES.about} fallbackIcon="book" fallbackLabel="Teaching at Prime Excelerate Tutelage" className="media-photo" />
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section section-split">
+        <div className="container split split-media rd-split-rev">
+          <Reveal className="prose">
             <h2>What iPrime is</h2>
             <p>
               iPrime is the institution's digital platform. It is being built to bring together learning resources, computer-based examinations,
               progress tracking, and a place for students and parents to stay informed. Features are released step by step, and each page says clearly what is available now.
             </p>
-          </Reveal>
-          <Reveal delay={100}>
             <ul className="value-list">
               {VALUES.map((v) => (
                 <li key={v.title} className="value card-hover">
@@ -39,6 +49,9 @@ export default function About() {
                 </li>
               ))}
             </ul>
+          </Reveal>
+          <Reveal delay={100} className="rd-split-art">
+            <Photo image={IMAGES.learning} fallbackIcon="book" fallbackLabel="Learning resources" className="media-photo" />
           </Reveal>
         </div>
       </section>

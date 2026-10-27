@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import Reveal from "../components/Reveal.jsx";
 import ProgrammeCards from "../components/ProgrammeCards.jsx";
+import { IMAGES } from "../siteImages.js";
 
 export default function Programmes() {
   return (
     <>
-      <PageHero eyebrow="Programmes" title="What Prime Excelerate Tutelage offers">
+      <PageHero eyebrow="Programmes" title="What Prime Excelerate Tutelage offers" image={IMAGES.programmes}>
         Support for students across different classes, subjects and examinations.
       </PageHero>
       <section className="section">
