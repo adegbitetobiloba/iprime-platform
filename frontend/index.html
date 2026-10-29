@@ -18,7 +18,7 @@
           try { t = localStorage.getItem("iprime-theme"); } catch (e) {}
           if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
           d.setAttribute("data-theme", t);
-          if (location.pathname === "/") d.setAttribute("data-v2", "");
+          d.setAttribute("data-v2", "");
         } catch (e) {}
       })();
     </script>

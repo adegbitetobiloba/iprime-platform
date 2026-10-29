@@ -41,6 +41,7 @@ export function subscribeTheme(fn) {
 }
 
 export function initTheme() {
+  document.documentElement.setAttribute("data-v2", ""); // new design is on for the whole site
   applyTheme();
   const mq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
   if (mq && mq.addEventListener) mq.addEventListener("change", () => { if (!choice) applyTheme(); });

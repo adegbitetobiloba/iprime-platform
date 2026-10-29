@@ -4,7 +4,7 @@
 
 /* ---------- Map the old tokens onto the new ones ---------- */
 html[data-v2] {
-  --header-h: 64px;
+  --header-h: 65px;
   --bg: var(--c-bg); --surface: var(--c-surface); --surface-2: var(--c-surface-2);
   --text: var(--c-text); --muted: var(--c-muted);
   --line: var(--c-line); --line-strong: var(--c-line-strong);
@@ -17,17 +17,20 @@ html[data-v2] {
 html[data-v2][data-theme="dark"] { color-scheme: dark; }
 html[data-v2] body { background: var(--c-bg); }
 /* old "navy" is both a text colour and a dark background; in the header and page it is used as text, so it follows the theme */
-html[data-v2] :is(.site-header, main) { --navy: var(--c-ink); }
+html[data-v2] :is(.site-header, main, .dialog) { --navy: var(--c-ink); --navy-2: var(--c-line-strong); }
 /* small islands that must stay as designed in both themes */
 html[data-v2] .rd-palette-art {
   --navy: #04204F; --surface: #FFFFFF; --text: #1B2640; --muted: #44506A; --line: #CBD3E1; --line-strong: #6B7790;
   --blue: #0553B3; --blue-tint: #E9F0FB; --on-dark: #FFFFFF; --on-dark-muted: #D3DEF2; --gold: #CC9A20;
 }
-html[data-v2] .badge:not(.badge-quiet) { --navy: #0B1F4B; }
+html[data-v2] .badge:not(.badge-quiet):not(.badge-ok):not(.badge-bad):not(.badge-warn) { --navy: #0B1F4B; }
 
-/* ---------- Type ---------- */
-html[data-v2] main :is(h1, h2) { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }
-html[data-v2] main h2 { font-size: clamp(1.9rem, 5vw, 2.75rem); line-height: 1.12; }
+/* ---------- Type: serif for big public-page headlines only; dashboards, admin and the exam use Plus Jakarta Sans ---------- */
+html[data-v2] :is(.rd-hero h1, .page-hero h1, .section-head h2, .split-copy h2, .cta-band h2, .auth-box h1, .pending-card h1, .dash-banner h1, .home-banner h1, .empty-state h2) {
+  font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em;
+}
+html[data-v2] :is(.section-head h2, .split-copy h2, .cta-band h2) { font-size: clamp(1.9rem, 5vw, 2.75rem); line-height: 1.12; }
+html[data-v2] .page-hero h1 { font-size: clamp(2.1rem, 6vw, 3.25rem); line-height: 1.08; }
 html[data-v2] .eyebrow { color: var(--c-link-strong); letter-spacing: 0.12em; }
 
 /* ---------- Header: calm bar with a touch of glass ---------- */
@@ -131,7 +134,7 @@ html[data-v2] :is(.who-card, .programme-card, .rd-step) {
 html[data-v2] .rd-who-card { border-top-width: 1px; border-top-color: var(--c-line); }
 html[data-v2] .icon-tile { border-radius: 14px; background: var(--c-tint); color: var(--c-link); }
 html[data-v2] .rd-who-1 .icon-tile { background: var(--c-gold-soft); color: var(--c-gold-text); }
-html[data-v2] .badge:not(.badge-quiet) { background: var(--c-gold-soft); color: var(--c-gold-text); }
+html[data-v2] .badge:not(.badge-quiet):not(.badge-ok):not(.badge-bad):not(.badge-warn) { background: var(--c-gold-soft); color: var(--c-gold-text); }
 html[data-v2] .chips li { border-radius: var(--r-pill); }
 @media (hover: hover) {
   html[data-v2] :is(.who-card, .programme-card, .rd-step):hover { box-shadow: var(--sh-2); border-color: var(--c-sky); }
@@ -161,3 +164,86 @@ html[data-v2] .site-footer { border-top: 1px solid rgba(255, 255, 255, 0.12); }
   html[data-v2] .section { padding: var(--s9) 0; }
   html[data-v2] .rd-hero-inner { padding-top: var(--s9); padding-bottom: var(--s9); }
 }
+
+
+/* =====================================================================================================
+   Rest of the site: same design on every page (forms, sign-in, dashboards, results, admin, exam screen)
+   ===================================================================================================== */
+
+/* ---------- Dark theme: status colours (all checked, 9:1 or better on their backgrounds) ---------- */
+html[data-v2][data-theme="dark"] {
+  --warning: #FFD27A; --warning-bg: #33280F; --warning-line: #6B5518;
+  --danger: #FFB4AB;  --danger-bg: #3A1714;  --danger-line: #7A2E27;
+  --success: #7DE0A8; --success-bg: #0F2B20; --success-line: #1F5C40;
+  --info-line: #2D4780; --gold-soft: var(--c-gold-soft);
+}
+
+/* ---------- Dark panels keep their own fixed colours in both themes ---------- */
+html[data-v2] :is(.panel-feature, .dash-banner, .home-banner, .score-banner, .auth-panel, .runner-bar, .photo-fallback, .cta-band) {
+  --navy: #0B1F4B; --navy-2: #123A8F;
+}
+html[data-v2] :is(.panel-feature, .dash-banner, .score-banner) {
+  background: linear-gradient(135deg, #0B1F4B 0%, #123A8F 100%); border-radius: var(--r-card); box-shadow: var(--sh-2);
+}
+html[data-v2] .home-banner { background: linear-gradient(135deg, #0B1F4B 0%, #123A8F 100%); border-bottom: 0; }
+html[data-v2] .auth-panel { background: linear-gradient(160deg, #0B1F4B 0%, #123A8F 100%); border-right: 0; }
+html[data-v2] .auth-logo-card { background: #FFFFFF; border-radius: var(--r-card); }
+html[data-v2] .photo-fallback { background: linear-gradient(135deg, #0B1F4B 0%, #123A8F 100%); }
+html[data-v2] .pill-on-dark { background: #FDF1D6; color: #0B1F4B; }
+html[data-v2] .dash-banner .status-ok { background: #FFFFFF; color: #05603A; }
+html[data-v2] .btn-on-dark:hover:not(:disabled) { background: #FFFFFF; color: #0B1F4B; }
+
+/* ---------- Shapes ---------- */
+html[data-v2] :is(.badge, .pill, .tag, .chips li) { border-radius: var(--r-pill); }
+html[data-v2] .account-btn { border-radius: var(--r-pill); }
+html[data-v2] .account-menu { border-radius: var(--r-ctl); box-shadow: var(--sh-2); }
+html[data-v2] .avatar { background: var(--c-ink); color: var(--c-bg); }
+html[data-v2] :is(.admin-tab, .segmented, .segmented button) { border-radius: var(--r-pill); }
+html[data-v2] .admin-tab.active { background: var(--c-ink); color: var(--c-bg); }
+html[data-v2] .segmented button[aria-pressed="true"] { background: var(--c-ink); color: var(--c-bg); }
+html[data-v2] .stepper li[aria-current="step"] span { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
+html[data-v2] .timeline-dot { color: var(--c-bg); }
+
+/* ---------- Content cards ---------- */
+html[data-v2] :is(.feature, .panel, .panel-plain, .exam-card, .stat, .value, .programme, .empty-state, .pending-card, .table-wrap, .faq-item) {
+  border-color: var(--c-line); box-shadow: var(--sh-1);
+}
+html[data-v2] :is(.feature, .panel, .panel-plain, .exam-card, .programme, .empty-state, .pending-card, .table-wrap) { border-radius: var(--r-card); }
+html[data-v2] :is(.stat, .faq-item, .value) { border-radius: 16px; }
+html[data-v2] .value { border-left-color: var(--c-gold); }
+html[data-v2] .pending-card { box-shadow: var(--sh-2); }
+html[data-v2] .dialog { border: 1px solid var(--c-line); border-radius: 24px; box-shadow: var(--sh-2); }
+html[data-v2] :is(.exam-card, .feature, .programme) { transition: transform 220ms var(--ease), box-shadow 220ms var(--ease), border-color 220ms var(--ease); }
+@media (hover: hover) {
+  html[data-v2] :is(.exam-card, .feature, .programme):hover { box-shadow: var(--sh-2); border-color: var(--c-sky); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html[data-v2] :is(.exam-card, .feature, .programme):hover { transform: translateY(-4px); }
+}
+
+/* ---------- Page openings and sign-in ---------- */
+html[data-v2] .page-hero {
+  border-bottom: 0;
+  background:
+    radial-gradient(55% 90% at 90% 0%, var(--c-glow-1), transparent 70%),
+    radial-gradient(40% 70% at 0% 100%, var(--c-glow-2), transparent 70%),
+    var(--c-surface-2);
+}
+html[data-v2] .pending-page { background: var(--c-surface-2); }
+html[data-v2] .auth-shell { min-height: calc(100vh - 65px); }
+html[data-v2] .auth-main {
+  background: radial-gradient(60% 50% at 100% 0%, var(--c-glow-1), transparent 70%), var(--c-bg);
+}
+html[data-v2] .toast { border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: var(--sh-2); }
+html[data-v2] .btn-primary[aria-busy="true"] { box-shadow: none; }
+
+/* ---------- Examination screen: calm and plain. Same colours and shapes, no lift, no shadow, no decoration ---------- */
+html[data-v2] .runner-bar { border-bottom: 0; }
+html[data-v2] :is(.q-card, .palette-card, .review-item) { border-radius: 16px; box-shadow: none; }
+html[data-v2] .option { border-radius: 14px; }
+html[data-v2] .option.is-selected { border-color: var(--c-link); box-shadow: inset 4px 0 0 var(--c-link); }
+html[data-v2] .option.is-selected .option-key { background: var(--c-blue); border-color: var(--c-blue); color: #FFFFFF; }
+html[data-v2] .palette-btn.is-answered,
+html[data-v2] .key-swatch.is-answered { background: var(--c-blue); border-color: var(--c-link); color: #FFFFFF; }
+html[data-v2] .palette-btn { border-radius: 10px; }
+html[data-v2] .stack-mobile td.row-actions .link-approve { background: var(--c-blue); border-color: var(--c-blue); color: #FFFFFF; }
