@@ -247,3 +247,47 @@ html[data-v2] .palette-btn.is-answered,
 html[data-v2] .key-swatch.is-answered { background: var(--c-blue); border-color: var(--c-link); color: #FFFFFF; }
 html[data-v2] .palette-btn { border-radius: 10px; }
 html[data-v2] .stack-mobile td.row-actions .link-approve { background: var(--c-blue); border-color: var(--c-blue); color: #FFFFFF; }
+
+/* =====================================================================================================
+   Polish pass: loading, errors, dialogs, exam on phones, dark-mode logo
+   ===================================================================================================== */
+
+/* Loading messages ("Loading your examination...", etc.) get a small spinner so the screen never looks frozen */
+html[data-v2] .page-note[role="status"]::before {
+  content: ""; display: block; width: 28px; height: 28px; margin: 0 auto var(--s3);
+  border: 3px solid var(--c-line); border-top-color: var(--c-blue); border-radius: 50%; animation: spin 800ms linear infinite;
+}
+html[data-v2] .skeleton { background: linear-gradient(90deg, var(--c-line) 0%, var(--c-surface-2) 50%, var(--c-line) 100%); background-size: 200% 100%; }
+
+/* Messages: a solid accent edge as well as colour, so they do not rely on colour alone */
+html[data-v2] .alert { border-radius: var(--r-ctl); border-left-width: 4px; padding: var(--s3) var(--s4); }
+html[data-v2] .callout { border-radius: var(--r-card); }
+
+/* Disabled buttons look and feel disabled */
+html[data-v2] .btn:disabled { box-shadow: none; transform: none; }
+
+/* Dialogs ease in (reduced-motion users get none: styles.css already shortens all animation for them) */
+html[data-v2] .dialog-overlay { animation: fade 160ms var(--ease) both; }
+html[data-v2] .dialog { animation: rise 220ms var(--ease) both; }
+
+/* Anchors and the sticky header */
+html[data-v2] { scroll-padding-top: 80px; }
+
+/* The logo mark is navy: in dark theme it sits on a light chip so it stays visible */
+html[data-v2][data-theme="dark"] .brand img { background: #FFFFFF; border-radius: 10px; padding: 2px 4px; }
+
+/* ---------- Examination screen ---------- */
+/* The blue Submit button would sit on the navy bar at under 3:1, so it uses gold there (navy text on gold is 8.6:1) */
+html[data-v2] .runner-bar .btn-primary { background: var(--c-gold); color: var(--c-on-gold); box-shadow: none; border-color: transparent; }
+html[data-v2] .runner-bar .btn-primary:hover:not(:disabled) { background: var(--c-gold-hover); color: var(--c-on-gold); }
+html[data-v2] .timer { min-width: 84px; padding: 4px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.08); }
+html[data-v2] .timer-low { box-shadow: inset 0 0 0 1.5px var(--warning-on-dark); }
+/* Phones: Previous / Next stay at the bottom of the screen while a long question scrolls (not yet checked on a real phone) */
+@media (max-width: 899px) {
+  html[data-v2] .q-nav {
+    position: sticky; bottom: 0; z-index: 5; margin: 0 calc(var(--s5) * -1) calc(var(--s5) * -1);
+    padding: var(--s3) var(--s5) calc(var(--s3) + env(safe-area-inset-bottom, 0px));
+    background: var(--c-surface); border-top: 1px solid var(--c-line); border-radius: 0 0 16px 16px;
+  }
+  html[data-v2] .q-nav .btn { flex: 1 1 0; }
+}
