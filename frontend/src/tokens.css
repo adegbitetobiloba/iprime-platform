@@ -1,0 +1,76 @@
+/* iPrime design tokens, new design ("Summit"). Loaded after styles.css and redesign.css.
+   Everything here is namespaced --c-* so it cannot change a page that has not moved to the new design yet.
+   v2.css maps these onto the page when <html> has data-v2. Dark theme: <html data-theme="dark">.
+   Contrast (checked with a script, WCAG): text 14:1 / muted 7.3:1 on the light page; text 15.8:1 / muted 9:1 on the dark page;
+   white on blue 5.6:1; navy on gold 8.6:1. Gold is decoration only, and text on gold is always navy. */
+:root {
+  /* surfaces */
+  --c-bg: #F7F9FD;
+  --c-surface: #FFFFFF;
+  --c-surface-2: #EDF2FB;
+  --c-paper: #FBF8F1;
+  --c-tint: #E8F0FF;
+  --c-line: #D5DDEC;
+  --c-line-strong: #7D8BAF;
+  --c-glass: rgba(247, 249, 253, 0.78);
+
+  /* text */
+  --c-ink: #0B1F4B;      /* headings and strong text */
+  --c-text: #1B2640;
+  --c-muted: #465273;
+
+  /* brand */
+  --c-blue: #1F5FE0;       /* buttons (white text on it: 5.6:1) */
+  --c-blue-press: #1748B8;
+  --c-link: #1F5FE0;       /* blue used as text or icon colour */
+  --c-link-strong: #1748B8;
+  --c-sky: #7FB0FF;
+  --c-gold: #F2B33D;
+  --c-gold-hover: #FFC24D;
+  --c-on-gold: #0B1F4B;
+  --c-gold-soft: #FDF1D6;
+  --c-gold-text: #7A4F00;
+
+  /* depth and effects */
+  --c-glow-1: rgba(31, 95, 224, 0.16);
+  --c-glow-2: rgba(242, 179, 61, 0.18);
+  --c-shadow: rgba(11, 31, 75, 0.22);
+  --c-btn-shadow: rgba(31, 95, 224, 0.5);
+  --sh-1: 0 1px 2px rgba(11, 31, 75, 0.06), 0 6px 16px rgba(11, 31, 75, 0.06);
+  --sh-2: 0 2px 4px rgba(11, 31, 75, 0.08), 0 16px 32px rgba(11, 31, 75, 0.14);
+
+  /* shape */
+  --r-card: 20px;
+  --r-ctl: 12px;
+  --r-pill: 999px;
+
+  /* type: Fraunces for big public-page headlines only, Plus Jakarta Sans for everything else */
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+}
+
+html[data-theme="dark"] {
+  --c-bg: #0A1224;
+  --c-surface: #131E3A;
+  --c-surface-2: #0E1830;
+  --c-paper: #0F1A33;
+  --c-tint: #16264D;
+  --c-line: #263459;
+  --c-line-strong: #5C6E9C;
+  --c-glass: rgba(10, 18, 36, 0.72);
+
+  --c-ink: #E8EEFF;
+  --c-text: #E6ECFB;
+  --c-muted: #A9B6D3;
+
+  --c-link: #8DB4FF;
+  --c-link-strong: #A9C7FF;
+  --c-gold-soft: #2B2616;
+  --c-gold-text: #F2B33D;
+
+  --c-glow-1: rgba(61, 119, 255, 0.22);
+  --c-glow-2: rgba(242, 179, 61, 0.10);
+  --c-shadow: rgba(0, 0, 0, 0.55);
+  --c-btn-shadow: rgba(31, 95, 224, 0.55);
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(0, 0, 0, 0.3);
+  --sh-2: 0 2px 4px rgba(0, 0, 0, 0.45), 0 16px 32px rgba(0, 0, 0, 0.5);
+}

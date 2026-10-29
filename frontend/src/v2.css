@@ -1,0 +1,163 @@
+/* New design layer ("Summit"). Loaded last. Every rule starts with html[data-v2], which Home turns on for the
+   signed-out Home page only, so no other page changes. To move another page over, set the same attribute there.
+   Colours come from tokens.css (--c-*). Old tokens are re-pointed below so shared classes follow the new design. */
+
+/* ---------- Map the old tokens onto the new ones ---------- */
+html[data-v2] {
+  --header-h: 64px;
+  --bg: var(--c-bg); --surface: var(--c-surface); --surface-2: var(--c-surface-2);
+  --text: var(--c-text); --muted: var(--c-muted);
+  --line: var(--c-line); --line-strong: var(--c-line-strong);
+  --blue: var(--c-link); --blue-dark: var(--c-link-strong); --blue-tint: var(--c-tint);
+  --focus: var(--c-link);
+  --r-sm: 8px; --r-md: var(--r-ctl); --r-lg: var(--r-card);
+  --shadow-sm: var(--sh-1); --shadow-md: var(--sh-2);
+  --grad-hero: var(--c-surface-2);
+}
+html[data-v2][data-theme="dark"] { color-scheme: dark; }
+html[data-v2] body { background: var(--c-bg); }
+/* old "navy" is both a text colour and a dark background; in the header and page it is used as text, so it follows the theme */
+html[data-v2] :is(.site-header, main) { --navy: var(--c-ink); }
+/* small islands that must stay as designed in both themes */
+html[data-v2] .rd-palette-art {
+  --navy: #04204F; --surface: #FFFFFF; --text: #1B2640; --muted: #44506A; --line: #CBD3E1; --line-strong: #6B7790;
+  --blue: #0553B3; --blue-tint: #E9F0FB; --on-dark: #FFFFFF; --on-dark-muted: #D3DEF2; --gold: #CC9A20;
+}
+html[data-v2] .badge:not(.badge-quiet) { --navy: #0B1F4B; }
+
+/* ---------- Type ---------- */
+html[data-v2] main :is(h1, h2) { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }
+html[data-v2] main h2 { font-size: clamp(1.9rem, 5vw, 2.75rem); line-height: 1.12; }
+html[data-v2] .eyebrow { color: var(--c-link-strong); letter-spacing: 0.12em; }
+
+/* ---------- Header: calm bar with a touch of glass ---------- */
+html[data-v2] .site-header { background: transparent; border-bottom: 1px solid var(--c-line); }
+html[data-v2] .site-header::before {
+  content: ""; position: absolute; inset: 0; height: auto; z-index: -1; background: var(--c-bg);
+}
+/* The blur is on a pseudo-element, not on the header, so the phone menu (position: fixed inside it) keeps working. */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  html[data-v2] .site-header::before {
+    background: var(--c-glass);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  html[data-v2] .site-header::before { background: var(--c-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+html[data-v2] .nav-link { border-radius: var(--r-pill); }
+html[data-v2] .nav-link.active { background: var(--c-tint); box-shadow: none; }
+html[data-v2] .drawer-link { border-radius: var(--r-ctl); }
+html[data-v2] .drawer-link.active { box-shadow: none; background: var(--c-tint); }
+
+/* Light/dark switch */
+.theme-toggle { display: none; }
+html[data-v2] .theme-toggle {
+  display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; cursor: pointer;
+  background: transparent; color: var(--c-ink); border: 1.5px solid var(--c-line); border-radius: var(--r-pill);
+  transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease);
+}
+html[data-v2] .theme-toggle:hover { background: var(--c-tint); border-color: var(--c-line-strong); }
+html[data-v2] .theme-toggle .icon-sun { display: none; }
+html[data-v2][data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+html[data-v2][data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+
+/* ---------- Buttons: pill shape, a small lift on hover, a press on tap ---------- */
+html[data-v2] .btn {
+  border-width: 1.5px; border-radius: var(--r-pill); min-height: 48px; padding: 0 var(--s5);
+  transition: transform 180ms var(--ease), box-shadow 180ms var(--ease), background-color var(--t) var(--ease), border-color var(--t) var(--ease), color var(--t) var(--ease);
+}
+html[data-v2] .btn-sm { min-height: 44px; }
+html[data-v2] .btn-lg { min-height: 56px; padding: 0 var(--s6); }
+html[data-v2] .btn-primary { background: var(--c-blue); color: #FFFFFF; box-shadow: 0 6px 16px -6px var(--c-btn-shadow); }
+html[data-v2] .btn-primary:hover:not(:disabled) { background: var(--c-blue-press); color: #FFFFFF; }
+html[data-v2] .btn-secondary { background: var(--c-surface); color: var(--c-ink); border-color: var(--c-line-strong); }
+html[data-v2] .btn-secondary:hover:not(:disabled) { background: var(--c-tint); border-color: var(--c-ink); color: var(--c-ink); }
+html[data-v2] .btn-gold { background: var(--c-gold); color: var(--c-on-gold); box-shadow: 0 6px 16px -8px rgba(242, 179, 61, 0.8); }
+html[data-v2] .btn-gold:hover:not(:disabled) { background: var(--c-gold-hover); color: var(--c-on-gold); }
+html[data-v2] .btn svg { transition: transform 180ms var(--ease); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html[data-v2] .btn:hover:not(:disabled) { transform: translateY(-2px); }
+  html[data-v2] .btn-primary:hover:not(:disabled) { box-shadow: 0 12px 22px -8px var(--c-btn-shadow); }
+  html[data-v2] .btn:hover:not(:disabled) svg { transform: translateX(3px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-v2] .btn:active:not(:disabled) { transform: translateY(0) scale(0.97); }
+}
+
+/* ---------- Hero ---------- */
+html[data-v2] .rd-hero:not(.has-photo) {
+  border-bottom: 0;
+  background:
+    radial-gradient(60% 70% at 88% 6%, var(--c-glow-1), transparent 70%),
+    radial-gradient(45% 55% at 4% 100%, var(--c-glow-2), transparent 70%),
+    var(--c-bg);
+}
+html[data-v2] .rd-hero-inner { padding-top: var(--s7); padding-bottom: var(--s7); }
+html[data-v2] .rd-hero h1 { font-size: clamp(2.5rem, 9vw, 4.5rem); line-height: 1.04; }
+html[data-v2] .rd-hl {
+  color: var(--c-link);
+  background: linear-gradient(var(--c-gold), var(--c-gold)) 0 92% / 100% 0.16em no-repeat;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+html[data-v2] .rd-pill {
+  border-radius: var(--r-pill); background: var(--c-tint); color: var(--c-link-strong); border: 1px solid var(--c-line);
+  text-transform: none; letter-spacing: 0.02em; font-size: 0.85rem; padding: 6px 14px;
+}
+html[data-v2] .rd-art svg { filter: drop-shadow(0 28px 36px var(--c-shadow)); }
+html[data-v2] .rd-chip {
+  background: var(--c-surface); color: var(--c-ink); border: 1px solid var(--c-line); border-radius: var(--r-pill);
+  box-shadow: var(--sh-1); padding: 9px 14px;
+}
+html[data-v2] .rd-chip svg { color: var(--c-link); }
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  html[data-v2] .rd-chip { background: var(--c-glass); -webkit-backdrop-filter: saturate(1.3) blur(8px); backdrop-filter: saturate(1.3) blur(8px); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  html[data-v2] .rd-chip { background: var(--c-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* ---------- Trust strip and sections ---------- */
+html[data-v2] .rd-strip { background: transparent; border-bottom: 1px solid var(--c-line); }
+html[data-v2] .rd-strip-icon { border-radius: var(--r-pill); }
+html[data-v2] .section-tint { background: var(--c-surface-2); border: 0; }
+html[data-v2] .section-split { background: var(--c-paper); border: 0; }
+
+/* ---------- Cards: rounded, soft shadow, lift on hover ---------- */
+html[data-v2] :is(.who-card, .programme-card, .rd-step) {
+  background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-card); box-shadow: var(--sh-1);
+  transition: transform 220ms var(--ease), box-shadow 220ms var(--ease), border-color 220ms var(--ease);
+}
+html[data-v2] .rd-who-card { border-top-width: 1px; border-top-color: var(--c-line); }
+html[data-v2] .icon-tile { border-radius: 14px; background: var(--c-tint); color: var(--c-link); }
+html[data-v2] .rd-who-1 .icon-tile { background: var(--c-gold-soft); color: var(--c-gold-text); }
+html[data-v2] .badge:not(.badge-quiet) { background: var(--c-gold-soft); color: var(--c-gold-text); }
+html[data-v2] .chips li { border-radius: var(--r-pill); }
+@media (hover: hover) {
+  html[data-v2] :is(.who-card, .programme-card, .rd-step):hover { box-shadow: var(--sh-2); border-color: var(--c-sky); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html[data-v2] :is(.who-card, .programme-card, .rd-step):hover { transform: translateY(-6px); }
+}
+
+/* Steps */
+html[data-v2] .step-num { width: 44px; height: 44px; background: var(--c-blue); color: #FFFFFF; }
+html[data-v2] .rd-step:not(:last-child)::after { background: var(--c-line); }
+
+/* Computer-based testing preview */
+html[data-v2] .rd-palette-art { border: 1px solid var(--c-line); border-radius: var(--r-card); box-shadow: var(--sh-2); }
+
+/* ---------- Call to action and footer ---------- */
+html[data-v2] .rd-cta {
+  border-top: 0; padding: var(--s8) 0;
+  background:
+    radial-gradient(50% 120% at 100% 0%, rgba(242, 179, 61, 0.22), transparent 60%),
+    linear-gradient(135deg, #0B1F4B 0%, #123A8F 100%);
+}
+html[data-v2] .site-footer { border-top: 1px solid rgba(255, 255, 255, 0.12); }
+
+/* ---------- Bigger screens ---------- */
+@media (min-width: 900px) {
+  html[data-v2] .section { padding: var(--s9) 0; }
+  html[data-v2] .rd-hero-inner { padding-top: var(--s9); padding-bottom: var(--s9); }
+}

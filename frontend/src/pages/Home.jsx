@@ -1,3 +1,4 @@
+import { useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 import Icon from "../components/Icon.jsx";
@@ -64,6 +65,14 @@ function PublicHero() {
 
 export default function Home() {
   const { token } = useAuth();
+
+  // New design: switched on for the signed-out Home page only. Other pages keep the current look until they are moved over.
+  const newDesign = !token;
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    if (newDesign) root.setAttribute("data-v2", ""); else root.removeAttribute("data-v2");
+    return () => root.removeAttribute("data-v2");
+  }, [newDesign]);
 
   return (
     <>

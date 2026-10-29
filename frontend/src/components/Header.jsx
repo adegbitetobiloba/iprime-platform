@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 import AccountMenu from "./AccountMenu.jsx";
+import ThemeToggle from "./ThemeToggle.jsx";
 import { TYPE_LABEL } from "../accountTypes.js";
 
 const PUBLIC_LINKS = [
@@ -64,6 +65,9 @@ export default function Header() {
             )}
           </div>
         </nav>
+
+        {/* Light/dark switch: only visible on pages already moved to the new design */}
+        <ThemeToggle />
 
         {/* Phones and tablets: one button that opens a full menu */}
         <button type="button" ref={toggleRef} className="menu-toggle" aria-expanded={open} aria-controls="site-drawer" onClick={() => setOpen((o) => !o)}>

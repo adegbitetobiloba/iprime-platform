@@ -9,7 +9,19 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    <!-- Sets the colour theme before the first paint so there is no white flash. Same key and rules as src/theme.js. -->
+    <script>
+      (function () {
+        try {
+          var d = document.documentElement, t = null;
+          try { t = localStorage.getItem("iprime-theme"); } catch (e) {}
+          if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          d.setAttribute("data-theme", t);
+          if (location.pathname === "/") d.setAttribute("data-v2", "");
+        } catch (e) {}
+      })();
+    </script>
     <title>iPrime | Prime Excelerate Tutelage</title>
   </head>
   <body>
