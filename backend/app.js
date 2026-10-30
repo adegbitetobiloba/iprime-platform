@@ -31,6 +31,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api", cbtRoutes);
+app.use("/api/enrolments", require("./routes/enrolmentRoutes"));
 
 app.use((req, res) => res.status(404).json({ error: "Not found" }));
 
