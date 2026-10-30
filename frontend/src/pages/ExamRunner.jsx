@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
+import Calculator from "../calculator/Calculator.jsx";
 
 const fmt = (s) => {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
@@ -182,7 +183,10 @@ export default function ExamRunner() {
           <span className="timer-num">{fmt(remaining ?? 0)}</span>
           {low && <span className="timer-note">Time is running low</span>}
         </div>
-        <button type="button" className="btn btn-primary btn-sm" onClick={() => setConfirming(true)}>Submit</button>
+        <div className="runner-actions">
+          <Calculator />
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setConfirming(true)}>Submit</button>
+        </div>
       </header>
 
       {failedCount > 0 && (

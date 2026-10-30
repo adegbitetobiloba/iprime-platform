@@ -1,0 +1,111 @@
+/* Examination calculator. Uses the design tokens from tokens.css (--c-*), the same shapes as the rest of the site,
+   and no decoration: it sits on the calm exam screen. Isolated in this file so it can be removed cleanly. */
+
+.runner-actions { display: flex; align-items: center; gap: var(--s2); flex: none; }
+.calc-toggle { gap: var(--s2); }
+.calc-toggle svg { flex: none; }
+@media (max-width: 639px) {
+  .calc-toggle { width: 44px; padding: 0; }
+  .calc-toggle-label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+}
+
+/* Panel: bottom-right on desktop, bottom-centre on phones, free once moved */
+.calc {
+  position: fixed; z-index: 30; right: 16px; bottom: 16px;
+  width: min(340px, calc(100vw - 16px)); max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow: auto;
+  padding: 10px; background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-line); border-radius: 20px; box-shadow: var(--sh-2);
+  overscroll-behavior: contain; touch-action: manipulation;
+}
+.calc.is-moved { right: auto; bottom: auto; }
+@media (max-width: 639px) {
+  .calc:not(.is-moved) { left: 0; right: 0; margin-inline: auto; bottom: 8px; }
+}
+
+.calc-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.calc-grip {
+  flex: 1 1 auto; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px; min-width: 0;
+  border: 0; border-radius: 12px; background: transparent; color: var(--c-ink); font: inherit; font-weight: 700;
+  cursor: grab; touch-action: none; text-align: left; transition: background-color var(--t) var(--ease);
+}
+.calc-grip:hover { background: var(--c-tint); }
+.calc-grip:active { cursor: grabbing; }
+.calc-grip svg { color: var(--c-muted); flex: none; }
+.calc-sci-toggle, .calc-close, .calc-mode {
+  min-height: 44px; border: 1.5px solid var(--c-line); border-radius: 999px; background: transparent; color: var(--c-ink);
+  font: inherit; font-weight: 700; cursor: pointer; transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease);
+}
+.calc-sci-toggle { padding: 0 14px; font-size: 0.9rem; }
+.calc-close { display: inline-grid; place-items: center; width: 44px; padding: 0; }
+.calc-sci-toggle:hover, .calc-close:hover, .calc-mode:hover { background: var(--c-tint); border-color: var(--c-line-strong); }
+.calc-sci-toggle[aria-pressed="true"], .calc-mode[aria-pressed="true"] { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
+
+/* Display */
+.calc-screen { display: grid; align-content: end; gap: 2px; min-height: 68px; padding: 8px 12px; margin-bottom: 8px; background: var(--c-surface-2); border: 1px solid var(--c-line); border-radius: 14px; text-align: right; }
+.calc-history { min-height: 1.25em; color: var(--c-muted); font-size: 0.85rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.calc-main {
+  font-size: 1.85rem; line-height: 1.25; font-weight: 700; color: var(--c-ink); font-variant-numeric: tabular-nums;
+  overflow-x: auto; white-space: nowrap; scrollbar-width: none; border-radius: 6px;
+}
+.calc-main::-webkit-scrollbar { display: none; }
+.calc-main.is-error { color: var(--danger); font-size: 1.05rem; white-space: normal; padding: 6px 0; }
+
+/* Mode row (Sci panel only) */
+.calc-modes { display: flex; gap: 6px; margin-bottom: 8px; }
+.calc-mode { min-width: 64px; padding: 0 12px; font-size: 0.85rem; }
+
+/* Keys: 44px minimum for touch */
+.calc-keys { display: grid; gap: 6px; }
+.calc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.calc-key {
+  min-height: 44px; min-width: 0; padding: 0 2px; border: 1px solid var(--c-line); border-radius: 12px;
+  background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: 1.05rem; font-weight: 700; cursor: pointer;
+  transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease), transform 90ms var(--ease);
+}
+.calc-key:hover:not(:disabled) { border-color: var(--c-line-strong); background: var(--c-surface-2); }
+.calc-key:disabled { opacity: 0.45; cursor: not-allowed; }
+.calc-fn { background: var(--c-surface-2); font-size: 0.92rem; }
+.calc-op { background: var(--c-tint); font-size: 1.2rem; }
+.calc-op:hover:not(:disabled) { background: var(--c-tint); border-color: var(--c-link); }
+.calc-del { background: var(--c-tint); font-size: 0.85rem; }
+.calc-ac { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger); font-size: 0.9rem; }
+.calc-ac:hover:not(:disabled) { background: var(--danger-bg); border-color: var(--danger); }
+.calc-eq { background: var(--c-blue); border-color: var(--c-blue); color: #FFFFFF; font-size: 1.3rem; }
+.calc-eq:hover:not(:disabled) { background: var(--c-blue-press); border-color: var(--c-blue-press); }
+.calc-wide { grid-column: span 2; }
+@media (prefers-reduced-motion: no-preference) { .calc-key:active:not(:disabled) { transform: scale(0.95); } }
+
+/* Phones and tablets: the panel is docked at the bottom, so the page gets room beneath it and the sticky Previous / Next bar rises above it */
+@media (max-width: 899px) {
+  html.calc-open .runner { padding-bottom: var(--calc-h, 0px); }
+  html.calc-open[data-v2] .q-nav { bottom: var(--calc-h, 0px); }
+}
+
+/* Desktop: while the panel sits at its default place (bottom-right) the question navigator shrinks to the space above it and scrolls inside,
+   so no navigator button is ever hidden behind the calculator. Dragging the panel elsewhere frees the navigator again. */
+@media (min-width: 900px) and (max-width: 1599px) {
+  html.calc-docked .palette-card { max-height: max(160px, calc(100vh - 90px - var(--calc-h, 0px) - 16px)); overflow: auto; }
+}
+
+/* No grey/blue flash on Android taps: every key has its own visible pressed state */
+.calc button, .calc-toggle { -webkit-tap-highlight-color: transparent; }
+
+/* Mouse and trackpad users get slightly tighter keys so the panel leaves more of the screen free (touch keeps the full 44px) */
+@media (pointer: fine) {
+  .calc-key { min-height: 38px; font-size: 1rem; }
+  .calc-grip, .calc-sci-toggle, .calc-close { min-height: 38px; }
+  .calc-close { width: 38px; }
+  .calc-mode { min-height: 32px; }
+  .calc-screen { min-height: 60px; }
+  .calc-head { margin-bottom: 6px; }
+}
+
+/* Exam bar on narrow phones: the title gives way (with an ellipsis) so it can never run under the timer or the buttons */
+.runner-bar { gap: var(--s2); }
+.runner-title { flex: 1 1 0; min-width: 0; overflow: hidden; }
+.runner-title .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.timer { flex: none; }
+@media (max-width: 639px) {
+  html[data-v2] .timer { min-width: 0; padding: 4px 8px; }
+  html[data-v2] .runner-bar .btn-sm { padding: 0 var(--s3); }
+}
