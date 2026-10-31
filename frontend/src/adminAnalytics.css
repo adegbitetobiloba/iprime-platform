@@ -1,0 +1,14 @@
+/* Admin examination analytics. Reuses sd-* (dashboard) and admin panel classes. */
+.aa-block { margin-top: var(--s5, 1.5rem); }
+.aa-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.aa-bars { display: flex; align-items: flex-end; gap: 6px; height: 150px; padding-top: 22px; }
+.aa-bar { flex: 1; min-height: 3px; position: relative; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--c-sky), var(--c-blue)); transform-origin: bottom; animation: aa-rise .6s ease-out both; }
+.aa-bar span { position: absolute; top: -19px; left: 0; right: 0; text-align: center; font-size: .75rem; color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.aa-axis { display: flex; gap: 6px; margin-top: .35rem; font-size: .72rem; color: var(--c-muted); }
+.aa-axis i { flex: 1; text-align: center; font-style: normal; }
+.aa-ranks { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.aa-ranks li { display: grid; grid-template-columns: 2rem 1fr auto; align-items: center; gap: .75rem; padding: .4rem 0; border-top: 1px solid var(--c-line); }
+.aa-ranks li:first-child { border-top: 0; }
+.aa-rank { font-weight: 800; color: var(--c-link-strong); font-variant-numeric: tabular-nums; }
+@keyframes aa-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .aa-bar { animation: none; } }

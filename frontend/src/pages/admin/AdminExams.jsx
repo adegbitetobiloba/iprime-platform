@@ -61,7 +61,7 @@ export default function AdminExams() {
             <tbody>
               {data.exams.map((e) => (
                 <tr key={e.id}>
-                  <td><Link to={`/admin/exams/${e.id}`}><strong>{e.title}</strong></Link><br /><span className="muted">{e.subject}{e.level ? ` · ${e.level}` : ""}</span></td>
+                  <td><Link to={`/admin/exams/${e.id}`}><strong>{e.title}</strong></Link><br /><span className="muted">{e.subject}{e.level ? ` · ${e.level}` : ""}</span>{e.attempts > 0 && <> · <Link to={`/admin/exams/${e.id}/analytics`}>Analytics</Link></>}</td>
                   <td><span className={`badge ${e.status === "published" ? "badge-ok" : "badge-quiet"}`}>{e.status === "published" ? "Published" : "Draft"}</span></td>
                   <td>{e.questionCount}</td>
                   <td>{e.durationMinutes} min</td>
