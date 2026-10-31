@@ -9,6 +9,8 @@ const cbt = require("../validations/cbtValidation");
 const prog = require("../controllers/programmeController");
 const users = require("../controllers/adminUserController");
 const progV = require("../validations/programmeValidation");
+const bankC = require("../controllers/bankController");
+const bankV = require("../validations/bankValidation");
 
 // Everything under /api/admin requires a signed-in account whose role is "admin" in the database.
 router.use(protect, requireRole("admin"));
@@ -31,6 +33,18 @@ router.delete("/exams/:id/questions/:qid", c.removeQuestion);
 router.post("/exams/:id/publish", c.publish);
 router.post("/exams/:id/unpublish", c.unpublish);
 router.get("/exams/:id/attempts", c.attempts);
+
+// Question bank (admin-only like everything in this file; the role is re-checked in the database on every request)
+router.post("/bank/import", validate(bankV.importBatch), bankC.importBatch);
+router.get("/bank/facets", bankC.facets);
+router.post("/bank/add-to-exam", validate(bankV.addToExam), bankC.addToExam);
+router.get("/bank", bankC.list);
+router.get("/bank/:id", bankC.get);
+router.patch("/bank/:id", validate(bankV.edit), bankC.edit);
+router.post("/bank/:id/verify", validate(bankV.verify), bankC.verify);
+router.post("/bank/:id/archive", bankC.archive);
+router.post("/bank/:id/restore", bankC.restore);
+router.post("/bank/:id/propagate", bankC.propagate);
 
 router.get("/programmes", prog.adminList);
 router.post("/programmes", validate(progV.createProgramme), prog.create);

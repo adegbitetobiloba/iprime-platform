@@ -23,11 +23,11 @@ const question = Joi.object({
   options: Joi.array().items(Joi.object({
     key: Joi.string().valid(...OPTION_KEYS).required(),
     text: Joi.string().trim().min(1).max(1000).required(),
-  })).min(2).max(5).required(),
+  })).min(2).max(6).required(),
   correctKey: Joi.string().valid(...OPTION_KEYS).required(),
   marks: Joi.number().min(0.5).max(100),
   topic: Joi.string().trim().max(120).allow(""),
-  explanation: Joi.string().trim().max(2000).allow(""),
+  explanation: Joi.string().trim().max(4000).allow(""),
 }).custom((v, helpers) => {
   const keys = v.options.map((o) => o.key);
   if (new Set(keys).size !== keys.length) return helpers.message("Option letters must be different from each other");

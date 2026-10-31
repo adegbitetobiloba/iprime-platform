@@ -1,5 +1,5 @@
 // Pure exam logic (no database, no network) so it can be tested on its own.
-const OPTION_KEYS = ["A", "B", "C", "D", "E"];
+const OPTION_KEYS = ["A", "B", "C", "D", "E", "F"]; // 2 to 6 options per question
 
 const toPlain = (answers) => (answers instanceof Map ? Object.fromEntries(answers) : answers || {});
 
@@ -22,7 +22,8 @@ function scoreAttempt(questions, answers) {
 const publicQuestion = (q) => ({
   id: String(q._id),
   text: q.text,
-  options: q.options.map((o) => ({ key: o.key, text: o.text })),
+  ...(q.textHtml ? { textHtml: q.textHtml } : {}),
+  options: q.options.map((o) => ({ key: o.key, text: o.text, ...(o.html ? { html: o.html } : {}) })),
   marks: q.marks ?? 1,
   ...(q.topic ? { topic: q.topic } : {}),
 });
@@ -45,8 +46,8 @@ function parseQuestionText(text) {
   const questions = [];
   const errors = [];
   const startRe = /^\s*(?:Q(?:uestion)?\s*\d*\s*[:.)]|\d+\s*[.)])\s*(.*)$/i;
-  const optionRe = /^\s*\(?([A-Ea-e])[.)]\s*(.+)$/;
-  const answerRe = /^\s*(?:Answer|Ans|Correct(?:\s+answer)?)\s*[:=-]\s*\(?([A-Ea-e])\)?\s*\.?\s*$/i;
+  const optionRe = /^\s*\(?([A-Fa-f])[.)]\s*(.+)$/;
+  const answerRe = /^\s*(?:Answer|Ans|Correct(?:\s+answer)?)\s*[:=-]\s*\(?([A-Fa-f])\)?\s*\.?\s*$/i;
   const explRe = /^\s*Explanation\s*[:-]\s*(.*)$/i;
   const marksRe = /^\s*Marks?\s*[:=]\s*(\d+(?:\.\d+)?)\s*$/i;
   const topicRe = /^\s*Topic\s*:\s*(.+)$/i;
