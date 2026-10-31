@@ -113,12 +113,19 @@ export default function App() {
           <Route path="/attempts/:id" element={<Protected><ExamRunner /></Protected>} />
           <Route path="/results" element={<Protected><Results /></Protected>} />
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
+          <Route path="/library" element={<Protected><Library /></Protected>} />
+          <Route path="/library/saved" element={<Protected><LibrarySaved /></Protected>} />
+          <Route path="/library/courses/:slug" element={<Protected><LibraryCourse /></Protected>} />
+          <Route path="/library/lessons/:id" element={<Protected><LibraryLesson /></Protected>} />
           <Route path="/admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
             <Route index element={<AdminHome />} />
             <Route path="exams" element={<AdminExams />} />
             <Route path="exams/:id" element={<AdminExamEdit />} />
             <Route path="programmes" element={<AdminProgrammes />} />
             <Route path="students" element={<AdminStudents />} />
+            <Route path="library" element={<AdminLibrary />} />
+            <Route path="library/courses/:id" element={<AdminLibraryCourse />} />
+            <Route path="library/analytics" element={<AdminLibraryAnalytics />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
