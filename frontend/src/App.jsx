@@ -5,6 +5,9 @@ import Footer from "./components/Footer.jsx";
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Programmes from "./pages/Programmes.jsx";
+import HowItWorks from "./pages/HowItWorks.jsx";
+import Achievements from "./pages/Achievements.jsx";
+import IPrime from "./pages/IPrime.jsx";
 import Events from "./pages/Events.jsx";
 import News from "./pages/News.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -14,7 +17,6 @@ import Register from "./pages/Register.jsx";
 import Verify from "./pages/Verify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
-import Performance from "./pages/Performance.jsx";
 import ExamCentre from "./pages/ExamCentre.jsx";
 import ExamIntro from "./pages/ExamIntro.jsx";
 import ExamRunner from "./pages/ExamRunner.jsx";
@@ -61,6 +63,9 @@ const TITLES = {
   "/": "iPrime | Prime Excelerate Tutelage",
   "/about": "About | iPrime",
   "/programmes": "Programmes | iPrime",
+  "/how-it-works": "How it works | iPrime",
+  "/achievements": "Achievements | iPrime",
+  "/iprime": "iPrime platform | Prime Excelerate Tutelage",
   "/events": "Events | iPrime",
   "/news": "News and announcements | iPrime",
   "/contact": "Contact | iPrime",
@@ -73,7 +78,6 @@ const TITLES = {
   "/dashboard": "Dashboard | iPrime",
   "/account": "My profile | iPrime",
   "/exams": "Examination centre | iPrime",
-  "/performance": "Performance | iPrime",
   "/results": "My results | iPrime",
 };
 
@@ -102,6 +106,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/programmes" element={<Programmes />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/achievements" element={<Achievements />} />
+          <Route path="/iprime" element={<IPrime />} />
           <Route path="/events" element={<Events />} />
           <Route path="/news" element={<News />} />
           <Route path="/contact" element={<Contact />} />
@@ -116,7 +123,6 @@ export default function App() {
           <Route path="/exams" element={<Protected><ExamCentre /></Protected>} />
           <Route path="/exams/:id" element={<Protected><ExamIntro /></Protected>} />
           <Route path="/attempts/:id" element={<Protected><ExamRunner /></Protected>} />
-          <Route path="/performance" element={<Protected><Performance /></Protected>} />
           <Route path="/results" element={<Protected><Results /></Protected>} />
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
           <Route path="/admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
