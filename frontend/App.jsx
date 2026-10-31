@@ -13,6 +13,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Verify from "./pages/Verify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import StudentDashboard from "./pages/StudentDashboard.jsx";
 import ExamCentre from "./pages/ExamCentre.jsx";
 import ExamIntro from "./pages/ExamIntro.jsx";
 import ExamRunner from "./pages/ExamRunner.jsx";
@@ -23,13 +24,19 @@ import AdminHome from "./pages/admin/AdminHome.jsx";
 import AdminExams from "./pages/admin/AdminExams.jsx";
 import AdminExamEdit from "./pages/admin/AdminExamEdit.jsx";
 import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
+import AdminStudents from "./pages/admin/AdminStudents.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import Onboarding from "./pages/Onboarding.jsx";
+import PendingApproval from "./pages/PendingApproval.jsx";
+import AdminDenied from "./pages/admin/AdminDenied.jsx";
+import Toast from "./components/Toast.jsx";
 import { useAuth } from "./auth.jsx";
 
 function Protected({ children }) {
   const { token, loading } = useAuth();
+  const { pathname } = useLocation();
   if (loading) return <p className="page-note" role="status">Loading your account...</p>;
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/login" replace state={{ from: pathname }} />; // after logging in they come back here
   return children;
 }
 
@@ -37,9 +44,16 @@ function Protected({ children }) {
 function AdminOnly({ children }) {
   const { token, user, loading } = useAuth();
   if (loading || (token && !user)) return <p className="page-note" role="status">Loading your account...</p>;
-  if (!token) return <Navigate to="/login" replace />;
-  if (user.role !== "admin") return <Navigate to="/dashboard" replace />;
+  if (!token) return <Navigate to="/login" replace state={{ from: "/admin" }} />;
+  if (user.role !== "admin") return <AdminDenied />;
   return children;
+}
+
+// Students (and administrators previewing the student view) get the learning dashboard; every other role keeps the
+// existing account page. The server still checks the role on every API call.
+function DashboardHome() {
+  const { user } = useAuth();
+  return user?.role === "student" || user?.role === "admin" ? <StudentDashboard /> : <Dashboard />;
 }
 
 const TITLES = {
@@ -53,7 +67,10 @@ const TITLES = {
   "/login": "Log in | iPrime",
   "/register": "Create an account | iPrime",
   "/verify": "Verify your email | iPrime",
+  "/onboarding": "Welcome | iPrime",
+  "/pending-approval": "Waiting for approval | iPrime",
   "/dashboard": "Dashboard | iPrime",
+  "/account": "My profile | iPrime",
   "/exams": "Examination centre | iPrime",
   "/results": "My results | iPrime",
 };
@@ -76,6 +93,7 @@ export default function App() {
     <>
       <a className="skip-link" href="#main">Skip to content</a>
       <PageEffects />
+      <Toast />
       {!focusMode && <Header />}
       <main id="main">
         <Routes>
@@ -89,7 +107,10 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
-          <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/pending-approval" element={<PendingApproval />} />
+          <Route path="/dashboard" element={<Protected><DashboardHome /></Protected>} />
+          <Route path="/account" element={<Protected><Dashboard /></Protected>} />
           <Route path="/exams" element={<Protected><ExamCentre /></Protected>} />
           <Route path="/exams/:id" element={<Protected><ExamIntro /></Protected>} />
           <Route path="/attempts/:id" element={<Protected><ExamRunner /></Protected>} />
@@ -100,6 +121,7 @@ export default function App() {
             <Route path="exams" element={<AdminExams />} />
             <Route path="exams/:id" element={<AdminExamEdit />} />
             <Route path="programmes" element={<AdminProgrammes />} />
+            <Route path="students" element={<AdminStudents />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -3,7 +3,14 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import { AuthProvider } from "./auth.jsx";
+import { initTheme } from "./theme.js";
 import "./styles.css";
+import "./redesign.css";
+import "./tokens.css";
+import "./v2.css";
+import "./studentDashboard.css";
+
+initTheme();
 
 // Scroll-reveal is progressive enhancement: content is only pre-hidden when the browser supports
 // IntersectionObserver AND the user has not asked for reduced motion. Otherwise everything stays visible.
