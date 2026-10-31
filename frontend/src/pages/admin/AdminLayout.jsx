@@ -9,6 +9,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/students" className="admin-tab">Students</NavLink>
           <NavLink to="/admin/exams" className="admin-tab">Examinations</NavLink>
           <NavLink to="/admin/programmes" className="admin-tab">Programmes</NavLink>
+          <NavLink to="/admin/library" className="admin-tab">Library</NavLink>
         </nav>
         <Outlet />
       </div>
