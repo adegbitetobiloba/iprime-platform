@@ -5,12 +5,20 @@ import AccountMenu from "./AccountMenu.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
 import { TYPE_LABEL } from "../accountTypes.js";
 
+// Main navigation (brief): About, Programmes, How it works, Achievements, iPrime, FAQ, Contact. Home is the logo.
 const PUBLIC_LINKS = [
   { to: "/about", label: "About" },
   { to: "/programmes", label: "Programmes" },
+  { to: "/how-it-works", label: "How it works" },
+  { to: "/achievements", label: "Achievements" },
+  { to: "/iprime", label: "iPrime" },
+  { to: "/faq", label: "FAQ" },
+  { to: "/contact", label: "Contact" },
+];
+// Kept reachable (phone menu and footer) but not in the top bar, which would otherwise be too crowded.
+const MORE_LINKS = [
   { to: "/events", label: "Events" },
   { to: "/news", label: "News" },
-  { to: "/contact", label: "Contact" },
 ];
 
 export default function Header() {
@@ -101,8 +109,7 @@ export default function Header() {
         <p className="drawer-heading">Explore</p>
         <ul className="drawer-list">
           <li><NavLink to="/" end className="drawer-link" onClick={close}>Home</NavLink></li>
-          {PUBLIC_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="drawer-link" onClick={close}>{l.label}</NavLink></li>))}
-          <li><NavLink to="/faq" className="drawer-link" onClick={close}>FAQ</NavLink></li>
+          {PUBLIC_LINKS.concat(MORE_LINKS).map((l) => (<li key={l.to}><NavLink to={l.to} className="drawer-link" onClick={close}>{l.label}</NavLink></li>))}
         </ul>
 
         <div className="drawer-foot">
@@ -112,7 +119,7 @@ export default function Header() {
             </button>
           ) : (
             <>
-              <Link to="/register" className="btn btn-primary btn-block btn-lg" onClick={close}>Sign up</Link>
+              <Link to="/register" className="btn btn-primary btn-block btn-lg" onClick={close}>Create an account</Link>
               <Link to="/login" className="btn btn-secondary btn-block btn-lg" onClick={close}>Log in</Link>
             </>
           )}

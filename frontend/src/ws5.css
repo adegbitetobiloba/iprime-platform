@@ -1,0 +1,122 @@
+/* Workstream 5 (Frontend / Brand): additive styles for the new public pages and the homepage hero.
+   Everything is namespaced .ws5-* and uses the --c-* tokens, so no existing page changes. Loaded last in main.jsx.
+   The hero is a fixed brand navy in both themes (white text on #0B1F4B / #061532 is well above WCAG AA). */
+
+/* ---------- Homepage hero ---------- */
+.ws5-hero { background: radial-gradient(1000px 460px at 88% -8%, rgba(31, 95, 224, 0.5), transparent 62%), linear-gradient(180deg, #0B1F4B 0%, #061532 100%); color: #fff; padding: clamp(2.5rem, 6vw, 5rem) 0; overflow: hidden; }
+.ws5-hero-grid { display: grid; gap: 2.25rem; align-items: center; }
+@media (min-width: 900px) { .ws5-hero-grid { grid-template-columns: 1.1fr 0.9fr; gap: 3rem; } }
+.ws5-pill { display: inline-block; margin: 0 0 1rem; padding: 0.35rem 0.85rem; border-radius: var(--r-pill); background: var(--c-gold); color: #0B1F4B; font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.ws5-hero .ws5-h1 { margin: 0 0 1rem; color: #fff; font-family: var(--font-display); font-weight: 600; font-size: clamp(2.1rem, 6.2vw, 3.7rem); line-height: 1.08; }
+.ws5-hero .ws5-hl { color: var(--c-gold); }
+.ws5-hero .ws5-lead { margin: 0 0 1.5rem; max-width: 34rem; color: #D9E3FA; font-size: clamp(1rem, 2.2vw, 1.15rem); line-height: 1.6; }
+.ws5-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.ws5-hero-sub { margin: 1.1rem 0 0; color: #D9E3FA; }
+.ws5-hero .ws5-hero-link { color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.ws5-hero .ws5-hero-link:hover { color: var(--c-gold); }
+.ws5-hero-note { margin: 0.5rem 0 0; color: #B8C7E8; font-size: 0.9rem; }
+
+/* Native visual used until a campaign flyer is approved */
+.ws5-panel { padding: clamp(1.25rem, 3vw, 1.75rem); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: var(--r-card); background: rgba(255, 255, 255, 0.07); }
+.ws5-panel-title { margin: 0 0 1rem; color: var(--c-gold); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.8125rem; }
+.ws5-panel-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
+.ws5-panel-list li { display: flex; gap: 0.9rem; align-items: flex-start; }
+.ws5-panel-list strong { display: block; color: #fff; font-size: 1.05rem; }
+.ws5-panel-list small { display: block; color: #C9D6F2; font-size: 0.9rem; line-height: 1.45; }
+.ws5-panel-n { flex: none; width: 2rem; height: 2rem; display: grid; place-items: center; border-radius: 50%; background: var(--c-gold); color: #0B1F4B; font-weight: 800; }
+
+/* Approved flyer: shown whole and undistorted */
+.ws5-flyer { margin: 0; }
+.ws5-flyer img { display: block; width: 100%; max-width: 34rem; height: auto; max-height: 40rem; object-fit: contain; margin-inline: auto; border-radius: var(--r-ctl); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
+
+/* ---------- Shared small pieces ---------- */
+.ws5-btn-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.ws5-cta-link { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.ws5-note { margin: 1.5rem 0 0; color: var(--c-muted); max-width: 44rem; }
+.ws5-facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.75rem; }
+.ws5-facts li { padding: 1rem 1.15rem; border: 1px solid var(--c-line); border-radius: var(--r-ctl); background: var(--c-surface); display: grid; gap: 0.15rem; }
+.ws5-facts strong { color: var(--c-ink); }
+.ws5-facts span { color: var(--c-muted); font-size: 0.95rem; }
+
+.ws5-badge { display: inline-block; vertical-align: middle; margin-left: 0.4rem; padding: 0.15rem 0.6rem; border-radius: var(--r-pill); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
+.ws5-badge-now { background: var(--c-tint); color: var(--c-link-strong); }
+.ws5-badge-soon { background: var(--c-gold-soft); color: var(--c-gold-text); }
+
+.ws5-checks { margin: 0 0 1rem; padding: 0; list-style: none; display: grid; gap: 0.75rem; }
+.ws5-checks li { display: flex; gap: 0.75rem; align-items: flex-start; }
+
+/* ---------- How it works ---------- */
+.ws5-journey { margin: 0; padding: 0; list-style: none; display: grid; gap: 1rem; max-width: 46rem; }
+.ws5-journey-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1.1rem 1.25rem; border: 1px solid var(--c-line); border-radius: var(--r-ctl); background: var(--c-surface); }
+.ws5-journey-num { flex: none; width: 2.25rem; height: 2.25rem; display: grid; place-items: center; border-radius: 50%; background: var(--c-blue); color: #fff; font-weight: 800; }
+.ws5-journey-title { margin: 0 0 0.25rem; font-size: 1.1rem; color: var(--c-ink); }
+.ws5-journey-item p, .ws5-join-item p { margin: 0; color: var(--c-muted); }
+
+.ws5-cycle-row { margin: 0; padding: 0; list-style: none; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
+.ws5-cycle-card { padding: 1.25rem; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-cycle-card h3 { margin: 0.6rem 0 0.25rem; color: var(--c-ink); }
+.ws5-cycle-card p { margin: 0; color: var(--c-muted); font-size: 0.95rem; }
+.ws5-cycle-n { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--c-gold); color: var(--c-on-gold); font-weight: 800; }
+
+.ws5-join { margin: 0; padding: 0; list-style: none; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.ws5-join-item { padding: 1.25rem; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-join-item h3 { margin: 0.7rem 0 0.35rem; color: var(--c-ink); }
+
+/* ---------- iPrime page ---------- */
+.ws5-feature-grid { margin: 0; padding: 0; list-style: none; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.ws5-feature { display: flex; gap: 0.9rem; align-items: flex-start; height: 100%; padding: 1.2rem; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-feature h3 { margin: 0 0 0.3rem; font-size: 1.05rem; color: var(--c-ink); }
+.ws5-feature p { margin: 0; color: var(--c-muted); }
+
+/* ---------- Achievements ---------- */
+.ws5-ach-grid { margin: 0; padding: 0; list-style: none; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+.ws5-ach { height: 100%; overflow: hidden; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); box-shadow: var(--sh-1); }
+.ws5-ach-media { aspect-ratio: 4 / 5; background: linear-gradient(160deg, #0B1F4B, #1F5FE0); display: grid; place-items: center; }
+.ws5-ach-media img { width: 100%; height: 100%; object-fit: cover; }
+.ws5-ach-mono { color: var(--c-gold); font-family: var(--font-display); font-size: 3.5rem; font-weight: 600; }
+.ws5-ach-body { padding: 1rem 1.15rem 1.25rem; }
+.ws5-ach-exam { margin: 0 0 0.25rem; color: var(--c-gold-text); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.ws5-ach-body h3 { margin: 0 0 0.4rem; color: var(--c-ink); }
+.ws5-ach-score { margin: 0; color: var(--c-ink); }
+.ws5-ach-score span { font-size: 2rem; font-weight: 800; }
+.ws5-ach-score small, .ws5-ach-meta { color: var(--c-muted); }
+.ws5-ach-meta { margin: 0.35rem 0 0; font-size: 0.9rem; }
+.ws5-ach-quote { margin: 0.75rem 0 0; padding-left: 0.85rem; border-left: 3px solid var(--c-gold); color: var(--c-text); font-size: 0.95rem; }
+
+/* ---------- Swipe cards (phones: swipe; wide screens: grid) ---------- */
+.ws5-swipe { position: relative; }
+.ws5-swipe-track { display: flex; gap: 0.9rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 1rem; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none; padding: 0.25rem 1rem 0.75rem; margin-inline: -1rem; touch-action: pan-x pan-y; }
+.ws5-swipe-track::-webkit-scrollbar { display: none; }
+.ws5-swipe-track:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 2px; border-radius: var(--r-ctl); }
+.ws5-swipe-item { flex: 0 0 86%; min-width: 0; scroll-snap-align: center; display: flex; }
+.ws5-swipe-item > * { flex: 1; min-width: 0; }
+.ws5-swipe.is-single .ws5-swipe-item { flex-basis: 100%; }
+@media (min-width: 600px) { .ws5-swipe-item { flex-basis: 46%; } .ws5-swipe.is-single .ws5-swipe-item { flex-basis: 100%; } }
+.ws5-swipe-ui { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.5rem; }
+.ws5-swipe-btn { flex: none; width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--c-line); background: var(--c-surface); color: var(--c-ink); cursor: pointer; }
+.ws5-swipe-btn:disabled { opacity: 0.4; cursor: default; }
+.ws5-swipe-btn:not(:disabled):hover { background: var(--c-tint); }
+.ws5-swipe-dots { display: grid; justify-items: center; gap: 0.15rem; min-width: 0; }
+.ws5-swipe-count { font-size: 0.8125rem; font-weight: 600; color: var(--c-muted); }
+.ws5-swipe-pips { display: flex; flex-wrap: wrap; justify-content: center; }
+.ws5-swipe-pip { position: relative; width: 1.5rem; height: 1.5rem; padding: 0; border: 0; background: none; cursor: pointer; }
+.ws5-swipe-pip::after { content: ""; position: absolute; inset: 0; margin: auto; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--c-line); transition: width 0.2s, background 0.2s; }
+.ws5-swipe-pip.is-on::after { width: 1.1rem; border-radius: 999px; background: var(--c-blue); }
+@media (prefers-reduced-motion: reduce) { .ws5-swipe-pip::after { transition: none; } }
+@media (min-width: 900px) {
+  .ws5-swipe.is-grid-md .ws5-swipe-track { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); overflow: visible; margin: 0; padding: 0; scroll-snap-type: none; }
+  .ws5-swipe.is-grid-md .ws5-swipe-item { flex: none; }
+  .ws5-swipe.is-grid-md .ws5-swipe-ui { display: none; }
+}
+.ws5-journey-card { min-height: 9rem; }
+
+/* ---------- Start page (flyer) ---------- */
+.ws5-welcome { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: #061532; color: #fff; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.ws5-welcome-top { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.6rem 1rem; }
+.ws5-welcome-brand { font-weight: 700; letter-spacing: 0.04em; font-size: 0.9rem; color: var(--c-gold); }
+.ws5-welcome-skip { min-height: 2.75rem; padding: 0 1rem; border: 1px solid rgba(255, 255, 255, 0.45); border-radius: var(--r-pill); background: transparent; color: #fff; font-weight: 600; cursor: pointer; }
+.ws5-welcome-skip:hover { background: rgba(255, 255, 255, 0.12); }
+.ws5-welcome-stage { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 0 0.75rem; }
+.ws5-welcome-stage img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: var(--r-ctl); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5); }
+.ws5-welcome-actions { flex: none; display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; padding: 0.75rem 1rem 1rem; }
+.ws5-welcome-actions .btn { flex: 1 1 11rem; justify-content: center; }
