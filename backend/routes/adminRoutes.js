@@ -12,6 +12,7 @@ const progV = require("../validations/programmeValidation");
 
 // Everything under /api/admin requires a signed-in account whose role is "admin" in the database.
 router.use(protect, requireRole("admin"));
+router.use("/enrolments", require("./adminEnrolmentRoutes"));
 
 router.get("/overview", users.overview);
 router.get("/students", users.listStudents);

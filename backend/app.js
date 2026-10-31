@@ -42,6 +42,7 @@ app.use("/api/student/analytics", analyticsRoutes); // longer path first
 app.use("/api/student", studentRoutes);
 // both student mounts must stay before the "/api" CBT router below, which guards all of /api
 app.use("/api", cbtRoutes);
+app.use("/api/enrolments", require("./routes/enrolmentRoutes"));
 
 app.use((req, res) => res.status(404).json({ error: "Not found" }));
 

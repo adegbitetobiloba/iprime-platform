@@ -34,6 +34,13 @@ import NotFound from "./pages/NotFound.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import PendingApproval from "./pages/PendingApproval.jsx";
 import AdminDenied from "./pages/admin/AdminDenied.jsx";
+import Library from "./pages/Library.jsx";
+import LibraryCourse from "./pages/LibraryCourse.jsx";
+import LibraryLesson from "./pages/LibraryLesson.jsx";
+import LibrarySaved from "./pages/LibrarySaved.jsx";
+import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
+import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
+import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
 import Toast from "./components/Toast.jsx";
 import { useAuth } from "./auth.jsx";
 
@@ -129,6 +136,10 @@ export default function App() {
           <Route path="/performance" element={<Protected><Performance /></Protected>} />
           <Route path="/results" element={<Protected><Results /></Protected>} />
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
+          <Route path="/library" element={<Protected><Library /></Protected>} />
+          <Route path="/library/saved" element={<Protected><LibrarySaved /></Protected>} />
+          <Route path="/library/courses/:slug" element={<Protected><LibraryCourse /></Protected>} />
+          <Route path="/library/lessons/:id" element={<Protected><LibraryLesson /></Protected>} />
           <Route path="/admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
             <Route index element={<AdminHome />} />
             <Route path="exams" element={<AdminExams />} />
@@ -136,6 +147,9 @@ export default function App() {
             <Route path="exams/:id/analytics" element={<AdminExamAnalytics />} />
             <Route path="programmes" element={<AdminProgrammes />} />
             <Route path="students" element={<AdminStudents />} />
+            <Route path="library" element={<AdminLibrary />} />
+            <Route path="library/courses/:id" element={<AdminLibraryCourse />} />
+            <Route path="library/analytics" element={<AdminLibraryAnalytics />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
