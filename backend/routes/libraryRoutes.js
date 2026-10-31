@@ -22,6 +22,8 @@ router.get("/search", c.search);
 router.get("/courses/:slug", c.getCourse);
 router.post("/courses/:id/enrol", c.enrol);
 
+const pdfLimiter = rateLimit({ windowMs: 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false, message: { error: "Too many document requests. Please wait a moment." } });
+router.get("/lessons/:id/pdf", pdfLimiter, c.streamPdf);
 router.get("/lessons/:id", c.getLesson);
 router.put("/lessons/:id/progress", progressLimiter, validate(v.progress), c.saveProgress);
 router.post("/lessons/:id/practice-check", c.checkPractice);

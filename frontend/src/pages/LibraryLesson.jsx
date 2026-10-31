@@ -5,6 +5,7 @@ import { useAuth } from "../auth.jsx";
 import { useFetch } from "../useFetch.js";
 import Markdown from "../library/Markdown.jsx";
 import VideoPlayer from "../library/VideoPlayer.jsx";
+import PdfViewer from "../library/PdfViewer.jsx";
 import { CourseOutline, TYPE_LABEL } from "../library/parts.jsx";
 import "../library/library.css";
 
@@ -138,11 +139,13 @@ export default function LibraryLesson() {
               </div>
             )}
 
-            {lesson.contentType === "pdf" && <p className="note">The document reader is not available yet.</p>}
+            {lesson.contentType === "pdf" && (lesson.pdf && lesson.pdf.available
+              ? <PdfViewer key={lesson.id} lessonId={lesson.id} token={token} startPage={data.progress ? data.progress.lastPage : 1} onPage={(pg, n) => send({ page: pg, pageCount: n })} />
+              : <p className="note">No document has been attached to this lesson yet.</p>)}
 
             <div className="lib-actions">
               <span className={`lib-status${done ? " done" : ""}`} role="status">
-                {done ? "✓ Lesson completed" : needsQuiz ? "Pass the practice quiz to complete this lesson" : lesson.contentType === "text" ? "Read to the end to complete" : lesson.contentType === "video" ? "Watch most of the video to complete" : ""}
+                {done ? "✓ Lesson completed" : needsQuiz ? "Pass the practice quiz to complete this lesson" : lesson.contentType === "text" ? "Read to the end to complete" : lesson.contentType === "video" ? "Watch most of the video to complete" : lesson.contentType === "pdf" ? "Read to the last page to complete" : ""}
               </span>
               {!preview && <button type="button" className="btn btn-secondary btn-sm" aria-pressed={bookmarked} onClick={toggleBookmark}>{bookmarked ? "Saved" : "Save lesson"}</button>}
             </div>

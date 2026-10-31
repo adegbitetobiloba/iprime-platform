@@ -7,6 +7,7 @@ const Progress = require("../models/LibraryProgress");
 const Enrolment = require("../models/LibraryEnrolment");
 const Bookmark = require("../models/LibraryBookmark");
 const Note = require("../models/LibraryNote");
+const LibraryFile = require("../models/LibraryFile");
 const { isLessonComplete, limitedGrowth, pickNextLesson, coursePercent } = require("../utils/libraryProgress");
 
 const PRACTICE_PASS_MARK = 50; // percent on the linked exam needed to count as a passed knowledge check
@@ -253,6 +254,7 @@ exports.getLesson = async (req, res) => {
       body: lesson.contentType === "text" ? lesson.body : undefined,
       video: lesson.contentType === "video" ? { provider: lesson.video.provider, videoId: lesson.video.videoId } : undefined,
       externalUrl: lesson.contentType === "link" ? lesson.externalUrl : undefined,
+      pdf: lesson.contentType === "pdf" ? { available: !!(lesson.pdf && lesson.pdf.file), name: lesson.pdf && lesson.pdf.originalName } : undefined, // never the file id
       moduleTitle: mod && mod.title, topicTitle: topic && topic.title,
     },
     course: { id: course._id, slug: course.slug, title: course.title, subject: course.subject && course.subject.name },
@@ -380,4 +382,23 @@ exports.mySummary = async (req, res) => {
     bookmarks,
     courses: courses.map((c) => ({ id: c._id, slug: c.slug, title: c.title, ...stats[String(c._id)] })),
   });
+};
+
+// Streams a lesson PDF to a signed-in student who may see the lesson. No permanent link exists: every request is authenticated,
+// and the response asks browsers and proxies not to store it. (This cannot stop screenshots or screen recording.)
+exports.streamPdf = async (req, res) => {
+  const loaded = await loadLesson(req, res);
+  if (!loaded) return;
+  const { lesson } = loaded;
+  if (lesson.contentType !== "pdf" || !(lesson.pdf && lesson.pdf.file)) return bad(res, "No document is attached to this lesson.", 404);
+  const file = await LibraryFile.findById(lesson.pdf.file).select("+data size sha256");
+  if (!file) return bad(res, "The document could not be found.", 404);
+  res.set({
+    "Content-Type": "application/pdf",
+    "Content-Length": String(file.size),
+    "Content-Disposition": "inline",
+    "Cache-Control": "private, no-store, max-age=0",
+    "X-Content-Type-Options": "nosniff",
+  });
+  res.end(file.data);
 };

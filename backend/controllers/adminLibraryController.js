@@ -3,6 +3,9 @@ const Subject = require("../models/Subject");
 const Course = require("../models/Course");
 const CourseModule = require("../models/CourseModule");
 const Lesson = require("../models/Lesson");
+const LibraryFile = require("../models/LibraryFile");
+const crypto = require("crypto");
+const { checkPdfBuffer, safeFileName } = require("../utils/libraryPdf");
 const { slugify, canTransition, parseVideoUrl, publishProblems, lessonHasContent, STATUSES } = require("../utils/library");
 
 const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
@@ -68,7 +71,7 @@ exports.getCourse = async (req, res) => {
   if (!course) return bad(res, "Not found", 404);
   const [modules, lessons] = await Promise.all([
     CourseModule.find({ course: course._id }).sort({ order: 1 }).lean(),
-    Lesson.find({ course: course._id }).sort({ order: 1 }).lean(), // pdf.storageKey is select:false and never returned
+    Lesson.find({ course: course._id }).sort({ order: 1 }).lean(), // file bytes live in LibraryFile and are never loaded here
   ]);
   res.json({ course, modules: modules.map((m) => ({ ...m, lessons: lessons.filter((l) => String(l.module) === String(m._id)) })) });
 };
@@ -89,7 +92,7 @@ exports.setCourseStatus = async (req, res) => {
   if (to === course.status) return res.json({ course });
   if (!canTransition(course.status, to)) return bad(res, `A ${course.status} course cannot become ${to}.`, 409);
   if (to === "published") {
-    const lessons = await Lesson.find({ course: course._id }).select("+pdf.storageKey").lean();
+    const lessons = await Lesson.find({ course: course._id }).lean();
     const problems = publishProblems(course, lessons);
     if (problems.length) return res.status(422).json({ error: "This course is not ready to publish.", errors: problems });
     if (!course.publishedAt) course.publishedAt = new Date();
@@ -98,7 +101,7 @@ exports.setCourseStatus = async (req, res) => {
   let lessonsLeftInDraft = 0;
   if (to === "published") {
     // Publishing a course also publishes its draft/review lessons that have content. Lessons without content stay hidden.
-    const pending = await Lesson.find({ course: course._id, status: { $in: ["draft", "review"] } }).select("+pdf.storageKey").lean();
+    const pending = await Lesson.find({ course: course._id, status: { $in: ["draft", "review"] } }).lean();
     const ready = pending.filter(lessonHasContent).map((l) => l._id);
     lessonsLeftInDraft = pending.length - ready.length;
     if (ready.length) lessonsPublished = (await Lesson.updateMany({ _id: { $in: ready } }, { $set: { status: "published", updatedBy: req.user.id } })).modifiedCount;
@@ -176,7 +179,6 @@ exports.createLesson = async (req, res) => {
   const m = await CourseModule.findById(req.params.id);
   if (!m) return bad(res, "Not found", 404);
   const { videoUrl, ...rest } = req.body;
-  if (rest.contentType === "pdf") return bad(res, "PDF lessons need private file storage, which is not enabled yet.", 501);
   const refErr = await checkRefs(m, rest);
   if (refErr) return bad(res, refErr);
   const last = await Lesson.findOne({ module: m._id }).sort({ order: -1 }).select("order");
@@ -221,4 +223,23 @@ exports.reorderLessons = async (req, res) => {
   if (req.body.ids.length !== have.size || !req.body.ids.every((i) => have.has(i))) return bad(res, "The list must contain every lesson of this chapter exactly once.");
   await Lesson.bulkWrite(req.body.ids.map((id, order) => ({ updateOne: { filter: { _id: id }, update: { $set: { order } } } })));
   res.json({ ok: true });
+};
+
+// Upload or replace a lesson's PDF. The file is the raw request body (Content-Type: application/pdf), so no extra upload package is needed.
+exports.uploadPdf = async (req, res) => {
+  const lesson = await Lesson.findById(req.params.id);
+  if (!lesson) return bad(res, "Not found", 404);
+  if (lesson.contentType !== "pdf") return bad(res, "This lesson is not a PDF lesson.", 409);
+  const problem = checkPdfBuffer(req.body);
+  if (problem) return bad(res, problem, req.body && req.body.length > 0 ? 422 : 400);
+  const file = await LibraryFile.create({
+    data: req.body, size: req.body.length, sha256: crypto.createHash("sha256").update(req.body).digest("hex"),
+    originalName: safeFileName(req.headers["x-file-name"]), uploadedBy: req.user.id,
+  });
+  const old = lesson.pdf && lesson.pdf.file;
+  lesson.pdf = { file: file._id, originalName: file.originalName, size: file.size };
+  lesson.updatedBy = req.user.id;
+  await lesson.save();
+  if (old) await LibraryFile.deleteOne({ _id: old }); // the replaced file is removed, not kept
+  res.json({ lesson });
 };

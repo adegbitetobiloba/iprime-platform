@@ -31,6 +31,7 @@ test("lessonHasContent follows the lesson type", () => {
   assert.ok(L.lessonHasContent({ contentType: "text", body: "Alkanes are..." }));
   assert.ok(!L.lessonHasContent({ contentType: "text", body: "  " }));
   assert.ok(!L.lessonHasContent({ contentType: "pdf", pdf: {} }));
+  assert.ok(L.lessonHasContent({ contentType: "pdf", pdf: { file: "abc" } }));
   assert.ok(L.lessonHasContent({ contentType: "video", video: { videoId: "dQw4w9WgXcQ" } }));
 });
 
@@ -78,4 +79,21 @@ test("continue target", () => {
   assert.equal(P.pickNextLesson(ls, ["a", "b"], "b").id, "c");
   assert.equal(P.pickNextLesson(ls, [], null).id, "a");
   assert.equal(P.pickNextLesson(ls, ["a", "b", "c"], "c"), null);
+});
+
+const PDF = require("../utils/libraryPdf");
+test("pdf upload checks", () => {
+  const good = Buffer.concat([Buffer.from("%PDF-1.7\n"), Buffer.alloc(300, 65), Buffer.from("\n%%EOF\n")]);
+  assert.equal(PDF.checkPdfBuffer(good), null);
+  assert.match(PDF.checkPdfBuffer(Buffer.from("<html>not a pdf</html>".repeat(20))), /not a PDF/);
+  assert.match(PDF.checkPdfBuffer(Buffer.concat([Buffer.from("%PDF-1.7\n"), Buffer.alloc(300, 65)])), /incomplete/);
+  assert.match(PDF.checkPdfBuffer(Buffer.alloc(0)), /No file/);
+  assert.match(PDF.checkPdfBuffer(Buffer.alloc(PDF.MAX_PDF_BYTES + 1, 65)), /too large/);
+  assert.equal(PDF.checkPdfBuffer("text"), "No file was received. Send the PDF as the request body.");
+});
+test("safe file names", () => {
+  assert.equal(PDF.safeFileName("..\\..\\secret/Chemistry Notes.pdf"), "Chemistry Notes.pdf");
+  assert.equal(PDF.safeFileName("a<b>c.pdf"), "abc.pdf");
+  assert.equal(PDF.safeFileName(""), "document.pdf");
+  assert.equal(PDF.safeFileName("Organic%20Notes.pdf"), "Organic Notes.pdf");
 });

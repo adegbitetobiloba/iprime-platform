@@ -31,7 +31,15 @@ router.delete("/modules/:id", c.deleteModule);
 
 router.post("/modules/:id/lessons", validate(v.lesson), c.createLesson);
 router.put("/modules/:id/lessons/order", validate(v.reorder), c.reorderLessons);
+router.put("/lessons/:id/pdf", express.raw({ type: "application/pdf", limit: "12mb" }), c.uploadPdf);
 router.patch("/lessons/:id", validate(v.lessonUpdate), c.updateLesson);
 router.delete("/lessons/:id", c.deleteLesson);
+
+// Clear messages for upload problems instead of a generic 500.
+// eslint-disable-next-line no-unused-vars
+router.use((err, req, res, next) => {
+  if (err && err.type === "entity.too.large") return res.status(413).json({ error: "That file is too large. The limit is 12 MB." });
+  return next(err);
+});
 
 module.exports = router;
