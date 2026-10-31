@@ -108,7 +108,7 @@ function finalise(q, ctx) {
   }
   const everything = [text, ...q.options.map((o) => o.text), explanation].join(" ");
   if (MATH_RE.test(everything)) add("MATH");
-  if (VISUAL_RE.test(text)) add("VISUAL", "Wording refers to a figure, diagram, graph or table.");
+  if (VISUAL_RE.test(text)) add("IMAGE", "Wording refers to a figure, diagram, graph or table.");
   if (text.length > LIMITS.text || q.options.some((o) => o.text.length > LIMITS.option) || explanation.length > LIMITS.explanation) add("TOO_LONG");
 
   return {

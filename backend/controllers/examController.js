@@ -227,8 +227,8 @@ exports.result = async (req, res) => {
     if (exam && exam.showAnswersAfter) {
       const given = toPlain(attempt.answers);
       out.review = exam.questions.map((q) => ({
-        id: String(q._id), text: q.text, options: q.options, marks: q.marks ?? 1,
-        yourChoice: given[String(q._id)] || null, correctKey: q.correctKey, explanation: q.explanation || "",
+        id: String(q._id), text: q.text, textHtml: q.textHtml || undefined, options: q.options.map((o) => ({ key: o.key, text: o.text, html: o.html || undefined })), marks: q.marks ?? 1,
+        yourChoice: given[String(q._id)] || null, correctKey: q.correctKey, explanation: q.explanation || "", explanationHtml: q.explanationHtml || undefined, explanationSource: q.explanation ? (q.explanationSource || "source") : null,
       }));
     }
     res.json(out);

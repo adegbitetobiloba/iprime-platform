@@ -1,0 +1,10 @@
+/* Formatted question content: underline, emphasis, paragraphs, line breaks. */
+.rich-plain { white-space: pre-line; overflow-wrap: anywhere; }
+.rich { overflow-wrap: anywhere; }
+.rich p { margin: 0 0 .65em; }
+.rich p:last-child { margin-bottom: 0; }
+.rich u { text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: .1em; }
+.rich hr { border: 0; border-top: 1px solid currentColor; opacity: .25; margin: .8em 0; }
+.rich ul, .rich ol { margin: 0 0 .65em 1.25em; padding: 0; }
+.rich blockquote { margin: 0 0 .65em; padding-left: .9em; border-left: 3px solid currentColor; opacity: .85; }
+.rich sub, .rich sup { line-height: 0; }
