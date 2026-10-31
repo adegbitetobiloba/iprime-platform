@@ -23,6 +23,13 @@ import AdminHome from "./pages/admin/AdminHome.jsx";
 import AdminExams from "./pages/admin/AdminExams.jsx";
 import AdminExamEdit from "./pages/admin/AdminExamEdit.jsx";
 import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
+import Library from "./pages/Library.jsx";
+import LibraryCourse from "./pages/LibraryCourse.jsx";
+import LibraryLesson from "./pages/LibraryLesson.jsx";
+import LibrarySaved from "./pages/LibrarySaved.jsx";
+import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
+import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
+import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import { useAuth } from "./auth.jsx";
 
