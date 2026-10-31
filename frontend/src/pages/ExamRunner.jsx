@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
 import Calculator from "../calculator/Calculator.jsx";
+import SafeHtml from "../components/SafeHtml.jsx";
 
 const fmt = (s) => {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
@@ -202,7 +203,7 @@ export default function ExamRunner() {
             <span id="q-title">Question {idx + 1} of {total}</span>
             <span>{q.marks} {q.marks === 1 ? "mark" : "marks"}</span>
           </p>
-          <p className="q-text">{q.text}</p>
+          <SafeHtml className="q-text" html={q.textHtml} text={q.text} />
 
           <fieldset className="options">
             <legend className="sr-only">Choose your answer</legend>
@@ -210,7 +211,7 @@ export default function ExamRunner() {
               <label key={o.key} className={`option${answers[q.id] === o.key ? " is-selected" : ""}`}>
                 <input type="radio" name={`q-${q.id}`} value={o.key} checked={answers[q.id] === o.key} onChange={() => choose(q.id, o.key)} />
                 <span className="option-key">{o.key}</span>
-                <span className="option-text">{o.text}</span>
+                <SafeHtml as="span" inline className="option-text" html={o.html} text={o.text} />
               </label>
             ))}
           </fieldset>

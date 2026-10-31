@@ -1,5 +1,9 @@
 import { useParams, Link } from "react-router-dom";
 import { useFetch, fmtDate } from "../useFetch.js";
+import SafeHtml from "../components/SafeHtml.jsx";
+
+// Where an explanation came from. Shown so students can tell the document's own solution from one an administrator wrote.
+const SOURCE_LABEL = { source: "From the source", admin_written: "Written by an administrator" };
 
 export default function ResultDetail() {
   const { id } = useParams();
@@ -43,17 +47,22 @@ export default function ResultDetail() {
               return (
                 <article key={q.id} className="review-item">
                   <p className="review-head"><strong>Question {i + 1}</strong> <span className={`badge ${right ? "badge-ok" : "badge-bad"}`}>{q.yourChoice ? (right ? "Correct" : "Incorrect") : "Not answered"}</span></p>
-                  <p>{q.text}</p>
+                  <SafeHtml html={q.textHtml} text={q.text} />
                   <ul className="review-options">
                     {q.options.map((o) => (
                       <li key={o.key} className={o.key === q.correctKey ? "is-correct" : o.key === q.yourChoice ? "is-wrong" : ""}>
-                        <strong>{o.key}.</strong> {o.text}
+                        <strong>{o.key}.</strong> <SafeHtml as="span" inline html={o.html} text={o.text} />
                         {o.key === q.correctKey && <span className="tag"> Correct answer</span>}
                         {o.key === q.yourChoice && o.key !== q.correctKey && <span className="tag"> Your answer</span>}
                       </li>
                     ))}
                   </ul>
-                  {q.explanation && <p className="muted"><strong>Explanation:</strong> {q.explanation}</p>}
+                  {q.explanation && (
+                    <div className="muted review-explanation">
+                      <p><strong>Explanation:</strong>{q.explanationSource && SOURCE_LABEL[q.explanationSource] ? <span className="tag"> {SOURCE_LABEL[q.explanationSource]}</span> : null}</p>
+                      <SafeHtml html={q.explanationHtml} text={q.explanation} />
+                    </div>
+                  )}
                 </article>
               );
             })}
