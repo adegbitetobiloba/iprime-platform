@@ -13,6 +13,8 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const adminAnalyticsRoutes = require("./routes/adminAnalyticsRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const publicRoutes = require("./routes/publicRoutes");
+const libraryRoutes = require("./routes/libraryRoutes");
+const adminLibraryRoutes = require("./routes/adminLibraryRoutes");
 
 const isProd = process.env.NODE_ENV === "production";
 const app = express();
@@ -32,6 +34,8 @@ app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connectio
 
 app.use("/api/auth", authRoutes);
 app.use("/api/public", publicRoutes);
+app.use("/api/admin/library", adminLibraryRoutes); // before /api/admin so the longer path matches first
+app.use("/api/library", libraryRoutes);            // before /api (CBT router)
 app.use("/api/admin/analytics", adminAnalyticsRoutes); // before /api/admin so the longer path is matched first
 app.use("/api/admin", adminRoutes);
 app.use("/api/student/analytics", analyticsRoutes); // longer path first
