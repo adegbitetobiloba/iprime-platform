@@ -62,6 +62,7 @@ export default function Header() {
           <ul className="nav-links">
             {PUBLIC_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="nav-link">{l.label}</NavLink></li>))}
             {canExam && <li><NavLink to="/exams" className="nav-link">Exams</NavLink></li>}
+            {canExam && <li><NavLink to="/library" className="nav-link">Library</NavLink></li>}
             {user && user.role === "admin" && <li><NavLink to="/admin" className="nav-link">Admin</NavLink></li>}
           </ul>
           <div className="nav-actions">
@@ -101,6 +102,7 @@ export default function Header() {
           <ul className="drawer-list">
             <li><NavLink to="/dashboard" className="drawer-link" onClick={close}>My dashboard</NavLink></li>
             {canExam && <li><NavLink to="/exams" className="drawer-link" onClick={close}>Examination centre</NavLink></li>}
+            {canExam && <li><NavLink to="/library" className="drawer-link" onClick={close}>Library</NavLink></li>}
             {canExam && <li><NavLink to="/results" className="drawer-link" onClick={close}>My results</NavLink></li>}
             {user.role === "admin" && <li><NavLink to="/admin" className="drawer-link" onClick={close}>Administration</NavLink></li>}
           </ul>
