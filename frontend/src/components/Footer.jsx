@@ -15,6 +15,9 @@ export default function Footer() {
           <h2 className="footer-heading">Explore</h2>
           <Link to="/about">About</Link>
           <Link to="/programmes">Programmes</Link>
+          <Link to="/how-it-works">How it works</Link>
+          <Link to="/achievements">Achievements</Link>
+          <Link to="/iprime">iPrime</Link>
           <Link to="/events">Events</Link>
           <Link to="/news">News</Link>
         </nav>
@@ -22,7 +25,7 @@ export default function Footer() {
           <h2 className="footer-heading">{token ? "Your account" : "Help and account"}</h2>
           <Link to="/faq">FAQ</Link>
           <Link to="/contact">Contact</Link>
-          {token ? <Link to="/dashboard">Dashboard</Link> : (<><Link to="/login">Log in</Link><Link to="/register">Sign up</Link></>)}
+          {token ? <Link to="/dashboard">Dashboard</Link> : (<><Link to="/login">Log in</Link><Link to="/register">Create an account</Link></>)}
         </nav>
       </div>
     </footer>
