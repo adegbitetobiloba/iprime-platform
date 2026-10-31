@@ -42,6 +42,7 @@ import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
 import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
 import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
 import Toast from "./components/Toast.jsx";
+import WelcomeFlyer from "./components/WelcomeFlyer.jsx";
 import { useAuth } from "./auth.jsx";
 
 function Protected({ children }) {
@@ -110,6 +111,7 @@ export default function App() {
       <a className="skip-link" href="#main">Skip to content</a>
       <PageEffects />
       <Toast />
+      <WelcomeFlyer />
       {!focusMode && <Header />}
       <main id="main">
         <Routes>

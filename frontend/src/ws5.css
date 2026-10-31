@@ -82,3 +82,41 @@
 .ws5-ach-score small, .ws5-ach-meta { color: var(--c-muted); }
 .ws5-ach-meta { margin: 0.35rem 0 0; font-size: 0.9rem; }
 .ws5-ach-quote { margin: 0.75rem 0 0; padding-left: 0.85rem; border-left: 3px solid var(--c-gold); color: var(--c-text); font-size: 0.95rem; }
+
+/* ---------- Swipe cards (phones: swipe; wide screens: grid) ---------- */
+.ws5-swipe { position: relative; }
+.ws5-swipe-track { display: flex; gap: 0.9rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 1rem; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none; padding: 0.25rem 1rem 0.75rem; margin-inline: -1rem; touch-action: pan-x pan-y; }
+.ws5-swipe-track::-webkit-scrollbar { display: none; }
+.ws5-swipe-track:focus-visible { outline: 2px solid var(--c-blue); outline-offset: 2px; border-radius: var(--r-ctl); }
+.ws5-swipe-item { flex: 0 0 86%; min-width: 0; scroll-snap-align: center; display: flex; }
+.ws5-swipe-item > * { flex: 1; min-width: 0; }
+.ws5-swipe.is-single .ws5-swipe-item { flex-basis: 100%; }
+@media (min-width: 600px) { .ws5-swipe-item { flex-basis: 46%; } .ws5-swipe.is-single .ws5-swipe-item { flex-basis: 100%; } }
+.ws5-swipe-ui { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.5rem; }
+.ws5-swipe-btn { flex: none; width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--c-line); background: var(--c-surface); color: var(--c-ink); cursor: pointer; }
+.ws5-swipe-btn:disabled { opacity: 0.4; cursor: default; }
+.ws5-swipe-btn:not(:disabled):hover { background: var(--c-tint); }
+.ws5-swipe-dots { display: grid; justify-items: center; gap: 0.15rem; min-width: 0; }
+.ws5-swipe-count { font-size: 0.8125rem; font-weight: 600; color: var(--c-muted); }
+.ws5-swipe-pips { display: flex; flex-wrap: wrap; justify-content: center; }
+.ws5-swipe-pip { position: relative; width: 1.5rem; height: 1.5rem; padding: 0; border: 0; background: none; cursor: pointer; }
+.ws5-swipe-pip::after { content: ""; position: absolute; inset: 0; margin: auto; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--c-line); transition: width 0.2s, background 0.2s; }
+.ws5-swipe-pip.is-on::after { width: 1.1rem; border-radius: 999px; background: var(--c-blue); }
+@media (prefers-reduced-motion: reduce) { .ws5-swipe-pip::after { transition: none; } }
+@media (min-width: 900px) {
+  .ws5-swipe.is-grid-md .ws5-swipe-track { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); overflow: visible; margin: 0; padding: 0; scroll-snap-type: none; }
+  .ws5-swipe.is-grid-md .ws5-swipe-item { flex: none; }
+  .ws5-swipe.is-grid-md .ws5-swipe-ui { display: none; }
+}
+.ws5-journey-card { min-height: 9rem; }
+
+/* ---------- Start page (flyer) ---------- */
+.ws5-welcome { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: #061532; color: #fff; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.ws5-welcome-top { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.6rem 1rem; }
+.ws5-welcome-brand { font-weight: 700; letter-spacing: 0.04em; font-size: 0.9rem; color: var(--c-gold); }
+.ws5-welcome-skip { min-height: 2.75rem; padding: 0 1rem; border: 1px solid rgba(255, 255, 255, 0.45); border-radius: var(--r-pill); background: transparent; color: #fff; font-weight: 600; cursor: pointer; }
+.ws5-welcome-skip:hover { background: rgba(255, 255, 255, 0.12); }
+.ws5-welcome-stage { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 0 0.75rem; }
+.ws5-welcome-stage img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: var(--r-ctl); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5); }
+.ws5-welcome-actions { flex: none; display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; padding: 0.75rem 1rem 1rem; }
+.ws5-welcome-actions .btn { flex: 1 1 11rem; justify-content: center; }
