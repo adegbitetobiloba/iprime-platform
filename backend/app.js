@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const cbtRoutes = require("./routes/cbtRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const adminAnalyticsRoutes = require("./routes/adminAnalyticsRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 
@@ -31,6 +32,7 @@ app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connectio
 
 app.use("/api/auth", authRoutes);
 app.use("/api/public", publicRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes); // before /api/admin so the longer path is matched first
 app.use("/api/admin", adminRoutes);
 app.use("/api/student/analytics", analyticsRoutes); // longer path first
 app.use("/api/student", studentRoutes);
