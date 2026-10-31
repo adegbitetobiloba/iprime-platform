@@ -38,7 +38,7 @@ const NAV = [
   { to: "/exams", icon: "test", label: "Take an examination", hint: "See what is open for you" },
   { to: "/exams", icon: "book", label: "Practise questions", hint: "Open practice tests and timed papers" },
   { to: "/results", icon: "clock", label: "Examination history", hint: "Every result you have saved" },
-  { to: "#performance", icon: "chart", label: "Performance", hint: "Scores, subjects and trend", anchor: true },
+  { to: "/performance", icon: "chart", label: "Performance", hint: "Scores, topics and progress" },
   { icon: "book", label: "Library", hint: "Coming soon", soon: true },
   { to: "/account", icon: "user", label: "My profile", hint: "Update your details" },
 ];
