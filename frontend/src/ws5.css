@@ -177,3 +177,57 @@
   .ws5-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; display: flex; gap: 0.6rem; padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom, 0px)); background: var(--c-surface); border-top: 1px solid var(--c-line); box-shadow: 0 -6px 20px rgba(11, 31, 75, 0.12); }
   .ws5-bar .btn { flex: 1 1 0; min-width: 0; justify-content: center; }
 }
+
+/* ---------- v4: fixes from the phone recording, and the fuller About page ---------- */
+/* Quick-action bar: labels stay on one line */
+.ws5-bar .btn { white-space: nowrap; font-size: 0.95rem; padding-inline: 0.6rem; }
+
+/* Swipe cards: settle on one card at a time */
+.ws5-swipe-track { scroll-snap-stop: always; }
+
+/* Tables that become cards on phones (opt-in with .data-table--stack). Used by My results. */
+@media (max-width: 639px) {
+  .data-table--stack { display: block; border: 0; }
+  .data-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .data-table--stack tbody { display: grid; gap: 0.85rem; }
+  .data-table--stack tr { display: grid; gap: 0.35rem; padding: 1rem 1.1rem; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+  .data-table--stack td { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0; border: 0; }
+  .data-table--stack td[data-label]::before { content: attr(data-label); color: var(--c-muted); font-size: 0.875rem; }
+  .data-table--stack .stack-title { display: block; padding-bottom: 0.4rem; border-bottom: 1px solid var(--c-line); }
+  .data-table--stack .stack-action { padding-top: 0.4rem; }
+  .data-table--stack .stack-link { display: inline-flex; align-items: center; min-height: 2.75rem; font-weight: 700; }
+  .table-wrap:has(.data-table--stack) { overflow: visible; border: 0; background: none; box-shadow: none; }
+}
+
+/* "On this page" chips */
+html { scroll-padding-top: 4.5rem; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+.ws5-anchor { background: var(--c-surface); border-bottom: 1px solid var(--c-line); }
+.ws5-anchor-list { display: flex; gap: 0.5rem; margin: 0 auto; padding-block: 0.65rem; list-style: none; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+.ws5-anchor-list::-webkit-scrollbar { display: none; }
+.ws5-anchor-list li { flex: none; scroll-snap-align: start; }
+.ws5-anchor-link { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 0.95rem; border: 1px solid var(--c-line); border-radius: var(--r-pill); color: var(--c-ink); background: var(--c-surface); font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; }
+.ws5-anchor-link:hover { background: var(--c-tint); }
+.ws5-anchor-target { scroll-margin-top: 4.5rem; }
+
+/* About */
+.ws5-purpose { display: grid; gap: 1rem; }
+@media (min-width: 800px) { .ws5-purpose { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
+.ws5-purpose-card { padding: clamp(1.25rem, 3vw, 1.9rem); border: 1px solid var(--c-line); border-top: 4px solid var(--c-gold); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-purpose-card h3 { margin: 0.9rem 0 0.4rem; color: var(--c-ink); font-size: 1.25rem; }
+.ws5-purpose-card p { margin: 0; color: var(--c-text); font-size: 1.05rem; line-height: 1.6; }
+.ws5-values { margin-top: 0.5rem; }
+.ws5-values .ws5-chip { font-size: 1rem; padding: 0.55rem 1.1rem; }
+.ws5-formats { display: grid; gap: 1rem; }
+@media (min-width: 800px) { .ws5-formats { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
+.ws5-format { padding: clamp(1.25rem, 3vw, 1.75rem); border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-format h3 { margin: 0 0 0.2rem; color: var(--c-ink); font-size: 1.3rem; }
+.ws5-format-lead { margin: 0 0 1rem; color: var(--c-muted); }
+
+/* ---------- v5: quicker fade-in (kept on phones, no blank gaps) ---------- */
+.reveal-ready [data-rv] { opacity: 0; transform: translateY(10px); transition: opacity 0.32s ease-out var(--reveal-delay, 0ms), transform 0.32s ease-out var(--reveal-delay, 0ms); will-change: opacity, transform; }
+.reveal-ready [data-rv].is-visible { opacity: 1; transform: none; will-change: auto; }
+/* The home-page hero's opening fade, shortened */
+.reveal-ready .reveal { animation-duration: 0.4s !important; transition-duration: 0.4s !important; }
+.reveal-ready .reveal-2 { animation-delay: 0.08s !important; transition-delay: 0.08s !important; }
+@media (prefers-reduced-motion: reduce) { [data-rv], .reveal { opacity: 1 !important; transform: none !important; transition: none !important; animation: none !important; } }
