@@ -13,6 +13,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Verify from "./pages/Verify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import StudentDashboard from "./pages/StudentDashboard.jsx";
 import ExamCentre from "./pages/ExamCentre.jsx";
 import ExamIntro from "./pages/ExamIntro.jsx";
 import ExamRunner from "./pages/ExamRunner.jsx";
@@ -48,6 +49,13 @@ function AdminOnly({ children }) {
   return children;
 }
 
+// Students (and administrators previewing the student view) get the learning dashboard; every other role keeps the
+// existing account page. The server still checks the role on every API call.
+function DashboardHome() {
+  const { user } = useAuth();
+  return user?.role === "student" || user?.role === "admin" ? <StudentDashboard /> : <Dashboard />;
+}
+
 const TITLES = {
   "/": "iPrime | Prime Excelerate Tutelage",
   "/about": "About | iPrime",
@@ -62,6 +70,7 @@ const TITLES = {
   "/onboarding": "Welcome | iPrime",
   "/pending-approval": "Waiting for approval | iPrime",
   "/dashboard": "Dashboard | iPrime",
+  "/account": "My profile | iPrime",
   "/exams": "Examination centre | iPrime",
   "/results": "My results | iPrime",
 };
@@ -100,7 +109,8 @@ export default function App() {
           <Route path="/verify" element={<Verify />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/pending-approval" element={<PendingApproval />} />
-          <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+          <Route path="/dashboard" element={<Protected><DashboardHome /></Protected>} />
+          <Route path="/account" element={<Protected><Dashboard /></Protected>} />
           <Route path="/exams" element={<Protected><ExamCentre /></Protected>} />
           <Route path="/exams/:id" element={<Protected><ExamIntro /></Protected>} />
           <Route path="/attempts/:id" element={<Protected><ExamRunner /></Protected>} />
