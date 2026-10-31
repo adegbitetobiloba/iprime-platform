@@ -28,6 +28,13 @@ import NotFound from "./pages/NotFound.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import PendingApproval from "./pages/PendingApproval.jsx";
 import AdminDenied from "./pages/admin/AdminDenied.jsx";
+import Library from "./pages/Library.jsx";
+import LibraryCourse from "./pages/LibraryCourse.jsx";
+import LibraryLesson from "./pages/LibraryLesson.jsx";
+import LibrarySaved from "./pages/LibrarySaved.jsx";
+import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
+import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
+import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
 import Toast from "./components/Toast.jsx";
 import { useAuth } from "./auth.jsx";
 
