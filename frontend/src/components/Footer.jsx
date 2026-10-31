@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
+import MobileActionBar from "./MobileActionBar.jsx";
 
 export default function Footer() {
   const { token } = useAuth();
   return (
+    <>
     <footer className="site-footer">
       <div className="container footer-grid">
         <div className="footer-brand">
@@ -29,5 +31,7 @@ export default function Footer() {
         </nav>
       </div>
     </footer>
+    <MobileActionBar />
+    </>
   );
 }

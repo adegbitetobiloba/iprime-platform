@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 import { IMAGES } from "../siteImages.js";
+import Countdown from "./Countdown.jsx";
 
 const KEY = "ws5.welcome.seen";
 
@@ -43,6 +44,7 @@ export default function WelcomeFlyer() {
       <div className="ws5-welcome-stage">
         <img src={flyer.src} alt={flyer.alt} width={flyer.width} height={flyer.height} fetchPriority="high" decoding="async" />
       </div>
+      <Countdown className="ws5-welcome-count" />
       <div className="ws5-welcome-actions">
         <Link to="/register" className="btn btn-gold btn-lg" onClick={close}>Create an account</Link>
         <button type="button" className="btn btn-on-dark btn-lg" onClick={close}>Explore the website</button>

@@ -120,3 +120,60 @@
 .ws5-welcome-stage img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: var(--r-ctl); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5); }
 .ws5-welcome-actions { flex: none; display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; padding: 0.75rem 1rem 1rem; }
 .ws5-welcome-actions .btn { flex: 1 1 11rem; justify-content: center; }
+
+/* ---------- v3: start-page fix, flyer on pages, campaign section, quick actions ---------- */
+/* Start page: the flyer now fits whatever space is left between the top bar and the buttons (it no longer runs under them) */
+.ws5-welcome-stage { position: relative; display: block; flex: 1 1 auto; min-height: 0; padding: 0; }
+.ws5-welcome-stage img { position: absolute; inset: 0; width: calc(100% - 1.5rem); height: 100%; margin-inline: auto; max-width: none; max-height: none; object-fit: contain; border-radius: 0; box-shadow: none; }
+.ws5-welcome-count { flex: none; margin: 0.4rem 0 0; text-align: center; color: #D9E3FA; }
+.ws5-welcome-actions { width: 100%; max-width: 34rem; margin-inline: auto; flex-wrap: nowrap; }
+.ws5-welcome-actions .btn { flex: 1 1 0; min-width: 0; padding-inline: 0.75rem; }
+@media (max-width: 420px) { .ws5-welcome-actions { flex-wrap: wrap; } .ws5-welcome-actions .btn { flex-basis: 100%; } }
+
+/* Flyer figure with enlarge + download */
+.ws5-flyer-fig { margin: 0; text-align: center; }
+.ws5-flyer-open { position: relative; display: block; width: 100%; max-width: 30rem; margin-inline: auto; padding: 0; border: 0; border-radius: var(--r-ctl); background: none; cursor: zoom-in; overflow: hidden; box-shadow: 0 14px 34px rgba(11, 31, 75, 0.35); }
+.ws5-flyer-open img { display: block; width: 100%; height: auto; }
+.ws5-flyer-zoom { position: absolute; right: 0.6rem; bottom: 0.6rem; padding: 0.3rem 0.7rem; border-radius: var(--r-pill); background: rgba(6, 21, 50, 0.85); color: #fff; font-size: 0.8125rem; font-weight: 600; }
+.ws5-flyer-fig figcaption { margin-top: 0.6rem; }
+.ws5-flyer-dl { color: var(--c-link-strong); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.ws5-hero .ws5-flyer-dl { color: #fff; }
+.ws5-lightbox { position: fixed; inset: 0; z-index: 1100; display: grid; place-items: center; padding: 3.5rem 0.75rem 0.75rem; background: rgba(3, 10, 28, 0.94); cursor: zoom-out; overflow: auto; }
+.ws5-lightbox img { max-width: 100%; max-height: calc(100dvh - 4.5rem); width: auto; height: auto; object-fit: contain; }
+.ws5-lightbox-close { position: fixed; top: calc(0.6rem + env(safe-area-inset-top, 0px)); right: 0.75rem; min-height: 2.75rem; padding: 0 1.1rem; border: 1px solid rgba(255, 255, 255, 0.5); border-radius: var(--r-pill); background: rgba(6, 21, 50, 0.9); color: #fff; font-weight: 600; cursor: pointer; }
+
+/* Countdown chip */
+.ws5-count { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0.9rem 0 0; padding: 0.4rem 0.9rem; border-radius: var(--r-pill); background: var(--c-gold-soft); color: var(--c-gold-text); font-size: 0.9rem; }
+.ws5-count-dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--c-gold-text); }
+.ws5-hero .ws5-hero-count { background: rgba(242, 179, 61, 0.18); color: #F8D98B; }
+.ws5-hero .ws5-hero-count .ws5-count-dot { background: #F2B33D; }
+.ws5-welcome .ws5-count { background: none; padding: 0; margin-top: 0.5rem; }
+
+/* Campaign section */
+.ws5-campaign-grid { display: grid; gap: 2rem; align-items: start; }
+@media (min-width: 900px) { .ws5-campaign-grid.has-flyer { grid-template-columns: 1.15fr 0.85fr; gap: 3rem; } }
+.ws5-campaign h2 { margin-top: 0.25rem; }
+.ws5-h3 { margin: 1.5rem 0 0.6rem; font-size: 1.05rem; color: var(--c-ink); }
+.ws5-keyfacts { display: grid; gap: 0.6rem; margin: 1.1rem 0 0.4rem; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); }
+.ws5-keyfacts > div { padding: 0.8rem 1rem; border: 1px solid var(--c-line); border-radius: var(--r-ctl); background: var(--c-surface); }
+.ws5-keyfacts dt { margin: 0; color: var(--c-muted); font-size: 0.8125rem; }
+.ws5-keyfacts dd { margin: 0.15rem 0 0; color: var(--c-ink); font-weight: 700; font-size: 1.05rem; }
+.ws5-fine { margin: 0.4rem 0 0; color: var(--c-muted); font-size: 0.875rem; }
+.ws5-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.ws5-tab { min-height: 2.75rem; padding: 0 1.1rem; border: 1px solid var(--c-line); border-radius: var(--r-pill); background: var(--c-surface); color: var(--c-ink); font-weight: 600; cursor: pointer; }
+.ws5-tab.is-on { background: var(--c-blue); border-color: var(--c-blue); color: #fff; }
+.ws5-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.9rem 0 1.25rem; padding: 0; list-style: none; }
+.ws5-chip { padding: 0.4rem 0.9rem; border-radius: var(--r-pill); background: var(--c-tint); color: var(--c-link-strong); font-weight: 600; font-size: 0.95rem; }
+.ws5-campaign-reasons { margin-top: 2rem; }
+.ws5-reason { padding: 1.2rem; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-reason h4 { margin: 0.6rem 0 0.3rem; color: var(--c-ink); font-size: 1.05rem; }
+.ws5-reason p { margin: 0; color: var(--c-muted); font-size: 0.95rem; }
+.ws5-hero-flyer .ws5-flyer-open { max-width: 26rem; }
+
+/* Phone quick-action bar */
+.ws5-bar, .ws5-bar-spacer { display: none; }
+@media (max-width: 899px) {
+  .ws5-bar-spacer { display: block; height: calc(4.5rem + env(safe-area-inset-bottom, 0px)); }
+  .ws5-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; display: flex; gap: 0.6rem; padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom, 0px)); background: var(--c-surface); border-top: 1px solid var(--c-line); box-shadow: 0 -6px 20px rgba(11, 31, 75, 0.12); }
+  .ws5-bar .btn { flex: 1 1 0; min-width: 0; justify-content: center; }
+}
