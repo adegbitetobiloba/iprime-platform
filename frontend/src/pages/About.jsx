@@ -4,6 +4,7 @@ import Reveal from "../components/Reveal.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import ProgrammeCards from "../components/ProgrammeCards.jsx";
 import Photo from "../components/Photo.jsx";
+import CampaignProgramme from "../components/CampaignProgramme.jsx";
 import { IMAGES } from "../siteImages.js";
 
 const VALUES = [
@@ -32,6 +33,8 @@ export default function About() {
           </Reveal>
         </div>
       </section>
+
+      <CampaignProgramme />
 
       <section className="section section-split">
         <div className="container split split-media rd-split-rev">

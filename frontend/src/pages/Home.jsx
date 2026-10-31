@@ -6,6 +6,10 @@ import Photo from "../components/Photo.jsx";
 import ProgrammeCards from "../components/ProgrammeCards.jsx";
 import AchievementCard from "../components/AchievementCard.jsx";
 import SwipeCards from "../components/SwipeCards.jsx";
+import FlyerFigure from "../components/FlyerFigure.jsx";
+import Countdown from "../components/Countdown.jsx";
+import CampaignProgramme from "../components/CampaignProgramme.jsx";
+import { CAMPAIGN } from "../campaign.js";
 import { PaletteArt } from "../components/HeroArt.jsx";
 import AuthedHome from "./home/AuthedHome.jsx";
 import { IMAGES } from "../siteImages.js";
@@ -46,7 +50,7 @@ const JOIN = [
 ];
 
 function PublicHero() {
-  const campaign = IMAGES.campaign; // approved campaign flyer, shown unedited; null until management confirms it
+  const campaign = CAMPAIGN.flyer; // the 2027 UTME flyer, shown whole; falls back to the learning-cycle panel if it is switched off
   return (
     <section className="ws5-hero">
       <div className="container ws5-hero-grid">
@@ -64,13 +68,12 @@ function PublicHero() {
             Already have an account? <Link to="/login" className="ws5-hero-link">Student login</Link>
           </p>
           <p className="ws5-hero-note">An account is your login. Enrolling in a programme is a separate application.</p>
+          <Countdown className="ws5-hero-count" />
         </div>
 
         <div className="ws5-hero-visual reveal reveal-2">
           {campaign ? (
-            <figure className="ws5-flyer">
-              <img src={campaign.src} alt={campaign.alt} width={campaign.width} height={campaign.height} fetchPriority="high" decoding="async" />
-            </figure>
+            <FlyerFigure priority className="ws5-hero-flyer" />
           ) : (
             <div className="ws5-panel">
               <p className="ws5-panel-title">The Prime learning cycle</p>
@@ -129,6 +132,8 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {!token && <CampaignProgramme showFlyer={false} />}
 
       <section className={`section${token ? "" : " section-tint"}`}>
         <div className="container">
