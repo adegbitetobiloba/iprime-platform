@@ -8,6 +8,7 @@ import "./styles.css";
 import "./redesign.css";
 import "./tokens.css";
 import "./v2.css";
+import "./studentDashboard.css";
 
 initTheme();
 
