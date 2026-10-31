@@ -9,6 +9,7 @@ import "./redesign.css";
 import "./tokens.css";
 import "./v2.css";
 import "./studentDashboard.css";
+import "./performance.css";
 
 initTheme();
 
