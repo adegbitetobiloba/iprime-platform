@@ -9,6 +9,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const cbtRoutes = require("./routes/cbtRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 
 const isProd = process.env.NODE_ENV === "production";
@@ -30,6 +31,7 @@ app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connectio
 app.use("/api/auth", authRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/student/analytics", analyticsRoutes); // must stay before the "/api" CBT router, which guards all of /api
 app.use("/api", cbtRoutes);
 
 app.use((req, res) => res.status(404).json({ error: "Not found" }));
