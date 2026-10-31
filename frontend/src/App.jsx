@@ -17,6 +17,7 @@ import Register from "./pages/Register.jsx";
 import Verify from "./pages/Verify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
+import Performance from "./pages/Performance.jsx";
 import ExamCentre from "./pages/ExamCentre.jsx";
 import ExamIntro from "./pages/ExamIntro.jsx";
 import ExamRunner from "./pages/ExamRunner.jsx";
@@ -28,6 +29,7 @@ import AdminExams from "./pages/admin/AdminExams.jsx";
 import AdminExamEdit from "./pages/admin/AdminExamEdit.jsx";
 import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
 import AdminStudents from "./pages/admin/AdminStudents.jsx";
+import AdminExamAnalytics from "./pages/admin/AdminExamAnalytics.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import PendingApproval from "./pages/PendingApproval.jsx";
@@ -78,6 +80,7 @@ const TITLES = {
   "/dashboard": "Dashboard | iPrime",
   "/account": "My profile | iPrime",
   "/exams": "Examination centre | iPrime",
+  "/performance": "Performance | iPrime",
   "/results": "My results | iPrime",
 };
 
@@ -123,12 +126,14 @@ export default function App() {
           <Route path="/exams" element={<Protected><ExamCentre /></Protected>} />
           <Route path="/exams/:id" element={<Protected><ExamIntro /></Protected>} />
           <Route path="/attempts/:id" element={<Protected><ExamRunner /></Protected>} />
+          <Route path="/performance" element={<Protected><Performance /></Protected>} />
           <Route path="/results" element={<Protected><Results /></Protected>} />
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
           <Route path="/admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
             <Route index element={<AdminHome />} />
             <Route path="exams" element={<AdminExams />} />
             <Route path="exams/:id" element={<AdminExamEdit />} />
+            <Route path="exams/:id/analytics" element={<AdminExamAnalytics />} />
             <Route path="programmes" element={<AdminProgrammes />} />
             <Route path="students" element={<AdminStudents />} />
           </Route>
