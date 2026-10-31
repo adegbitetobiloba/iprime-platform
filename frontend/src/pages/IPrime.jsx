@@ -3,6 +3,7 @@ import { useAuth } from "../auth.jsx";
 import PageHero from "../components/PageHero.jsx";
 import Reveal from "../components/Reveal.jsx";
 import Icon from "../components/Icon.jsx";
+import SwipeCards from "../components/SwipeCards.jsx";
 
 const NOW = [
   { icon: "test", title: "Timed practice examinations", text: "Practice examinations set by the institution, taken on screen with a countdown that keeps running even if you refresh the page." },
@@ -49,9 +50,9 @@ export default function IPrime() {
             <p className="eyebrow">Available now</p>
             <h2>What you can do on iPrime today</h2>
           </Reveal>
-          <ul className="ws5-feature-grid">
-            {NOW.map((f) => (<Reveal as="li" key={f.title} className="ws5-feature-wrap"><Card item={f} /></Reveal>))}
-          </ul>
+          <SwipeCards label="Available now" gridFrom="md">
+            {NOW.map((f) => (<Card key={f.title} item={f} />))}
+          </SwipeCards>
         </div>
       </section>
 
@@ -62,9 +63,9 @@ export default function IPrime() {
             <h2>Coming next</h2>
             <p className="section-lead">Features are released step by step. These are not available yet.</p>
           </Reveal>
-          <ul className="ws5-feature-grid">
-            {SOON.map((f) => (<Reveal as="li" key={f.title} className="ws5-feature-wrap"><Card item={f} soon /></Reveal>))}
-          </ul>
+          <SwipeCards label="Coming next" gridFrom="md">
+            {SOON.map((f) => (<Card key={f.title} item={f} soon />))}
+          </SwipeCards>
         </div>
       </section>
 

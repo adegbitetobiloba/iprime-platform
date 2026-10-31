@@ -3,6 +3,7 @@ import PageHero from "../components/PageHero.jsx";
 import Reveal from "../components/Reveal.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import AchievementCard from "../components/AchievementCard.jsx";
+import SwipeCards from "../components/SwipeCards.jsx";
 import { publishableAchievements } from "../achievements.js";
 
 const CHECKS = [
@@ -25,9 +26,9 @@ export default function Achievements() {
       <section className="section">
         <div className="container">
           {items.length > 0 ? (
-            <ul className="ws5-ach-grid">
-              {items.map((a) => (<li key={a.id}><AchievementCard item={a} /></li>))}
-            </ul>
+            <SwipeCards label="Verified student achievements" gridFrom="md">
+              {items.map((a) => (<AchievementCard key={a.id} item={a} />))}
+            </SwipeCards>
           ) : (
             <Reveal>
               <EmptyState

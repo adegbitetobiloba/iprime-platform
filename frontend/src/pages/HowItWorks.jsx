@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
 import Reveal from "../components/Reveal.jsx";
 import Icon from "../components/Icon.jsx";
+import SwipeCards from "../components/SwipeCards.jsx";
 
 // status: "now" = works on iPrime today; "soon" = being introduced (do not present as live).
 const JOURNEY = [
@@ -40,17 +41,17 @@ export default function HowItWorks() {
 
       <section className="section">
         <div className="container">
-          <ol className="ws5-journey">
+          <SwipeCards label="Steps to join, swipe through them" single>
             {JOURNEY.map((s, i) => (
-              <Reveal as="li" key={s.title} className="ws5-journey-item" delay={Math.min(i, 4) * 60}>
+              <div key={s.title} className="ws5-journey-item ws5-journey-card">
                 <span className="ws5-journey-num" aria-hidden="true">{i + 1}</span>
                 <div>
                   <h2 className="ws5-journey-title">{s.title} <Badge status={s.status} /></h2>
                   <p>{s.text}</p>
                 </div>
-              </Reveal>
+              </div>
             ))}
-          </ol>
+          </SwipeCards>
           <Reveal>
             <p className="ws5-note">
               Dates, fees and programme availability are published only after the institution confirms them. Please check the <Link to="/programmes" className="rd-link">programmes page</Link> or <Link to="/contact" className="rd-link">contact the institution</Link> for current details.
@@ -66,15 +67,15 @@ export default function HowItWorks() {
             <h2>The Prime learning cycle</h2>
             <p className="section-lead">The same five steps guide learning in the classroom and on iPrime.</p>
           </Reveal>
-          <ol className="ws5-cycle-row">
+          <SwipeCards label="The Prime learning cycle" gridFrom="md">
             {CYCLE.map((c, i) => (
-              <Reveal as="li" key={c.title} className="ws5-cycle-card" delay={i * 70}>
+              <div key={c.title} className="ws5-cycle-card">
                 <span className="ws5-cycle-n" aria-hidden="true">{i + 1}</span>
                 <h3>{c.title}</h3>
                 <p>{c.text}</p>
-              </Reveal>
+              </div>
             ))}
-          </ol>
+          </SwipeCards>
           <Reveal>
             <p style={{ marginTop: "var(--s5)" }}>
               <Link to="/register" className="btn btn-primary">Create an account <Icon name="arrow" size={18} /></Link>

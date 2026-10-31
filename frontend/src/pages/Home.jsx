@@ -5,6 +5,7 @@ import Reveal from "../components/Reveal.jsx";
 import Photo from "../components/Photo.jsx";
 import ProgrammeCards from "../components/ProgrammeCards.jsx";
 import AchievementCard from "../components/AchievementCard.jsx";
+import SwipeCards from "../components/SwipeCards.jsx";
 import { PaletteArt } from "../components/HeroArt.jsx";
 import AuthedHome from "./home/AuthedHome.jsx";
 import { IMAGES } from "../siteImages.js";
@@ -149,15 +150,15 @@ export default function Home() {
               <h2>Create an account, then apply to enrol</h2>
               <p className="section-lead">Three separate steps, so you always know where you are.</p>
             </Reveal>
-            <ol className="ws5-join">
+            <SwipeCards label="How joining works" gridFrom="md">
               {JOIN.map((s, i) => (
-                <Reveal as="li" key={s.title} className="ws5-join-item" delay={i * 90}>
+                <div key={s.title} className="ws5-join-item">
                   <span className="ws5-journey-num" aria-hidden="true">{i + 1}</span>
                   <h3>{s.title} {s.soon && <span className="ws5-badge ws5-badge-soon">Coming soon</span>}</h3>
                   <p>{s.text}</p>
-                </Reveal>
+                </div>
               ))}
-            </ol>
+            </SwipeCards>
             <Reveal><p style={{ marginTop: "var(--s5)" }}><Link to="/how-it-works" className="btn btn-secondary">See every step</Link></p></Reveal>
           </div>
         </section>
@@ -198,9 +199,9 @@ export default function Home() {
               <p className="eyebrow">Achievements</p>
               <h2>Verified student achievements</h2>
             </Reveal>
-            <ul className="ws5-ach-grid">
-              {achievements.map((a) => (<li key={a.id}><AchievementCard item={a} /></li>))}
-            </ul>
+            <SwipeCards label="Verified student achievements" gridFrom="md">
+              {achievements.map((a) => (<AchievementCard key={a.id} item={a} />))}
+            </SwipeCards>
             <Reveal><p style={{ marginTop: "var(--s5)" }}><Link to="/achievements" className="btn btn-secondary">All achievements</Link></p></Reveal>
           </div>
         </section>
@@ -214,18 +215,16 @@ export default function Home() {
                 <p className="eyebrow">Who iPrime is for</p>
                 <h2>One platform, three ways to belong</h2>
               </Reveal>
-              <ul className="who-grid rd-who">
+              <SwipeCards label="Ways to belong" gridFrom="md">
                 {ACCOUNT_TYPES.map((t, i) => (
-                  <Reveal as="li" key={t.id} delay={i * 90}>
-                    <div className={`who-card rd-who-card rd-who-${i % 3} card-hover`}>
-                      <span className="icon-tile rd-icon-lg"><Icon name={t.icon} size={24} /></span>
-                      <h3>{t.title}</h3>
-                      <p>{WHO[t.id].text}</p>
-                      <Link to={`/register?type=${t.id}`} className="rd-link">{WHO[t.id].cta} <Icon name="arrow" size={16} /></Link>
-                    </div>
-                  </Reveal>
+                  <div key={t.id} className={`who-card rd-who-card rd-who-${i % 3} card-hover`}>
+                    <span className="icon-tile rd-icon-lg"><Icon name={t.icon} size={24} /></span>
+                    <h3>{t.title}</h3>
+                    <p>{WHO[t.id].text}</p>
+                    <Link to={`/register?type=${t.id}`} className="rd-link">{WHO[t.id].cta} <Icon name="arrow" size={16} /></Link>
+                  </div>
                 ))}
-              </ul>
+              </SwipeCards>
             </div>
           </section>
           <section className="cta-band rd-cta">

@@ -33,6 +33,7 @@ import Onboarding from "./pages/Onboarding.jsx";
 import PendingApproval from "./pages/PendingApproval.jsx";
 import AdminDenied from "./pages/admin/AdminDenied.jsx";
 import Toast from "./components/Toast.jsx";
+import WelcomeFlyer from "./components/WelcomeFlyer.jsx";
 import { useAuth } from "./auth.jsx";
 
 function Protected({ children }) {
@@ -100,6 +101,7 @@ export default function App() {
       <a className="skip-link" href="#main">Skip to content</a>
       <PageEffects />
       <Toast />
+      <WelcomeFlyer />
       {!focusMode && <Header />}
       <main id="main">
         <Routes>
