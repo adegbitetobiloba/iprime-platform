@@ -24,16 +24,17 @@ export default function Results() {
         )}
         {data && data.attempts.length > 0 && (
           <div className="table-wrap">
-            <table className="data-table">
+            {/* data-table--stack turns each row into a card on phones, so nothing runs off the screen (see ws5.css) */}
+            <table className="data-table data-table--stack">
               <thead><tr><th>Examination</th><th>Date</th><th>Score</th><th>Percentage</th><th><span className="sr-only">Details</span></th></tr></thead>
               <tbody>
                 {data.attempts.map((a) => (
                   <tr key={a.id}>
-                    <td><strong>{a.examTitle || "Examination"}</strong><br /><span className="muted">{a.subject}</span></td>
-                    <td>{fmtDate(a.submittedAt)}</td>
-                    <td>{a.score} / {a.totalMarks}</td>
-                    <td>{a.percentage}%</td>
-                    <td><Link to={`/results/${a.id}`}>View</Link></td>
+                    <td className="stack-title"><strong>{a.examTitle || "Examination"}</strong><br /><span className="muted">{a.subject}</span></td>
+                    <td data-label="Date">{fmtDate(a.submittedAt)}</td>
+                    <td data-label="Score">{a.score} / {a.totalMarks}</td>
+                    <td data-label="Percentage">{a.percentage}%</td>
+                    <td className="stack-action"><Link to={`/results/${a.id}`} className="stack-link">View result</Link></td>
                   </tr>
                 ))}
               </tbody>
