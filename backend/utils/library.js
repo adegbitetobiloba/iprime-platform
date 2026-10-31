@@ -52,7 +52,7 @@ function lessonHasContent(l) {
   switch (l.contentType) {
     case "text": return !!(l.body && l.body.trim().length >= 1);
     case "video": return !!(l.video && l.video.videoId);
-    case "pdf": return !!(l.pdf && l.pdf.storageKey);
+    case "pdf": return !!(l.pdf && l.pdf.file);
     case "link": return !!l.externalUrl;
     default: return false;
   }

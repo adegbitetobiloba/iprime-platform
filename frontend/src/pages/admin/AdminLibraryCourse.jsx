@@ -7,6 +7,7 @@ import Field from "../../components/Field.jsx";
 import CourseForm, { courseBody, courseToForm } from "../../library/CourseForm.jsx";
 import Markdown from "../../library/Markdown.jsx";
 import { TYPE_LABEL } from "../../library/parts.jsx";
+import { MAX_PDF_MB, uploadPdf } from "../../library/files.js";
 import "../../library/library.css";
 
 const STATUS_LABEL = { draft: "Draft", review: "Under review", published: "Published", archived: "Archived" };
@@ -42,6 +43,8 @@ function LessonForm({ module, lesson, exams, onSave, onCancel, busy }) {
     requiresQuizPass: lesson ? !!lesson.requiresQuizPass : false,
   });
   const [showPreview, setShowPreview] = useState(false);
+  const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState("");
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
 
   const submit = (e) => {
@@ -55,7 +58,11 @@ function LessonForm({ module, lesson, exams, onSave, onCancel, busy }) {
     if (f.contentType === "text") body.body = f.body;
     if (f.contentType === "video") body.videoUrl = f.videoUrl;
     if (f.contentType === "link") body.externalUrl = f.externalUrl;
-    onSave(body);
+    if (f.contentType === "pdf" && file) {
+      if (file.type && file.type !== "application/pdf") return setFileError("Only PDF files can be uploaded.");
+      if (file.size > MAX_PDF_MB * 1024 * 1024) return setFileError(`That file is larger than ${MAX_PDF_MB} MB. Compress it and try again.`);
+    }
+    return onSave(body, f.contentType === "pdf" ? file : null);
   };
 
   return (
@@ -65,7 +72,7 @@ function LessonForm({ module, lesson, exams, onSave, onCancel, busy }) {
       <div className="grid-2">
         <Field label="Type" id="l-type">
           <select id="l-type" value={f.contentType} onChange={set("contentType")} disabled={editing}>
-            <option value="text">Written lesson</option><option value="video">Video (YouTube or Vimeo)</option><option value="link">External resource</option><option value="pdf" disabled>PDF document (coming soon)</option>
+            <option value="text">Written lesson</option><option value="video">Video (YouTube or Vimeo)</option><option value="link">External resource</option><option value="pdf">PDF document</option>
           </select>
         </Field>
         <Field label="Topic" id="l-topic">
@@ -100,6 +107,12 @@ $H_2O$  $x^2$  $x_{n+1}$   (subscripts and superscripts)
         </>
       )}
       {f.contentType === "video" && <Field label="Video link" id="l-video" value={f.videoUrl} onChange={set("videoUrl")} maxLength={500} hint="A YouTube or Vimeo link. Other sites are not accepted." />}
+      {f.contentType === "pdf" && (
+        <Field label={lesson && lesson.pdf && lesson.pdf.file ? "Replace the PDF (optional)" : "PDF file"} id="l-pdf" hint={`Up to ${MAX_PDF_MB} MB. Students read it inside iPrime and cannot download it.${lesson && lesson.pdf && lesson.pdf.originalName ? ` Current file: ${lesson.pdf.originalName}.` : ""}`}>
+          <input id="l-pdf" type="file" accept="application/pdf,.pdf" onChange={(e) => { setFile(e.target.files[0] || null); setFileError(""); }} />
+          {fileError && <span className="field-error" role="alert">{fileError}</span>}
+        </Field>
+      )}
       {f.contentType === "link" && <Field label="Resource link (https)" id="l-ext" value={f.externalUrl} onChange={set("externalUrl")} maxLength={500} />}
 
       <div className="grid-2">
@@ -128,12 +141,14 @@ function Chapter({ module, index, total, courseStatus, exams, run, token, orderI
   const [busy, setBusy] = useState(false);
   useEffect(() => { setTitle(module.title); setTopics(module.topics); }, [module]);
 
-  const saveLesson = async (body) => {
+  const saveLesson = async (body, file) => {
     setBusy(true);
     const ok = await run(async () => {
-      if (editor === "new") await api(`/admin/library/modules/${module._id}/lessons`, { method: "POST", token, body });
+      let lessonId = editor;
+      if (editor === "new") lessonId = (await api(`/admin/library/modules/${module._id}/lessons`, { method: "POST", token, body })).lesson._id;
       else await api(`/admin/library/lessons/${editor}`, { method: "PATCH", token, body });
-    }, "Lesson saved.");
+      if (file) await uploadPdf(lessonId, file, token); // a failed upload leaves the lesson saved; the message says what to retry
+    }, file ? "Lesson and PDF saved." : "Lesson saved.");
     setBusy(false);
     if (ok) setEditor(null);
   };
@@ -174,7 +189,7 @@ function Chapter({ module, index, total, courseStatus, exams, run, token, orderI
         {module.lessons.length === 0 && <p className="note">No lessons in this chapter yet.</p>}
         {module.lessons.map((l, i) => (
           <div key={l._id} className="lib-lesson-row">
-            <span className="grow"><strong>{l.title}</strong> <span className="muted">· {TYPE_LABEL[l.contentType]}{l.estimatedMinutes ? ` · ${l.estimatedMinutes} min` : ""}{l.practice && l.practice.exam ? " · practice" : ""}</span></span>
+            <span className="grow"><strong>{l.title}</strong> <span className="muted">· {TYPE_LABEL[l.contentType]}{l.estimatedMinutes ? ` · ${l.estimatedMinutes} min` : ""}{l.practice && l.practice.exam ? " · practice" : ""}{l.contentType === "pdf" ? (l.pdf && l.pdf.file ? " · PDF attached" : " · no PDF yet") : ""}</span></span>
             <span className={`badge ${badge(l.status)}`}>{STATUS_LABEL[l.status]}</span>
             <button type="button" className="link-btn" onClick={() => setEditor(l._id)}>Edit</button>
             <Link className="link-btn" to={`/library/lessons/${l._id}`}>Preview</Link>
