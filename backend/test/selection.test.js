@@ -183,3 +183,26 @@ test("controller: a published exam or one with attempts refuses new questions, s
   const r2 = await call(c.addToExam, { body: { examId: used._id, ids } });
   assert.equal(r2.statusCode, 409);
 });
+
+test("controller: a GROUP of question banks (several subjects) can be selected together and balanced by subject", async () => {
+  await seedBank();
+  const chem = []; for (let i = 0; i < 20; i++) chem.push(item(500 + i, "Atoms", { subject: "Chemistry", externalId: `CHM-${i}` }));
+  const bio = []; for (let i = 0; i < 20; i++) bio.push(item(600 + i, "Cells", { subject: "Biology", externalId: `BIO-${i}` }));
+  await call(c.importBatch, { body: { sessionId: "sess-sel-0002", questions: [...chem, ...bio], allowIncomplete: true, onConflict: "skip" } });
+  const r = await call(c.select, { body: body({ subjects: ["Physics", "Chemistry", "Biology"], count: 30, balanceBy: "subject" }) });
+  assert.equal(r.body.selected, 30);
+  assert.deepEqual(Object.values(r.body.breakdown.bySubject).sort(), [10, 10, 10]);
+  assert.ok(r.body.questions.every((q) => ["Physics", "Chemistry", "Biology"].includes(q.subject)));
+  const two = await call(c.select, { body: body({ subjects: ["Chemistry", "Biology"], count: 40 }) });
+  assert.equal(two.body.selected, 40); assert.ok(two.body.questions.every((q) => q.subject !== "Physics"));
+  assert.equal(two.body.available.total, 41); // 20 Biology + 20 imported Chemistry + the 1 Chemistry question already in the seeded bank
+});
+
+test("controller: questions added to an exam keep their subject and difficulty so a pool can be drawn evenly", async () => {
+  await seedBank();
+  const sel = await call(c.select, { body: body({ subject: "Physics", count: 12, difficulty: { mode: "mix" } }) });
+  const exam = db.newExam();
+  await call(c.addToExam, { body: { examId: exam._id, ids: sel.body.questions.map((q) => q.id) } });
+  assert.ok(exam.questions.every((q) => q.subject === "Physics"));
+  assert.ok(exam.questions.some((q) => q.difficulty === "easy") && exam.questions.some((q) => q.difficulty === "hard"));
+});

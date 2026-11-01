@@ -250,11 +250,12 @@ exports.addToExam = async (req, res) => {
 // Only questions that are active AND complete (usable) can ever be chosen; "verifiedOnly" narrows that further.
 exports.select = async (req, res) => {
   try {
-    const { subject, topics, count, manualIds, excludeIds, verifiedOnly, balanceTopics, difficulty } = req.body;
+    const { subject, subjects = [], topics, count, manualIds, excludeIds, verifiedOnly, balanceTopics, balanceBy, difficulty } = req.body;
+    const wanted = [...new Set([...(subject ? [subject] : []), ...subjects])]; // one subject, or a group of question banks
     const eligible = { status: "active", usable: true };
     if (verifiedOnly) eligible["verification.status"] = "verified";
     const filter = { ...eligible };
-    if (subject) filter.subject = subject;
+    if (wanted.length) filter.subject = wanted.length === 1 ? wanted[0] : { $in: wanted };
     const fields = "externalId subject topic difficulty extra text options marks verification";
     const [rows, manualRows] = await Promise.all([
       BankQuestion.find(filter).select(fields).limit(30000).lean(),
@@ -262,9 +263,9 @@ exports.select = async (req, res) => {
     ]);
     const byId = new Map(rows.map((r) => [String(r._id), r]));
     for (const m of manualRows) byId.set(String(m._id), m);
-    const pool = [...byId.values()].map((r) => ({ id: String(r._id), topic: r.topic || "", difficulty: bank.difficultyOf(r), row: r }));
+    const pool = [...byId.values()].map((r) => ({ id: String(r._id), topic: r.topic || "", subject: r.subject || "", difficulty: bank.difficultyOf(r), row: r }));
 
-    const out = selectQuestions(pool, { count, topics, manualIds, excludeIds, balanceTopics, difficulty });
+    const out = selectQuestions(pool, { count, topics, manualIds, excludeIds, balanceTopics, balanceBy, difficulty });
     const manualSet = new Set(manualIds.map(String));
     const view = out.picked.map(({ id, row }) => ({
       id, externalId: row.externalId || null, subject: row.subject || "", topic: row.topic || "", difficulty: bank.difficultyOf(row),
@@ -274,7 +275,7 @@ exports.select = async (req, res) => {
     }));
 
     // What was available to choose from (within the subject and topic filter), so the screen can explain any shortfall.
-    const scope = pool.filter((p) => (!topics.length || topics.map((t) => t.toLowerCase()).includes(p.topic.toLowerCase())) && (!subject || p.row.subject === subject));
+    const scope = pool.filter((p) => (!topics.length || topics.map((t) => t.toLowerCase()).includes(p.topic.toLowerCase())) && (!wanted.length || wanted.includes(p.row.subject)));
     const topicCounts = {};
     for (const p of scope) topicCounts[p.topic || "(no topic)"] = (topicCounts[p.topic || "(no topic)"] || 0) + 1;
     const lvl = { easy: 0, medium: 0, hard: 0, unrated: 0 };

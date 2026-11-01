@@ -62,6 +62,8 @@ module.exports = {
   // Chooses questions for an examination (read-only: nothing is saved until the questions are added to an exam).
   select: Joi.object({
     subject: Joi.string().trim().max(80).allow(""),
+    subjects: Joi.array().items(Joi.string().trim().max(80)).max(30).default([]),
+    balanceBy: Joi.string().valid("topic", "subject").default("topic"),
     topics: Joi.array().items(Joi.string().trim().max(120)).max(50).default([]),
     count: Joi.number().integer().min(1).max(500).required(),
     manualIds: Joi.array().items(objectId).max(500).default([]),
