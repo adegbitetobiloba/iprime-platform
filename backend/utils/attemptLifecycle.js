@@ -13,11 +13,12 @@ function makeFinaliser(Attempt) {
     for (let i = 0; i < MAX_TRIES; i++) {
       if (!current) return null;
       if (current.status === "submitted") return current; // already closed: same stored result, no re-scoring
-      const result = scoreAttempt(exam.questions, current.answers);
+      const served = require("./randomise").servedQuestions(exam, current); // only this student's own questions
+      const result = scoreAttempt(served, current.answers);
       const revFilter = current.rev == null ? { $exists: false } : current.rev; // attempts created before rev existed
       const r = await Attempt.updateOne(
         { _id: current._id, status: "in_progress", rev: revFilter },
-        { $set: { status: "submitted", submittedAt: new Date(), autoSubmitted: Boolean(auto), questionCount: exam.questions.length, ...result } }
+        { $set: { status: "submitted", submittedAt: new Date(), autoSubmitted: Boolean(auto), questionCount: served.length, ...result } }
       );
       if (r.matchedCount === 1) return Attempt.findById(current._id).lean();
       current = await Attempt.findById(current._id).lean(); // someone saved or closed it first: look again
