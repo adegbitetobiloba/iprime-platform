@@ -4,6 +4,7 @@ import { api } from "../../api.js";
 import { useAuth } from "../../auth.jsx";
 import { useFetch, fmtDate } from "../../useFetch.js";
 import { useSubmit } from "../../useSubmit.js";
+import ExamSettings from "../../components/ExamSettings.jsx";
 import Field from "../../components/Field.jsx";
 import FormStatus from "../../components/FormStatus.jsx";
 
@@ -208,7 +209,7 @@ export default function AdminExamEdit() {
       {actionError && <p className="alert alert-error" role="alert">{actionError}</p>}
       {published && <p className="alert alert-info" role="status">This examination is visible to students. Unpublish it to edit its questions.</p>}
 
-      <Details exam={exam} locked={Boolean(locked)} onSaved={setExam} />
+      <ExamSettings exam={exam} locked={Boolean(locked)} onSaved={setExam} />
 
       <div className="panel">
         <h2 className="panel-title">Questions</h2>
