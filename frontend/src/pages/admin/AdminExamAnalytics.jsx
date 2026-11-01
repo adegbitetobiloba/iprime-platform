@@ -1,6 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../../useFetch.js";
 import ExportBar from "../../components/analytics/ExportBar.jsx";
+import "../../studentDashboard.css";
+import "../../adminAnalytics.css";
 
 const pct = (v) => (v == null ? "No data" : `${v}%`);
 

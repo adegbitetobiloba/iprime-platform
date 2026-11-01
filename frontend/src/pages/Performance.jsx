@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useFetch, fmtDate } from "../useFetch.js";
 import Sparkline from "../components/dashboard/Sparkline.jsx";
+import "../studentDashboard.css"; // shared card, list and meter styles
+import "../performance.css";
 
 // Wording is deliberately neutral: no labels that stigmatise a learner.
 const BAND = {
@@ -42,7 +44,7 @@ export default function Performance() {
             <h1>How you are doing</h1>
             <p>Worked out only from the examinations you have submitted.</p>
           </div>
-          <Link to="/dashboard" className="btn btn-secondary btn-sm">Back to dashboard</Link>
+          <div className="pf-actions"><Link to="/performance/report" className="btn btn-primary btn-sm">Progress report</Link><Link to="/dashboard" className="btn btn-secondary btn-sm">Back to dashboard</Link></div>
         </header>
 
         {loading && <div className="sd-loading" aria-hidden="true"><div className="skeleton sd-sk-wide" /><div className="skeleton sd-sk-wide" /></div>}

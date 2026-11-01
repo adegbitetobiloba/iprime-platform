@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFetch, fmtDate } from "../../useFetch.js";
+import "../../studentDashboard.css";
+import "../../adminAnalytics.css";
 
 // Starting point for analytics: pick an examination to see how students did.
 // Only examinations with at least one submission can be analysed, so the others are clearly marked, not hidden.
