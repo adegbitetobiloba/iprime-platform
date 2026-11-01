@@ -33,8 +33,6 @@ const examSchema = new mongoose.Schema(
     durationMinutes: { type: Number, required: true, min: 1, max: 360 },
     maxAttempts: { type: Number, default: 1, min: 1, max: 20 },
     showAnswersAfter: { type: Boolean, default: false }, // may students review correct answers after submitting?
-    shuffleQuestions: { type: Boolean, default: false }, // each student gets their own question order
-    shuffleOptions: { type: Boolean, default: false },   // each student gets their own option order (questions that refer to other options are never shuffled)
     availableFrom: { type: Date },
     availableUntil: { type: Date },
     status: { type: String, enum: ["draft", "published"], default: "draft", index: true },

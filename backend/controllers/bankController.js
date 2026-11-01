@@ -4,8 +4,6 @@ const BankQuestion = require("../models/BankQuestion");
 const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const bank = require("../utils/bank");
-const { selectQuestions } = require("../utils/selection");
-const { dependsOnNeighbours, optionsShufflable } = require("../utils/randomise");
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const MAX_EXAM_QUESTIONS = 500;
@@ -19,7 +17,6 @@ const summary = (q) => ({
   usable: !!q.usable, problems: q.problems || [], awaitingSolution: !!q.awaitingSolution,
   reviewStatus: q.review && q.review.status, status: q.status, hasSolution: !!(q.solution && q.solution.text),
   edited: !!q.edited, version: q.version || 1, updatedAt: q.updatedAt,
-  difficulty: q.difficulty || null, marks: q.marks ?? 1,
   questionType: q.questionType || null, sourceStatus: q.sourceStatus || null, verified: !!(q.verification && q.verification.status === "verified"),
   sourceRef: (q.source && q.source.refs && q.source.refs[0]) || null, hasFormatting: !!q.textHtml, hasExplanation: !!(q.explanation || (q.solution && q.solution.text)),
 });
@@ -105,8 +102,6 @@ exports.list = async (req, res) => {
     if (flag === "missing_explanation") { filter.explanation = ""; filter["solution.text"] = { $in: [null, ""] }; }
     if (flag === "verified") filter["verification.status"] = "verified";
     if (flag === "unverified") filter["verification.status"] = { $ne: "verified" };
-    if (["easy", "medium", "hard"].includes(req.query.difficulty)) filter.difficulty = req.query.difficulty;
-    if (req.query.difficulty === "unrated") filter.difficulty = null; // matches questions with no difficulty set
     if (req.query.type) filter.questionType = String(req.query.type);
     if (req.query.sourceStatus) filter.sourceStatus = String(req.query.sourceStatus);
     if (req.query.sourceRef) filter["source.refs"] = new RegExp(bank.escapeRegex(String(req.query.sourceRef).trim().slice(0, 100)), "i");
@@ -174,7 +169,7 @@ exports.edit = async (req, res) => {
     q.set({
       history, textHtml: next.textHtml, explanationHtml: next.explanationHtml,
       subject: next.subject, topic: next.topic, subtopic: next.subtopic, text: next.text, options: next.options, correctKey: next.correctKey,
-      explanation: next.explanation, marks: next.marks, difficulty: next.difficulty, questionType: next.questionType, imageRef: next.imageRef, solution: next.solution,
+      explanation: next.explanation, marks: next.marks, questionType: next.questionType, imageRef: next.imageRef, solution: next.solution,
       usable: next.usable, problems: next.problems, awaitingSolution: next.awaitingSolution, contentHash: next.contentHash, stemHash: next.stemHash,
       review: next.review, edited: true, version: next.version, updatedBy: next.updatedBy,
     });
@@ -219,7 +214,7 @@ const lockedReason = async (exam) => {
 // POST /api/admin/bank/add-to-exam {examId, ids}: copies snapshots into a draft exam with no attempts.
 exports.addToExam = async (req, res) => {
   try {
-    const { examId, ids, marks } = req.body; // marks (optional): give every question copied in this call the same mark
+    const { examId, ids } = req.body;
     const exam = await Exam.findById(examId);
     if (!exam) return res.status(404).json({ error: "Examination not found" });
     const locked = await lockedReason(exam);
@@ -235,58 +230,11 @@ exports.addToExam = async (req, res) => {
       if (!q.usable) { skipped.push({ id, reason: "incomplete", problems: q.problems }); continue; }
       if (already.has(String(q._id))) { skipped.push({ id, reason: "already_in_exam" }); continue; }
       if (exam.questions.length + added.length >= MAX_EXAM_QUESTIONS) { skipped.push({ id, reason: "exam_full" }); continue; }
-      const snap = bank.examSnapshot(plain(q));
-      if (marks !== undefined && marks !== null) snap.marks = marks;
-      added.push(snap);
+      added.push(bank.examSnapshot(plain(q)));
       already.add(String(q._id));
     }
     if (added.length) { exam.questions.push(...added); await exam.save(); }
     res.status(added.length ? 201 : 200).json({ added: added.length, skipped, questionCount: exam.questions.length });
-  } catch (err) { serverError(res, err); }
-};
-
-// POST /api/admin/bank/select : picks questions for an examination. READ-ONLY; the questions are only copied into an exam
-// by the existing add-to-exam call, so what the administrator previews is exactly what gets built.
-// Only questions that are active AND complete (usable) can ever be chosen; "verifiedOnly" narrows that further.
-exports.select = async (req, res) => {
-  try {
-    const { subject, topics, count, manualIds, excludeIds, verifiedOnly, balanceTopics, difficulty } = req.body;
-    const eligible = { status: "active", usable: true };
-    if (verifiedOnly) eligible["verification.status"] = "verified";
-    const filter = { ...eligible };
-    if (subject) filter.subject = subject;
-    const fields = "externalId subject topic difficulty extra text options marks verification";
-    const [rows, manualRows] = await Promise.all([
-      BankQuestion.find(filter).select(fields).limit(30000).lean(),
-      manualIds.length ? BankQuestion.find({ ...eligible, _id: { $in: manualIds } }).select(fields).lean() : [],
-    ]);
-    const byId = new Map(rows.map((r) => [String(r._id), r]));
-    for (const m of manualRows) byId.set(String(m._id), m);
-    const pool = [...byId.values()].map((r) => ({ id: String(r._id), topic: r.topic || "", difficulty: bank.difficultyOf(r), row: r }));
-
-    const out = selectQuestions(pool, { count, topics, manualIds, excludeIds, balanceTopics, difficulty });
-    const manualSet = new Set(manualIds.map(String));
-    const view = out.picked.map(({ id, row }) => ({
-      id, externalId: row.externalId || null, subject: row.subject || "", topic: row.topic || "", difficulty: bank.difficultyOf(row),
-      text: (row.text || "").slice(0, 200), marks: row.marks ?? 1, optionCount: (row.options || []).length,
-      verified: !!(row.verification && row.verification.status === "verified"), manual: manualSet.has(id),
-      neighbour: dependsOnNeighbours(row), fixedOptions: !optionsShufflable(row),
-    }));
-
-    // What was available to choose from (within the subject and topic filter), so the screen can explain any shortfall.
-    const scope = pool.filter((p) => (!topics.length || topics.map((t) => t.toLowerCase()).includes(p.topic.toLowerCase())) && (!subject || p.row.subject === subject));
-    const topicCounts = {};
-    for (const p of scope) topicCounts[p.topic || "(no topic)"] = (topicCounts[p.topic || "(no topic)"] || 0) + 1;
-    const lvl = { easy: 0, medium: 0, hard: 0, unrated: 0 };
-    for (const p of scope) lvl[p.difficulty || "unrated"]++;
-    const verified = scope.filter((p) => p.row.verification && p.row.verification.status === "verified").length;
-
-    res.json({
-      questions: view, requested: count, selected: view.length, shortfall: out.shortfall, manualCount: out.manualCount,
-      notes: out.notes, breakdown: out.breakdown, totalMarks: view.reduce((n, q) => n + q.marks, 0),
-      available: { total: scope.length, byTopic: Object.entries(topicCounts).map(([name, n]) => ({ name, count: n })).sort((a, b) => a.name.localeCompare(b.name)), byDifficulty: lvl, verified, unverified: scope.length - verified },
-      warnings: { unverified: view.filter((q) => !q.verified).length, neighbourDependent: view.filter((q) => q.neighbour).length, fixedOptions: view.filter((q) => q.fixedOptions).length },
-    });
   } catch (err) { serverError(res, err); }
 };
 

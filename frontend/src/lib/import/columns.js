@@ -11,7 +11,6 @@ const SYN = {
   explanationSource: ["explanationsource"],
   subject: ["subject"], topic: ["topic", "topictitle"], subtopic: ["subtopic"],
   marks: ["marks", "mark", "points", "score"],
-  difficulty: ["difficulty", "difficultylevel"],
   questionType: ["questiontype", "type"],
   reviewStatus: ["reviewstatus", "status"],
   reviewNotes: ["reviewnotes", "notes", "note", "comments", "comment"],

@@ -50,7 +50,6 @@ export function rowsToQuestions(rows, ctx = {}) {
       externalId: cell(row, F.externalId) || undefined,
       subject: cell(row, F.subject) || ctx.subject || undefined,
       topic: cell(row, F.topic) || undefined, subtopic: cell(row, F.subtopic) || undefined,
-      difficulty: cell(row, F.difficulty) || undefined,
       text: "", options: [], explanation: "",
       explanationSource: cell(row, F.explanationSource) || undefined,
       questionType: cell(row, F.questionType) || undefined, imageRef: cell(row, F.imageRef) || undefined,

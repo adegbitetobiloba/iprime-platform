@@ -29,7 +29,6 @@ const schema = new mongoose.Schema(
     },
     marks: { type: Number, default: 1 },
     questionType: { type: String, trim: true, maxlength: 60 },
-    difficulty: { type: String, enum: ["easy", "medium", "hard"], index: true }, // optional: only set when the source or an administrator provides it
     imageRef: { type: String, trim: true, maxlength: 300 },
     source: { refs: { type: [String], default: [] }, page: String, label: String, document: String },
     sourceStatus: { type: String, trim: true, maxlength: 40, index: true },        // the file's own Review_Status (Verified / Unverified / Needs Review), kept as found

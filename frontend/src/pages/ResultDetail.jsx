@@ -51,7 +51,7 @@ export default function ResultDetail() {
                   <ul className="review-options">
                     {q.options.map((o) => (
                       <li key={o.key} className={o.key === q.correctKey ? "is-correct" : o.key === q.yourChoice ? "is-wrong" : ""}>
-                        <strong>{o.label || o.key}.</strong> <SafeHtml as="span" inline html={o.html} text={o.text} />
+                        <strong>{o.key}.</strong> <SafeHtml as="span" inline html={o.html} text={o.text} />
                         {o.key === q.correctKey && <span className="tag"> Correct answer</span>}
                         {o.key === q.yourChoice && o.key !== q.correctKey && <span className="tag"> Your answer</span>}
                       </li>
