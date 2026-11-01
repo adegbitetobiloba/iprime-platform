@@ -15,7 +15,7 @@ const bankV = require("../validations/bankValidation");
 // Everything under /api/admin requires a signed-in account whose role is "admin" in the database.
 router.use(protect, requireRole("admin"));
 router.use("/enrolments", require("./adminEnrolmentRoutes"));
-
+router.use("/messages", require("./adminMessageRoutes"));
 router.get("/overview", users.overview);
 router.get("/students", users.listStudents);
 router.get("/students/:id", users.getStudent);
