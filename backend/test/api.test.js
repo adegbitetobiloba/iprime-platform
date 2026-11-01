@@ -45,7 +45,7 @@ test("register validation rejects bad input", async () => {
 });
 
 test("self-signup cannot choose admin or teacher", () => {
-  assert.deepEqual(SELF_SIGNUP_ROLES, ["student", "parent"]);
+  assert.deepEqual(SELF_SIGNUP_ROLES, ["student", "parent", "alumni"]);
   const base = {
     firstName: "A", lastName: "B", email: "a@b.com", phone: "08012345678", state: "Lagos", password: "longenough1",
   };
