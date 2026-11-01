@@ -21,15 +21,21 @@ export default function FlyerFigure({ priority = false, className = "" }) {
     <>
       <figure className={`ws5-flyer-fig ${className}`.trim()}>
         <button type="button" className="ws5-flyer-open" onClick={() => setOpen(true)} aria-label="View the 2027 UTME flyer full size">
-          <img src={f.src} alt={f.alt} width={f.width} height={f.height} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : undefined} decoding="async" />
+          <picture>
+            <source srcSet={f.src} type="image/webp" />
+            <img src={f.fallback || f.src} alt={f.alt} width={f.width} height={f.height} loading={priority ? "eager" : "lazy"} fetchpriority={priority ? "high" : undefined} decoding="async" />
+          </picture>
           <span className="ws5-flyer-zoom" aria-hidden="true">Tap to enlarge</span>
         </button>
-        <figcaption><a href={f.src} download="Prime-Excelerate-2027-UTME-flyer.webp" className="ws5-flyer-dl">Download the flyer</a></figcaption>
+        <figcaption><a href={f.fallback || f.src} download="Prime-Excelerate-2027-UTME-flyer.jpg" className="ws5-flyer-dl">Download the flyer</a></figcaption>
       </figure>
       {open && (
         <div className="ws5-lightbox" role="dialog" aria-modal="true" aria-label="2027 UTME flyer, full size" onClick={() => setOpen(false)}>
           <button type="button" ref={closeRef} className="ws5-lightbox-close" onClick={() => setOpen(false)}>Close</button>
-          <img src={f.src} alt={f.alt} />
+          <picture>
+            <source srcSet={f.src} type="image/webp" />
+            <img src={f.fallback || f.src} alt={f.alt} />
+          </picture>
         </div>
       )}
     </>

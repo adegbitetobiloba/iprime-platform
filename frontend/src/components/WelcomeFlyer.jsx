@@ -42,7 +42,10 @@ export default function WelcomeFlyer() {
         <button type="button" ref={skipRef} className="ws5-welcome-skip" onClick={close}>Continue to website</button>
       </div>
       <div className="ws5-welcome-stage">
-        <img src={flyer.src} alt={flyer.alt} width={flyer.width} height={flyer.height} fetchPriority="high" decoding="async" />
+        <picture>
+          <source srcSet={flyer.src} type="image/webp" />
+          <img src={flyer.fallback || flyer.src} alt={flyer.alt} width={flyer.width} height={flyer.height} fetchpriority="high" decoding="async" />
+        </picture>
       </div>
       <Countdown className="ws5-welcome-count" />
       <div className="ws5-welcome-actions">

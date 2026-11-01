@@ -1,4 +1,5 @@
 import { Children, useCallback, useEffect, useRef, useState } from "react";
+import { scrollBoxTo } from "../scrollCompat.js";
 
 // Swipe-through cards for phones, with no dependencies. Uses native scroll-snapping, so touch, trackpad and keyboard
 // all work. On wide screens (gridFrom="md") the same cards simply lay out as a grid and the controls disappear.
@@ -32,8 +33,7 @@ export default function SwipeCards({ label, children, single = false, gridFrom, 
     const el = trackRef.current;
     if (!el) return;
     const n = Math.max(0, Math.min(count - 1, i));
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollTo({ left: n * stepOf(el), behavior: reduce ? "auto" : "smooth" });
+    scrollBoxTo(el, n * stepOf(el));
     setIndex(n);
   };
 

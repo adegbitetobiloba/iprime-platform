@@ -25,7 +25,13 @@
     <title>iPrime | Prime Excelerate Tutelage</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Shown while the app downloads (slow networks, modest phones); React replaces it as soon as it starts. -->
+    <div id="root"><p style="font-family:system-ui,sans-serif;text-align:center;margin:3rem 1rem;color:#44506a">Loading iPrime&hellip;</p></div>
+    <noscript><p style="font-family:system-ui,sans-serif;text-align:center;margin:2rem 1rem;color:#9b1c11">iPrime needs JavaScript. Please turn it on in your browser settings and reload the page.</p></noscript>
+    <!-- Browsers too old to run modules ignore the app below and run this instead. Written in plain old JavaScript on purpose. -->
+    <script nomodule>
+      document.getElementById("root").innerHTML = '<div style="font-family:Arial,sans-serif;max-width:30rem;margin:2rem auto;padding:0 1rem;color:#1b2640;line-height:1.5"><h1 style="font-size:1.4rem;color:#04204f">Please update your browser</h1><p>This browser is too old to run iPrime. Please update it, or open this page in the latest Chrome, Firefox, Edge or Safari. If you need help, contact Prime Excelerate Tutelage.</p></div>';
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
