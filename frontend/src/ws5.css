@@ -231,3 +231,34 @@ html { scroll-padding-top: 4.5rem; }
 .reveal-ready .reveal { animation-duration: 0.4s !important; transition-duration: 0.4s !important; }
 .reveal-ready .reveal-2 { animation-delay: 0.08s !important; transition-delay: 0.08s !important; }
 @media (prefers-reduced-motion: reduce) { [data-rv], .reveal { opacity: 1 !important; transform: none !important; transition: none !important; animation: none !important; } }
+
+/* ---------- v6: header that never overlaps the logo, dropdown, scroll-spy chips, back to top ---------- */
+.brand { flex: none; }
+.brand-text, .brand-prime, .brand-excelerate { white-space: nowrap; }
+@media (min-width: 900px) {
+  .ws5-nav { min-width: 0; flex: 1 1 auto; justify-content: flex-end; flex-wrap: nowrap; gap: 0.5rem; }
+  .ws5-nav .nav-links { flex-wrap: nowrap; align-items: center; gap: 0.15rem; }
+  .ws5-nav .nav-link { white-space: nowrap; padding: 0.5rem 0.7rem; }
+  .ws5-nav .nav-actions { flex: none; flex-wrap: nowrap; }
+}
+@media (max-width: 1179px) { .ws5-nav .nav-extra { display: none; } }
+@media (min-width: 1180px) { .ws5-dd-menu .dd-extra { display: none; } }
+
+.ws5-dd { position: relative; list-style: none; }
+.ws5-dd-btn { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.5rem; padding: 0.4rem 0.8rem; border: 0; border-radius: var(--r-pill, 999px); background: transparent; color: var(--c-ink, var(--navy)); font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ws5-dd-btn:hover, .ws5-dd-btn[aria-expanded="true"], .ws5-dd-btn.is-current { background: var(--c-tint, var(--blue-tint)); }
+.ws5-dd-caret { width: 0.45rem; height: 0.45rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform 0.15s; }
+.ws5-dd-btn[aria-expanded="true"] .ws5-dd-caret { transform: rotate(225deg) translateY(-2px); }
+.ws5-dd-menu { position: absolute; right: 0; top: calc(100% + 0.5rem); z-index: 40; min-width: 13rem; margin: 0; padding: 0.4rem; list-style: none; background: var(--c-surface, var(--surface)); border: 1px solid var(--c-line, var(--line)); border-radius: var(--r-ctl, 10px); box-shadow: var(--sh-2, 0 12px 30px rgba(11, 31, 75, 0.18)); animation: fade 140ms ease-out both; }
+.ws5-dd-menu a { display: block; padding: 0.65rem 0.85rem; border-radius: 8px; color: var(--c-ink, var(--navy)); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.ws5-dd-menu a:hover, .ws5-dd-menu a:focus-visible { background: var(--c-tint, var(--blue-tint)); }
+.ws5-dd-menu a.active { background: var(--c-tint, var(--blue-tint)); box-shadow: inset 3px 0 0 var(--c-gold, var(--gold)); }
+
+/* Active "On this page" chip */
+.ws5-anchor-link.is-on { background: var(--c-blue); border-color: var(--c-blue); color: #fff; }
+
+/* Back to top */
+.ws5-top { position: fixed; right: 1rem; bottom: 1rem; z-index: 55; width: 2.9rem; height: 2.9rem; display: grid; place-items: center; border: 1px solid var(--c-line, var(--line)); border-radius: 50%; background: var(--c-surface, var(--surface)); color: var(--c-ink, var(--navy)); box-shadow: var(--sh-2, 0 8px 22px rgba(11, 31, 75, 0.2)); cursor: pointer; animation: fade 160ms ease-out both; }
+.ws5-top:hover { background: var(--c-tint, var(--blue-tint)); }
+@media (max-width: 899px) { .ws5-top { bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); } }
+@media (prefers-reduced-motion: reduce) { .ws5-dd-menu, .ws5-top { animation: none; } }
