@@ -17,18 +17,22 @@ function apportion(total, weights) {
 
 // Takes up to k items. With balance on, each pick comes from the topic with the FEWEST chosen so far (shared `counts`
 // across every call, manual picks included), so topic totals never drift apart by more than one while questions last.
-function take(list, k, balance, rng, counts) {
+function take(list, k, balance, rng, counts, keyOf, cost) {
   if (k <= 0 || !list.length) return [];
   const mixed = shuffled(list, rng);
+  // Least-used first (stable, so ties stay in random order). Used to spread questions across students.
+  if (cost) mixed.sort((a, b) => cost(a) - cost(b));
   if (!balance) return mixed.slice(0, k);
   const byTopic = new Map();
-  for (const q of mixed) { const t = q.topic || ""; if (!byTopic.has(t)) byTopic.set(t, []); byTopic.get(t).push(q); }
+  for (const q of mixed) { const t = keyOf(q); if (!byTopic.has(t)) byTopic.set(t, []); byTopic.get(t).push(q); }
   const out = [];
   while (out.length < k) {
     const open = [...byTopic.entries()].filter(([, qs]) => qs.length);
     if (!open.length) break;
     const least = Math.min(...open.map(([t]) => counts.get(t) || 0));
     const tied = shuffled(open.filter(([t]) => (counts.get(t) || 0) === least), rng);
+    // Between topics that are level, the one whose next question is least used goes first, so no topic runs out early.
+    if (cost) tied.sort((a, b) => cost(a[1][0]) - cost(b[1][0]));
     const [t, qs] = tied[0];
     out.push(qs.shift());
     counts.set(t, (counts.get(t) || 0) + 1);
@@ -44,8 +48,12 @@ function selectQuestions(pool, opts = {}) {
   const count = Math.max(0, Math.floor(opts.count || 0));
   const rng = rngFrom(opts.seed || newSeed());
   const balance = opts.balanceTopics !== false;
+  // What "evenly" means: across topics (default), or across subjects for an exam that mixes subjects.
+  const keyOf = opts.balanceBy === "subject" ? (q) => q.subject || "" : (q) => q.topic || "";
   const topics = (opts.topics || []).filter(Boolean);
   const exclude = new Set((opts.excludeIds || []).map(String));
+  // opts.cost: { questionId: number }. Lower is preferred; used to hand out the least-used questions first.
+  const cost = opts.cost ? (q) => opts.cost[String(q.id)] || 0 : null;
   const notes = [];
 
   const byId = new Map(pool.map((q) => [String(q.id), q]));
@@ -59,7 +67,7 @@ function selectQuestions(pool, opts = {}) {
   }
   const chosenIds = new Set(manual.map((q) => String(q.id)));
   const counts = new Map(); // picks per topic so far; manual picks count towards the balance
-  for (const q of manual) counts.set(q.topic || "", (counts.get(q.topic || "") || 0) + 1);
+  for (const q of manual) counts.set(keyOf(q), (counts.get(keyOf(q)) || 0) + 1);
 
   const topicSet = new Set(topics.map((t) => t.toLowerCase()));
   const candidates = pool.filter((q) => !chosenIds.has(String(q.id)) && !exclude.has(String(q.id)) && (!topicSet.size || topicSet.has(String(q.topic || "").toLowerCase())));
@@ -75,16 +83,16 @@ function selectQuestions(pool, opts = {}) {
     const rated = (lvl) => candidates.filter((q) => q.difficulty === lvl);
     const unrated = candidates.filter((q) => !LEVELS.includes(q.difficulty));
     if (!LEVELS.some((l) => rated(l).length)) notes.push({ code: "NO_DIFFICULTY_DATA", unrated: unrated.length });
-    for (const lvl of LEVELS) picked.push(...take(rated(lvl), targets[lvl], balance, rng, counts));
+    for (const lvl of LEVELS) picked.push(...take(rated(lvl), targets[lvl], balance, rng, counts, keyOf, cost));
     const got = new Set(picked.map((q) => String(q.id)));
     const lacking = LEVELS.filter((l) => picked.filter((q) => q.difficulty === l).length < targets[l]);
     for (const l of lacking) notes.push({ code: "LEVEL_SHORT", level: l, wanted: targets[l], got: picked.filter((q) => q.difficulty === l).length });
     // Fill any gap from the rest: rated questions first, then unrated.
     let gap = need - picked.length;
-    if (gap > 0) { const rest = candidates.filter((q) => !got.has(String(q.id))); const fill = take(rest.filter((q) => LEVELS.includes(q.difficulty)), gap, balance, rng, counts); picked.push(...fill); fill.forEach((q) => got.add(String(q.id))); gap = need - picked.length; }
-    if (gap > 0) { const fill = take(unrated.filter((q) => !got.has(String(q.id))), gap, balance, rng, counts); picked.push(...fill); }
+    if (gap > 0) { const rest = candidates.filter((q) => !got.has(String(q.id))); const fill = take(rest.filter((q) => LEVELS.includes(q.difficulty)), gap, balance, rng, counts, keyOf, cost); picked.push(...fill); fill.forEach((q) => got.add(String(q.id))); gap = need - picked.length; }
+    if (gap > 0) { const fill = take(unrated.filter((q) => !got.has(String(q.id))), gap, balance, rng, counts, keyOf, cost); picked.push(...fill); }
   } else {
-    picked = take(candidates, need, balance, rng, counts);
+    picked = take(candidates, need, balance, rng, counts, keyOf, cost);
   }
 
   // Final order is random (not grouped by difficulty or topic). With question shuffling off, this is the order every student sees.
@@ -94,7 +102,7 @@ function selectQuestions(pool, opts = {}) {
   const tally = (key, fallback) => all.reduce((m, q) => { const k = (key(q) || fallback); m[k] = (m[k] || 0) + 1; return m; }, {});
   return {
     picked: all, shortfall, notes,
-    breakdown: { byTopic: tally((q) => q.topic, "(no topic)"), byDifficulty: tally((q) => (LEVELS.includes(q.difficulty) ? q.difficulty : null), "unrated") },
+    breakdown: { bySubject: tally((q) => q.subject, "(no subject)"), byTopic: tally((q) => q.topic, "(no topic)"), byDifficulty: tally((q) => (LEVELS.includes(q.difficulty) ? q.difficulty : null), "unrated") },
     manualCount: manual.length,
   };
 }

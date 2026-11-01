@@ -54,12 +54,22 @@ const NEIGHBOUR_REFERENCE = [
 ];
 const dependsOnNeighbours = (q) => NEIGHBOUR_REFERENCE.some((rx) => rx.test(String(q.text || "")));
 
+// The questions THIS attempt was given. An attempt drawn from a pool stores its own list of question ids; every other
+// attempt (older ones, or exams where everyone gets everything) has none, and gets the whole exam.
+function servedQuestions(exam, attempt) {
+  const ids = attempt && Array.isArray(attempt.questionIds) ? attempt.questionIds : null;
+  const all = (exam && exam.questions) || [];
+  if (!ids || !ids.length) return all;
+  const byId = new Map(all.map((q) => [String(q._id), q]));
+  return ids.map((id) => byId.get(String(id))).filter(Boolean);
+}
+
 // Builds the order one attempt sees. Without a seed (older attempts) or with both switches off, nothing moves.
 // `settings` come from the ATTEMPT (copied at start), so changing the exam later cannot reshuffle someone mid-exam.
 function arrange(questions, settings = {}) {
   const { seed, shuffleQuestions, shuffleOptions } = settings;
   const on = Boolean(seed);
-  let order = questions.slice();
+  let order = servedQuestions({ questions }, settings).slice(); // only this attempt's own questions
   if (on && shuffleQuestions) order = shuffled(order, rngFrom(`${seed}:questions`));
   return order.map((q) => {
     let opts = (q.options || []).slice();
@@ -94,4 +104,4 @@ const reviewView = (entry, given) => {
   };
 };
 
-module.exports = { newSeed, rngFrom, shuffled, optionsShufflable, dependsOnNeighbours, arrange, studentView, reviewView };
+module.exports = { servedQuestions, newSeed, rngFrom, shuffled, optionsShufflable, dependsOnNeighbours, arrange, studentView, reviewView };

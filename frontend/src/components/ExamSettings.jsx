@@ -6,6 +6,7 @@ import Field from "./Field.jsx";
 import FormStatus from "./FormStatus.jsx";
 import DurationPicker from "./DurationPicker.jsx";
 import { problem as durationProblem } from "../lib/exam/duration.js";
+import { describe as describePool, MAX_PER_STUDENT } from "../lib/exam/pool.js";
 import "../pages/admin/builder.css";
 
 const toLocal = (iso) => {
@@ -29,6 +30,7 @@ export default function ExamSettings({ exam, locked, onSaved }) {
       examType: exam.examType || "", instructions: exam.instructions || "", durationMinutes: exam.durationMinutes ?? "",
       maxAttempts: String(exam.maxAttempts || 1), showAnswersAfter: Boolean(exam.showAnswersAfter),
       shuffleQuestions: Boolean(exam.shuffleQuestions), shuffleOptions: Boolean(exam.shuffleOptions),
+      questionsPerStudent: exam.questionsPerStudent ? String(exam.questionsPerStudent) : "", drawSpread: exam.drawSpread !== false, drawBalance: exam.drawBalance !== false, drawMixDifficulty: Boolean(exam.drawMixDifficulty),
       availableFrom: toLocal(exam.availableFrom), availableUntil: toLocal(exam.availableUntil),
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,7 +39,8 @@ export default function ExamSettings({ exam, locked, onSaved }) {
   const save = useSubmit(async () => {
     const bad = durationProblem(f.durationMinutes);
     if (bad) throw new Error(bad);
-    const body = { ...f, durationMinutes: Number(f.durationMinutes), maxAttempts: Number(f.maxAttempts), availableFrom: toIso(f.availableFrom), availableUntil: toIso(f.availableUntil) };
+    if (f.questionsPerStudent !== "" && !(Number.isInteger(Number(f.questionsPerStudent)) && Number(f.questionsPerStudent) >= 1 && Number(f.questionsPerStudent) <= MAX_PER_STUDENT)) throw new Error("Questions per student must be a whole number from 1 to 500.");
+    const body = { ...f, questionsPerStudent: f.questionsPerStudent === "" ? null : Number(f.questionsPerStudent), durationMinutes: Number(f.durationMinutes), maxAttempts: Number(f.maxAttempts), availableFrom: toIso(f.availableFrom), availableUntil: toIso(f.availableUntil) };
     const d = await api(`/admin/exams/${exam._id}`, { method: "PATCH", token, body });
     onSaved(d.exam);
     setSaved("Details saved.");
@@ -64,6 +67,19 @@ export default function ExamSettings({ exam, locked, onSaved }) {
         <Field label="Opens (optional)" id="e-from" type="datetime-local" value={f.availableFrom} onChange={set("availableFrom")} />
         <Field label="Closes (optional)" id="e-until" type="datetime-local" value={f.availableUntil} onChange={set("availableUntil")} hint="Students cannot start after this time." />
       </div>
+
+      <fieldset className="xb-switches">
+        <legend>Question pool</legend>
+        <Field label="Questions per student (leave empty so everyone gets all questions)" id="e-per" type="number" min="1" max={MAX_PER_STUDENT} value={f.questionsPerStudent} onChange={set("questionsPerStudent")} disabled={locked} hint={locked ? "Locked because the examination is published or has attempts." : undefined} />
+        <p className="note" role="status">{describePool(f.questionsPerStudent, (exam.questions || []).length || exam.questionCount || 0).text}</p>
+        {f.questionsPerStudent !== "" && (
+          <>
+            <label className="flag-toggle"><input type="checkbox" checked={f.drawSpread} disabled={locked} onChange={flip("drawSpread")} /> Give new students questions nobody has had yet (least-used first)</label>
+            <label className="flag-toggle"><input type="checkbox" checked={f.drawBalance} disabled={locked} onChange={flip("drawBalance")} /> Give every student an even mix of topics (or subjects)</label>
+            <label className="flag-toggle"><input type="checkbox" checked={f.drawMixDifficulty} disabled={locked} onChange={flip("drawMixDifficulty")} /> Give every student the same easy / medium / hard mix</label>
+          </>
+        )}
+      </fieldset>
 
       <fieldset className="xb-switches">
         <legend>Randomisation</legend>

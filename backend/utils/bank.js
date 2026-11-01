@@ -162,6 +162,9 @@ function examSnapshot(q) {
   };
   if (q.textHtml) snap.textHtml = q.textHtml;
   if (q.topic) snap.topic = String(q.topic).slice(0, 120);
+  if (q.subject) snap.subject = String(q.subject).slice(0, 80);
+  const diff = difficultyOf(q);
+  if (diff) snap.difficulty = diff;
   const expl = adminSolution || q.explanation;
   if (expl) { snap.explanation = String(expl).slice(0, 4000); snap.explanationSource = adminSolution ? "admin_written" : "source"; if (!adminSolution && q.explanationHtml) snap.explanationHtml = q.explanationHtml; }
   return snap;

@@ -6,6 +6,7 @@ import { useFetch } from "../../useFetch.js";
 import Field from "../../components/Field.jsx";
 import DurationPicker from "../../components/DurationPicker.jsx";
 import { label as durationLabel, problem as durationProblem } from "../../lib/exam/duration.js";
+import { describe as describePool, MAX_PER_STUDENT } from "../../lib/exam/pool.js";
 import "./builder.css";
 
 const STEPS = ["Basics", "Questions", "Settings", "Review"];
@@ -33,20 +34,20 @@ export default function AdminExamBuilder() {
 
   const [step, setStep] = useState(0);
   const [basics, setBasics] = useState({ title: "", subject: "", level: "", examType: "", instructions: "" });
-  const [src, setSrc] = useState({ subject: "", topics: [], count: "20", mode: "random", difficultyMode: "any", mix: { easy: 30, medium: 50, hard: 20 }, verifiedOnly: false, balanceTopics: true });
+  const [src, setSrc] = useState({ subjects: [], balanceBy: "topic", topics: [], count: "20", mode: "random", difficultyMode: "any", mix: { easy: 30, medium: 50, hard: 20 }, verifiedOnly: false, balanceTopics: true });
   const [manual, setManual] = useState({});            // id -> question view, picked by hand
   const [excluded, setExcluded] = useState([]);        // ids the administrator removed, so a re-pick never brings them back
   const [result, setResult] = useState(null);          // latest answer from /admin/bank/select
   const [picking, setPicking] = useState(false);
   const [pickError, setPickError] = useState("");
-  const [cfg, setCfg] = useState({ durationMinutes: 60, maxAttempts: "1", shuffleQuestions: false, shuffleOptions: false, showAnswersAfter: false, marksMode: "bank", marksAll: "1" });
+  const [cfg, setCfg] = useState({ perStudent: "", drawSpread: true, drawBalance: true, drawMix: false, durationMinutes: 60, maxAttempts: "1", shuffleQuestions: false, shuffleOptions: false, showAnswersAfter: false, marksMode: "bank", marksAll: "1" });
   const [saving, setSaving] = useState("");
   const [saveError, setSaveError] = useState("");
   const [created, setCreated] = useState(null);
   const [showAll, setShowAll] = useState(false);
 
   const subjects = facets.data?.subjects || [];
-  const topicsHere = useMemo(() => (facets.data?.topics || []).filter((t) => !src.subject || t.subject === src.subject), [facets.data, src.subject]);
+  const topicsHere = useMemo(() => (facets.data?.topics || []).filter((t) => !src.subjects.length || src.subjects.includes(t.subject)), [facets.data, src.subjects]);
   const setB = (k) => (e) => setBasics((b) => ({ ...b, [k]: e.target.value }));
   const setS = (k, v) => { setSrc((s) => ({ ...s, [k]: v })); setResult(null); };
 
@@ -62,7 +63,7 @@ export default function AdminExamBuilder() {
       if (!Number.isInteger(count) || count < 1) throw new Error(src.mode === "manual" ? "Tick at least one question to include." : "Enter how many questions you need (1 to 500).");
       if (count > 500) throw new Error("An examination can have at most 500 questions.");
       const body = {
-        subject: src.subject, topics: src.topics, count, manualIds, excludeIds: excluded, verifiedOnly: src.verifiedOnly, balanceTopics: src.balanceTopics,
+        subjects: src.subjects, balanceBy: src.subjects.length > 1 ? src.balanceBy : "topic", topics: src.topics, count, manualIds, excludeIds: excluded, verifiedOnly: src.verifiedOnly, balanceTopics: src.balanceTopics,
         difficulty: src.difficultyMode === "mix" ? { mode: "mix", mix: { easy: Number(src.mix.easy) || 0, medium: Number(src.mix.medium) || 0, hard: Number(src.mix.hard) || 0 } } : { mode: "any" },
       };
       if (keepManualOnly) body.count = Math.max(count, manualIds.length);
@@ -81,9 +82,9 @@ export default function AdminExamBuilder() {
   const [q, setQ] = useState("");
   const [topicFilter, setTopicFilter] = useState("");
   const [page, setPage] = useState(1);
-  const browseUrl = useMemo(() => { const p = new URLSearchParams({ page: String(page), limit: "15", flag: "usable" }); if (src.subject) p.set("subject", src.subject); if (topicFilter) p.set("topic", topicFilter); if (q.trim()) p.set("q", q.trim()); return `/admin/bank?${p}`; }, [src.subject, topicFilter, q, page]);
+  const browseUrl = useMemo(() => { const p = new URLSearchParams({ page: String(page), limit: "15", flag: "usable" }); if (src.subjects.length === 1) p.set("subject", src.subjects[0]); if (topicFilter) p.set("topic", topicFilter); if (q.trim()) p.set("q", q.trim()); return `/admin/bank?${p}`; }, [src.subjects, topicFilter, q, page]);
   const browse = useFetch(src.mode === "random" || step !== 1 ? "/admin/bank?limit=1&flag=usable" : browseUrl);
-  useEffect(() => { setPage(1); }, [src.subject, topicFilter, q]);
+  useEffect(() => { setPage(1); }, [src.subjects, topicFilter, q]);
 
   const toggleManual = (row) => {
     setResult(null);
@@ -94,7 +95,7 @@ export default function AdminExamBuilder() {
   const problems = {
     0: [!basics.title.trim() && "Give the examination a title.", !basics.subject.trim() && "Enter the subject."].filter(Boolean),
     1: [!result && "Pick the questions first.", result && result.selected < 1 && "No questions are selected."].filter(Boolean),
-    2: [durationProblem(cfg.durationMinutes), !(Number(cfg.maxAttempts) >= 1 && Number(cfg.maxAttempts) <= 20) && "Attempts must be between 1 and 20.", cfg.marksMode === "all" && !(Number(cfg.marksAll) >= 0.5 && Number(cfg.marksAll) <= 100) && "Marks per question must be between 0.5 and 100."].filter(Boolean),
+    2: [durationProblem(cfg.durationMinutes), !(Number(cfg.maxAttempts) >= 1 && Number(cfg.maxAttempts) <= 20) && "Attempts must be between 1 and 20.", cfg.marksMode === "all" && !(Number(cfg.marksAll) >= 0.5 && Number(cfg.marksAll) <= 100) && "Marks per question must be between 0.5 and 100.", cfg.perStudent !== "" && !(Number.isInteger(Number(cfg.perStudent)) && Number(cfg.perStudent) >= 1 && Number(cfg.perStudent) <= MAX_PER_STUDENT) && "Questions per student must be a whole number from 1 to 500."].filter(Boolean),
   };
   const go = (n) => { if (n > step) for (let i = step; i < n; i++) if (problems[i]?.length) { setStep(i); return; } setStep(n); };
   const canLeave = (i) => !problems[i] || problems[i].length === 0;
@@ -108,6 +109,7 @@ export default function AdminExamBuilder() {
       const d = await api("/admin/exams", { method: "POST", token, body: {
         title: basics.title.trim(), subject: basics.subject.trim(), level: basics.level.trim(), examType: basics.examType.trim(), instructions: basics.instructions.trim(),
         durationMinutes: Number(cfg.durationMinutes), maxAttempts: Number(cfg.maxAttempts), showAnswersAfter: cfg.showAnswersAfter, shuffleQuestions: cfg.shuffleQuestions, shuffleOptions: cfg.shuffleOptions,
+        ...(cfg.perStudent !== "" ? { questionsPerStudent: Number(cfg.perStudent), drawSpread: cfg.drawSpread, drawBalance: cfg.drawBalance, drawMixDifficulty: cfg.drawMix } : {}),
       } });
       examId = d.exam._id;
       const ids = chosen.map((c) => c.id);
@@ -168,12 +170,18 @@ export default function AdminExamBuilder() {
 
           <fieldset className="xb-fieldset">
             <legend>Where from</legend>
-            <Field label="Question bank subject" id="s-subject">
-              <select id="s-subject" value={src.subject} onChange={(e) => { setSrc((s) => ({ ...s, subject: e.target.value, topics: [] })); setResult(null); setManual({}); setExcluded([]); }}>
-                <option value="">All subjects</option>
-                {subjects.map((s) => <option key={s.name} value={s.name}>{s.name} ({s.count})</option>)}
-              </select>
-            </Field>
+            <p><strong>Question banks</strong> <span className="muted">(tick one, or several to combine them; leave all unticked to use every subject)</span></p>
+            <div className="xb-topics" role="group" aria-label="Question bank subjects">
+              {subjects.map((s) => (
+                <label key={s.name}><input type="checkbox" checked={src.subjects.includes(s.name)} onChange={(e) => { setSrc((x) => ({ ...x, subjects: e.target.checked ? [...x.subjects, s.name] : x.subjects.filter((n) => n !== s.name), topics: [], balanceBy: (e.target.checked ? x.subjects.length + 1 : x.subjects.length - 1) > 1 ? "subject" : "topic" })); setResult(null); setManual({}); setExcluded([]); }} /> {s.name} <span className="muted">({s.count})</span></label>
+              ))}
+            </div>
+            {src.subjects.length > 1 && (
+              <div className="xb-radios" role="radiogroup" aria-label="Spread evenly across">
+                <label className={src.balanceBy === "subject" ? "is-on" : ""}><input type="radio" name="balanceBy" checked={src.balanceBy === "subject"} onChange={() => setS("balanceBy", "subject")} /><span><strong>Evenly across subjects</strong><small>Each subject contributes the same number of questions.</small></span></label>
+                <label className={src.balanceBy === "topic" ? "is-on" : ""}><input type="radio" name="balanceBy" checked={src.balanceBy === "topic"} onChange={() => setS("balanceBy", "topic")} /><span><strong>Evenly across topics</strong></span></label>
+              </div>
+            )}
             {topicsHere.length > 0 && (
               <>
                 <p><strong>Topics</strong> <span className="muted">(leave all unticked to use every topic)</span></p>
@@ -194,7 +202,7 @@ export default function AdminExamBuilder() {
                 <label key={v} className={src.mode === v ? "is-on" : ""}><input type="radio" name="mode" value={v} checked={src.mode === v} onChange={() => { setS("mode", v); }} /><span><strong>{t}</strong><small>{d}</small></span></label>
               ))}
             </div>
-            {src.mode !== "manual" && <Field label="Number of questions" id="s-count" type="number" min="1" max="500" value={src.count} onChange={(e) => setS("count", e.target.value)} hint="Up to 500." />}
+            {src.mode !== "manual" && <Field label="Number of questions to pick" id="s-count" type="number" min="1" max="500" value={src.count} onChange={(e) => setS("count", e.target.value)} hint="Up to 500. This is the exam, or the pool students are drawn from (set in the next step)." />}
             {src.mode !== "manual" && (
               <>
                 <div className="xb-radios" role="radiogroup" aria-label="Difficulty">
@@ -271,6 +279,23 @@ export default function AdminExamBuilder() {
       {step === 2 && (
         <section className="panel form form-tight" aria-labelledby="s2">
           <h2 className="panel-title" id="s2">3. Settings</h2>
+          <fieldset className="xb-fieldset">
+            <legend>Questions each student gets</legend>
+            <div className="xb-radios" role="radiogroup" aria-label="Question delivery">
+              <label className={cfg.perStudent === "" ? "is-on" : ""}><input type="radio" name="delivery" checked={cfg.perStudent === ""} onChange={() => setCfg((c) => ({ ...c, perStudent: "" }))} /><span><strong>Everyone gets all {chosen.length} questions</strong></span></label>
+              <label className={cfg.perStudent !== "" ? "is-on" : ""}><input type="radio" name="delivery" checked={cfg.perStudent !== ""} onChange={() => setCfg((c) => ({ ...c, perStudent: String(Math.min(40, Math.max(1, chosen.length - 1))) }))} /><span><strong>Each student gets their own different questions</strong><small>The {chosen.length} questions become a pool; every student is given their own draw from it when they start.</small></span></label>
+            </div>
+            {cfg.perStudent !== "" && (
+              <>
+                <Field label="Questions per student" id="b-per" type="number" min="1" max={MAX_PER_STUDENT} value={cfg.perStudent} onChange={(e) => setCfg((c) => ({ ...c, perStudent: e.target.value }))} />
+                <p className="note" role="status">{describePool(cfg.perStudent, chosen.length).text}</p>
+                <label className="flag-toggle"><input type="checkbox" checked={cfg.drawSpread} onChange={(e) => setCfg((c) => ({ ...c, drawSpread: e.target.checked }))} /> Give new students questions nobody has had yet (least-used first)</label>
+                <label className="flag-toggle"><input type="checkbox" checked={cfg.drawBalance} onChange={(e) => setCfg((c) => ({ ...c, drawBalance: e.target.checked }))} /> Give every student an even mix of topics{src.subjects.length > 1 ? " and subjects" : ""}</label>
+                <label className="flag-toggle"><input type="checkbox" checked={cfg.drawMix} onChange={(e) => setCfg((c) => ({ ...c, drawMix: e.target.checked }))} /> Give every student the same easy / medium / hard mix <span className="muted">(only for questions with a difficulty rating)</span></label>
+                <p className="muted xb-help">Students do not all get equally hard papers unless you keep the mix even, so scores are most comparable when the topic and difficulty options above are on. A retake draws questions the student has not had before whenever the pool allows.</p>
+              </>
+            )}
+          </fieldset>
           <DurationPicker id="b-duration" value={cfg.durationMinutes} onChange={(v) => setCfg((c) => ({ ...c, durationMinutes: v }))} />
           <Field label="Attempts allowed per student" id="b-attempts" type="number" min="1" max="20" value={cfg.maxAttempts} onChange={(e) => setCfg((c) => ({ ...c, maxAttempts: e.target.value }))} />
           <fieldset className="xb-switches">
@@ -297,15 +322,17 @@ export default function AdminExamBuilder() {
           <dl className="xb-summary">
             <div><dt>Title</dt><dd>{basics.title || "—"}</dd></div>
             <div><dt>Subject</dt><dd>{basics.subject || "—"}{basics.level ? ` · ${basics.level}` : ""}</dd></div>
-            <div><dt>Questions</dt><dd>{chosen.length}</dd></div>
-            <div><dt>Total marks</dt><dd>{totalMarks}</dd></div>
+            <div><dt>Questions in the exam</dt><dd>{chosen.length}</dd></div>
+            <div><dt>Each student gets</dt><dd>{cfg.perStudent !== "" && Number(cfg.perStudent) < chosen.length ? `${cfg.perStudent} (their own draw)` : `All ${chosen.length}`}</dd></div>
+            <div><dt>Total marks (per student)</dt><dd>{cfg.perStudent !== "" && Number(cfg.perStudent) < chosen.length ? Math.round((totalMarks / (chosen.length || 1)) * Number(cfg.perStudent) * 100) / 100 : totalMarks}</dd></div>
             <div><dt>Duration</dt><dd>{durationLabel(cfg.durationMinutes) || "—"}</dd></div>
             <div><dt>Attempts</dt><dd>{cfg.maxAttempts}</dd></div>
             <div><dt>Question order</dt><dd>{cfg.shuffleQuestions ? "Different for each student" : "Same for everyone"}</dd></div>
             <div><dt>Option order</dt><dd>{cfg.shuffleOptions ? "Different for each student" : "As written"}</dd></div>
           </dl>
           <ul className="xb-check" aria-label="Checklist">
-            <li>{chosen.length} question{chosen.length === 1 ? "" : "s"} ready</li>
+            <li>{chosen.length} question{chosen.length === 1 ? "" : "s"} ready{cfg.perStudent !== "" ? `, drawn ${cfg.perStudent} per student` : ""}</li>
+            {cfg.perStudent !== "" && <li>{describePool(cfg.perStudent, chosen.length).text}</li>}
             <li>Duration: {durationLabel(cfg.durationMinutes)}</li>
             {warn?.unverified > 0 && <li className="is-warn">{plural(warn.unverified, "question")} not yet verified</li>}
             {short && <li className="is-warn">{result.shortfall} fewer questions than requested</li>}
