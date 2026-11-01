@@ -4,6 +4,7 @@ import { useAuth } from "../auth.jsx";
 import AccountMenu from "./AccountMenu.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
 import { TYPE_LABEL } from "../accountTypes.js";
+import MessagesNavLink from "./MessagesNavLink.jsx";
 
 const PUBLIC_LINKS = [
   { to: "/about", label: "About" },
@@ -54,6 +55,8 @@ export default function Header() {
           <ul className="nav-links">
             {PUBLIC_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="nav-link">{l.label}</NavLink></li>))}
             {canExam && <li><NavLink to="/exams" className="nav-link">Exams</NavLink></li>}
+            {canExam && <li><NavLink to="/exams" className="nav-link">Exams<li><MessagesNavLink className="nav-link" /></li>
+
             {user && user.role === "admin" && <li><NavLink to="/admin" className="nav-link">Admin</NavLink></li>}
           </ul>
           <div className="nav-actions">
@@ -102,6 +105,7 @@ export default function Header() {
         <ul className="drawer-list">
           <li><NavLink to="/" end className="drawer-link" onClick={close}>Home</NavLink></li>
           {PUBLIC_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="drawer-link" onClick={close}>{l.label}</NavLink></li>))}
+          <li><MessagesNavLink className="drawer-link" onClick={close} /></li>
           <li><NavLink to="/faq" className="drawer-link" onClick={close}>FAQ</NavLink></li>
         </ul>
 
