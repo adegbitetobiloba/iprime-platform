@@ -4,12 +4,16 @@ import { useAuth } from "../auth.jsx";
 import Icon from "../components/Icon.jsx";
 import Reveal from "../components/Reveal.jsx";
 import Sparkline from "../components/dashboard/Sparkline.jsx";
+import { pickContinue } from "../lib/continueTarget.js";
 import "../studentDashboard.css";
 
 const greeting = () => {
   const h = new Date().getHours();
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 };
+
+const TYPE_LABEL = { pdf: "PDF", video: "Video", text: "Reading", link: "Link" };
+const clock = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 
 const minutesLeft = (s) => (s >= 3600 ? `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min left` : `${Math.max(1, Math.ceil(s / 60))} min left`);
 
@@ -40,7 +44,7 @@ const NAV = [
   { to: "/exams", icon: "book", label: "Practise questions", hint: "Open practice tests and timed papers" },
   { to: "/results", icon: "clock", label: "Examination history", hint: "Every result you have saved" },
   { to: "/performance", icon: "chart", label: "Performance", hint: "Scores, topics and progress" },
-  { icon: "book", label: "Library", hint: "Coming soon", soon: true },
+  { to: "/library", icon: "book", label: "Library", hint: "Study notes, videos and PDFs" },
   { to: "/account", icon: "user", label: "My profile", hint: "Update your details" },
 ];
 
@@ -103,23 +107,32 @@ function ContinueLearning({ data }) {
         </div>
 
         <div className="sd-card">
-          <h3>Library</h3>
-          {lib?.available && lib.recent?.length > 0 ? (
-            <ul className="sd-list">
-              {lib.recent.map((m) => (
-                <li key={m.id} className="sd-row">
-                  <div>
-                    <strong>{m.title}</strong>
-                    <span className="muted">{[m.subject, m.lastPage && m.pageCount ? `Page ${m.lastPage} of ${m.pageCount}` : null].filter(Boolean).join(" · ")}</span>
-                  </div>
-                  {m.href && <Link className="btn btn-secondary btn-sm" to={m.href}>Continue</Link>}
-                </li>
-              ))}
-            </ul>
-          ) : lib?.available ? (
-            <p className="muted">You have not opened any study material yet.</p>
+          <div className="sd-card-head"><h3>Library</h3><Link to="/library" className="sd-link">Open Library <Icon name="arrow" size={14} /></Link></div>
+          {!lib?.available ? (
+            <p className="muted">The Library could not be loaded just now. <Link to="/library">Open it directly</Link>.</p>
+          ) : lib.recent.length === 0 ? (
+            <>
+              <p className="muted">You have not opened any study material yet. Lessons, videos and PDFs you read will appear here so you can carry on where you stopped.</p>
+              <Link to="/library" className="btn btn-primary btn-sm sd-cta">Browse the Library</Link>
+            </>
           ) : (
-            <p className="muted">The Library is not open yet. When it is, the lessons and PDFs you read will appear here so you can carry on from the page where you stopped.</p>
+            <>
+              <p className="sd-lib-stats muted">
+                <strong>{lib.summary.lessonsCompleted}</strong> lesson{lib.summary.lessonsCompleted === 1 ? "" : "s"} completed
+                {lib.summary.studyMinutes > 0 && <> · <strong>{lib.summary.studyMinutes}</strong> min studied</>}
+              </p>
+              <ul className="sd-list">
+                {lib.recent.map((m) => (
+                  <li key={m.id} className="sd-row">
+                    <div>
+                      <strong>{m.title}</strong>
+                      <span className="muted">{[TYPE_LABEL[m.contentType] || "Lesson", m.lastPage ? `Page ${m.lastPage} of ${m.pageCount}` : null, m.positionSec ? `Resume at ${clock(m.positionSec)}` : null, m.completed ? "Completed" : null].filter(Boolean).join(" · ")}</span>
+                    </div>
+                    <Link className="btn btn-secondary btn-sm" to={`/library/lessons/${m.id}`}>{m.completed ? "Review" : "Continue"}</Link>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
 
@@ -239,6 +252,20 @@ function Recommended({ data }) {
   );
 }
 
+function ContinueHero({ target }) {
+  if (!target) return null;
+  return (
+    <section className={`sd-hero${target.urgent ? " is-urgent" : ""}`} aria-labelledby="sd-hero-h">
+      <div className="sd-hero-text">
+        <p className="sd-hero-eyebrow" id="sd-hero-h">{target.kind === "recommended" ? "Suggested for you" : "Continue where you stopped"}</p>
+        <h2>{target.title}</h2>
+        <p className="sd-hero-detail">{target.detail}</p>
+      </div>
+      <Link to={target.to} className="btn btn-primary">{target.label} <Icon name="arrow" size={16} /></Link>
+    </section>
+  );
+}
+
 function Skeleton() {
   return (
     <div className="sd-loading" aria-hidden="true">
@@ -270,6 +297,8 @@ export default function StudentDashboard() {
         {(!user?.phone || !user?.state) && (
           <p className="alert alert-info sd-gap" role="status">Add your phone number and state to finish your profile. <Link to="/account">Edit profile</Link></p>
         )}
+
+        {data && <ContinueHero target={pickContinue(data)} />}
 
         <QuickNav />
 

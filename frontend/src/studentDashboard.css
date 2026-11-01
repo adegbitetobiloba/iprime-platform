@@ -95,3 +95,21 @@ a.sd-nav-item:focus-visible { outline: 3px solid var(--c-gold); outline-offset: 
   .sd-nav-item, .sd-result { transition: none; }
   a.sd-nav-item:hover, .sd-result:hover { transform: none; }
 }
+
+/* Library card on the dashboard */
+.sd-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; margin-bottom: .5rem; }
+.sd-card-head h3 { margin: 0; }
+.sd-lib-stats { margin: 0 0 .75rem; font-size: .92rem; }
+.sd-lib-stats strong { color: var(--c-ink); }
+.sd-cta { margin-top: .75rem; }
+
+/* "Continue where you stopped" card */
+.sd-hero { margin-top: var(--sd-gap); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; padding: 1.25rem 1.4rem; background: var(--c-surface); border: 1px solid var(--c-line); border-left: 6px solid var(--c-gold); border-radius: 14px; box-shadow: 0 10px 28px -20px var(--c-shadow); animation: sd-hero-in .45s ease-out both; }
+.sd-hero.is-urgent { border-left-color: #D64545; }
+.sd-hero-text { min-width: 0; flex: 1 1 260px; }
+.sd-hero-eyebrow { margin: 0 0 .2rem; font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-gold-text); }
+.sd-hero h2 { margin: 0; font-size: clamp(1.15rem, 2.6vw, 1.45rem); color: var(--c-ink); overflow-wrap: anywhere; }
+.sd-hero-detail { margin: .3rem 0 0; color: var(--c-muted); }
+.sd-hero .btn { white-space: nowrap; }
+@keyframes sd-hero-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sd-hero { animation: none; } }

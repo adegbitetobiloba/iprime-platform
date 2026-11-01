@@ -35,7 +35,7 @@ export default function Library() {
   if (difficulty) qs.set("difficulty", difficulty);
   const { data, error, loading, reload } = useFetch(browsing ? `/library/courses?${qs}` : "/library/home");
 
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState((params.get("q") || "").slice(0, 60)); // lets other pages (e.g. Performance) open the Library with a search
   const [results, setResults] = useState(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");

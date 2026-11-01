@@ -1,12 +1,27 @@
 const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const { buildDashboard } = require("../utils/dashboard");
+const { buildLibrarySection } = require("../utils/dashboardLibrary");
 
-// The Library is built by a separate workstream and is not mounted on the API yet. This is the ONE place that
-// will read "recently opened lessons / last-read page" once the Library exposes per-student progress.
-// Until then the dashboard reports honestly that there is nothing to show, instead of inventing data.
-async function loadLibrarySection(/* userId */) {
-  return { available: false, recent: [] };
+// Library activity for the dashboard, read from the Library's own per-student progress records (LibraryProgress).
+// If the Library cannot be read for any reason the dashboard still works and simply reports it as unavailable.
+async function loadLibrarySection(userId) {
+  try {
+    const mongoose = require("mongoose");
+    const Progress = require("../models/LibraryProgress");
+    require("../models/Lesson"); // registers LibraryLesson so populate() can resolve it
+    const uid = new mongoose.Types.ObjectId(String(userId));
+    const [progress, agg] = await Promise.all([
+      Progress.find({ user: uid }).sort({ lastOpenedAt: -1 }).limit(12)
+        .select("lesson lastOpenedAt completed pageCount lastPage lastPositionSec")
+        .populate({ path: "lesson", select: "title contentType status course" }).lean(),
+      Progress.aggregate([{ $match: { user: uid } }, { $group: { _id: null, completed: { $sum: { $cond: ["$completed", 1, 0] } }, seconds: { $sum: "$activeSeconds" }, watched: { $sum: "$maxWatchedSec" }, opened: { $sum: 1 } } }]),
+    ]);
+    return buildLibrarySection({ progress, totals: agg[0] || {} });
+  } catch (err) {
+    console.error("dashboard: library section unavailable:", err.message);
+    return { available: false, recent: [] };
+  }
 }
 
 // GET /api/student/dashboard

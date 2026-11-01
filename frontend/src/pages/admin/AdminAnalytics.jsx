@@ -24,10 +24,15 @@ export default function AdminAnalytics() {
       <div className="page-bar">
         <div>
           <p className="eyebrow">Administration</p>
-          <h1>Examination analytics</h1>
-          <p className="muted">Choose an examination to see scores, hard questions, topics and who may need support.</p>
+          <h1>Analytics</h1>
+          <p className="muted">Examination results, and how students are using the Library. Choose an examination below to see scores, hard questions, topics and who may need support.</p>
         </div>
       </div>
+
+      <ul className="aa-list aa-more">
+        <li className="aa-item"><div className="aa-item-main"><strong>Library study by student</strong><span className="muted">Who is studying, who has gone quiet and who has not started.</span></div><div className="aa-item-end"><Link to="/admin/analytics/library-study" className="btn btn-secondary btn-sm">Open</Link></div></li>
+        <li className="aa-item"><div className="aa-item-main"><strong>Library course and lesson analytics</strong><span className="muted">Most used courses, where students stop, video engagement.</span></div><div className="aa-item-end"><Link to="/admin/library/analytics" className="btn btn-secondary btn-sm">Open</Link></div></li>
+      </ul>
 
       <div className="aa-filters">
         <label className="aa-search">
