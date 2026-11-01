@@ -3,6 +3,7 @@ const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const { deadlineFor, toPlain } = require("../utils/cbt");
 const { newSeed, arrange, studentView, reviewView } = require("../utils/randomise");
+const pool = require("../utils/pool");
 const { makeFinaliser } = require("../utils/attemptLifecycle");
 
 const isId = (v) => mongoose.isValidObjectId(v);
@@ -14,7 +15,7 @@ const serverError = (res, err) => {
 const isOpen = (exam, at = new Date()) =>
   exam.status === "published" && (!exam.availableFrom || exam.availableFrom <= at) && (!exam.availableUntil || exam.availableUntil >= at);
 
-const totalMarks = (exam) => exam.questions.reduce((n, q) => n + (q.marks ?? 1), 0);
+const totalMarks = (exam) => pool.shape(exam).totalMarks;
 
 // Scores and closes an attempt. Safe to call twice, and safe against a save arriving mid-way: see utils/attemptLifecycle.js.
 const finalise = makeFinaliser(Attempt);
