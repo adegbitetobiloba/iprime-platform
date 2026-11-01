@@ -8,7 +8,7 @@ import "../../messages.css";
 const NAV = [
   { heading: null, items: [{ to: "/admin", label: "Overview", end: true }] },
   { heading: "Admissions", items: [{ to: "/admin/applications", label: "Applications", badge: "applications" }, { to: "/admin/students", label: "Students and accounts" }] },
-  { heading: "Academics", items: [{ to: "/admin/exams", label: "Examinations" }, { to: "/admin/bank", label: "Question bank" }, { to: "/admin/import", label: "Import questions" }, { to: "/admin/programmes", label: "Programmes" }, { to: "/admin/library", label: "Library" }] },
+  { heading: "Academics", items: [{ to: "/admin/exams", label: "Examinations" }, { to: "/admin/bank", label: "Question bank" }, { to: "/admin/import", label: "Import questions" }, { to: "/admin/analytics", label: "Analytics" }, { to: "/admin/programmes", label: "Programmes" }, { to: "/admin/library", label: "Library" }] },
   { heading: "Communication", items: [{ to: "/admin/messages", label: "Messages", badge: "messages" }] },
 ];
 
