@@ -55,7 +55,7 @@ export default function Header() {
           <ul className="nav-links">
             {PUBLIC_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="nav-link">{l.label}</NavLink></li>))}
             {canExam && <li><NavLink to="/exams" className="nav-link">Exams</NavLink></li>}
-            {canExam && <li><NavLink to="/exams" className="nav-link">Exams<li><MessagesNavLink className="nav-link" /></li>
+            {canExam && <li><MessagesNavLink className="nav-link" /></li>}
             {user && user.role === "admin" && <li><NavLink to="/admin" className="nav-link">Admin</NavLink></li>}
           </ul>
           <div className="nav-actions">
