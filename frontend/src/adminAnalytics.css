@@ -12,3 +12,32 @@
 .aa-rank { font-weight: 800; color: var(--c-link-strong); font-variant-numeric: tabular-nums; }
 @keyframes aa-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @media (prefers-reduced-motion: reduce) { .aa-bar { animation: none; } }
+
+/* ---- milestone 6: export bar, analytics hub, print ---- */
+.aa-nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+.aa-actions { display: grid; gap: .35rem; }
+.aa-buttons { display: flex; flex-wrap: wrap; gap: .6rem; }
+.aa-status { margin: 0; min-height: 1.4em; font-size: .9rem; }
+.aa-error { color: #B3261E; }
+:root[data-theme="dark"] .aa-error { color: #FF8F87; }
+.aa-filters { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem; }
+.aa-search { flex: 1 1 260px; }
+.aa-search input { width: 100%; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--c-line-strong, #7D8BAF); border-radius: 10px; background: var(--c-surface, #fff); color: var(--c-text, #1B2640); font: inherit; }
+.aa-search input:focus-visible { outline: 3px solid var(--c-gold, #F2B33D); outline-offset: 1px; }
+.aa-check { display: inline-flex; align-items: center; gap: .5rem; color: var(--c-text); }
+.aa-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+.aa-item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; padding: .9rem 1.1rem; background: var(--c-surface, #fff); border: 1px solid var(--c-line, #D5DDEC); border-radius: 14px; transition: border-color .18s ease; }
+.aa-item:hover { border-color: var(--c-blue, #1F5FE0); }
+.aa-item-main { display: grid; min-width: 0; }
+.aa-item-main strong { overflow-wrap: anywhere; }
+.aa-item-end { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.aa-none { font-size: .9rem; }
+
+@media print {
+  .site-header, .site-footer, .skip-link, .adm-side, .adm-menu-btn, .aa-actions, .aa-nav, .toast { display: none !important; }
+  .adm { display: block !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .aa .panel, .aa .sd-stat { box-shadow: none !important; break-inside: avoid; border: 1px solid #999 !important; }
+  .aa-bar { animation: none !important; background: #1F5FE0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .aa-grid { grid-template-columns: 1fr 1fr; }
+}
