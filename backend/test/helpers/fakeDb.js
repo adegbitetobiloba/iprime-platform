@@ -14,7 +14,7 @@ function matches(doc, f) {
     return Array.isArray(val) ? val.map(String).includes(String(v)) : String(val) === String(v);
   });
 }
-class Query { constructor(rows) { this.rows = rows; } sort() { return this; } skip(n) { this.rows = this.rows.slice(n); return this; } limit(n) { this.rows = this.rows.slice(0, n); return this; } lean() { return Promise.resolve(this.rows.map((r) => (r.toObject ? r.toObject() : r))); } then(a, b) { return Promise.resolve(this.rows).then(a, b); } }
+class Query { constructor(rows) { this.rows = rows; } select() { return this; } sort() { return this; } skip(n) { this.rows = this.rows.slice(n); return this; } limit(n) { this.rows = this.rows.slice(0, n); return this; } lean() { return Promise.resolve(this.rows.map((r) => (r.toObject ? r.toObject() : r))); } then(a, b) { return Promise.resolve(this.rows).then(a, b); } }
 class Doc {
   constructor(f) { Object.assign(this, JSON.parse(JSON.stringify(f))); if (f.solution) this.solution = f.solution; this._id = f._id || hex(); this.status = this.status || "active"; this.version = this.version || 1; this.updatedAt = new Date(); }
   set(o) { Object.assign(this, o); }
