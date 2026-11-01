@@ -139,7 +139,7 @@
 .ws5-flyer-dl { color: var(--c-link-strong); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .ws5-hero .ws5-flyer-dl { color: #fff; }
 .ws5-lightbox { position: fixed; inset: 0; z-index: 1100; display: grid; place-items: center; padding: 3.5rem 0.75rem 0.75rem; background: rgba(3, 10, 28, 0.94); cursor: zoom-out; overflow: auto; }
-.ws5-lightbox img { max-width: 100%; max-height: calc(100dvh - 4.5rem); width: auto; height: auto; object-fit: contain; }
+.ws5-lightbox img { max-width: 100%; max-height: calc(100vh - 4.5rem); max-height: calc(100dvh - 4.5rem); width: auto; height: auto; object-fit: contain; }
 .ws5-lightbox-close { position: fixed; top: calc(0.6rem + env(safe-area-inset-top, 0px)); right: 0.75rem; min-height: 2.75rem; padding: 0 1.1rem; border: 1px solid rgba(255, 255, 255, 0.5); border-radius: var(--r-pill); background: rgba(6, 21, 50, 0.9); color: #fff; font-weight: 600; cursor: pointer; }
 
 /* Countdown chip */
@@ -225,8 +225,8 @@ html { scroll-padding-top: 4.5rem; }
 .ws5-format-lead { margin: 0 0 1rem; color: var(--c-muted); }
 
 /* ---------- v5: quicker fade-in (kept on phones, no blank gaps) ---------- */
-.reveal-ready [data-rv] { opacity: 0; transform: translateY(10px); transition: opacity 0.32s ease-out var(--reveal-delay, 0ms), transform 0.32s ease-out var(--reveal-delay, 0ms); will-change: opacity, transform; }
-.reveal-ready [data-rv].is-visible { opacity: 1; transform: none; will-change: auto; }
+.reveal-ready [data-rv] { opacity: 0; transform: translateY(10px); transition: opacity 0.32s ease-out var(--reveal-delay, 0ms), transform 0.32s ease-out var(--reveal-delay, 0ms); }
+.reveal-ready [data-rv].is-visible { opacity: 1; transform: none; }
 /* The home-page hero's opening fade, shortened */
 .reveal-ready .reveal { animation-duration: 0.4s !important; transition-duration: 0.4s !important; }
 .reveal-ready .reveal-2 { animation-delay: 0.08s !important; transition-delay: 0.08s !important; }
@@ -262,3 +262,36 @@ html { scroll-padding-top: 4.5rem; }
 .ws5-top:hover { background: var(--c-tint, var(--blue-tint)); }
 @media (max-width: 899px) { .ws5-top { bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); } }
 @media (prefers-reduced-motion: reduce) { .ws5-dd-menu, .ws5-top { animation: none; } }
+
+/* ---------- v7: compatibility with older phones and browsers ----------
+   Every modern rule above is paired here with a plain fallback. Browsers that understand the modern rule ignore this block. */
+.ws5-welcome, .ws5-lightbox { top: 0; right: 0; bottom: 0; left: 0; }
+.ws5-welcome-stage picture, .ws5-flyer-open picture { display: block; }
+.ws5-welcome-stage img { top: 0; left: 0; margin-left: auto; margin-right: auto; }
+.ws5-welcome-actions, .ws5-flyer-open { margin-left: auto; margin-right: auto; }
+.ws5-swipe-track { margin-left: -1rem; margin-right: -1rem; padding-left: 1rem; padding-right: 1rem; scroll-padding-left: 1rem; }
+.ws5-anchor-list { margin-left: auto; margin-right: auto; padding-top: 0.65rem; padding-bottom: 0.65rem; }
+.ws5-bar .btn { padding-left: 0.6rem; padding-right: 0.6rem; }
+.ws5-welcome-actions .btn { padding-left: 0.75rem; padding-right: 0.75rem; }
+.ws5-welcome-skip, .ws5-lightbox-close { padding-left: 1rem; padding-right: 1rem; }
+@media (min-width: 900px) {
+  .ws5-swipe.is-grid-md .ws5-swipe-track { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
+}
+@supports not (width: clamp(1px, 2vw, 3px)) {
+  .ws5-hero { padding: 3rem 0; }
+  .ws5-hero .ws5-h1 { font-size: 2.4rem; }
+  .ws5-hero .ws5-lead { font-size: 1.05rem; }
+  .ws5-panel, .ws5-purpose-card { padding: 1.5rem; }
+  .ws5-ach-mono { font-size: 3rem; }
+}
+/* Older engines (before about 2021) ignore "gap" on flex rows and "aspect-ratio": use margins and the padding trick instead. */
+@supports not (aspect-ratio: 1 / 1) {
+  .ws5-btn-row .btn, .ws5-actions .btn { margin: 0 0.6rem 0.6rem 0; }
+  .ws5-swipe-item { margin-right: 0.9rem; }
+  .ws5-chips li, .ws5-tabs .ws5-tab, .ws5-anchor-list li { margin: 0 0.5rem 0.5rem 0; }
+  .ws5-bar .btn + .btn { margin-left: 0.6rem; }
+  .ws5-welcome-actions .btn { margin: 0.3rem; }
+  .ws5-ach-media { display: block; height: 0; padding-top: 125%; position: relative; }
+  .ws5-ach-media img { position: absolute; top: 0; left: 0; }
+  .ws5-ach-mono { position: absolute; top: 35%; left: 0; width: 100%; text-align: center; }
+}

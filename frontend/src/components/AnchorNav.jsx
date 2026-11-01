@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useScrollSpy } from "../useScrollSpy.js";
+import { scrollBoxTo } from "../scrollCompat.js";
 
 // "On this page" chips for long pages. Plain anchor links (work without JavaScript, with the keyboard), and the chip for the
 // section being read lights up and slides into view as you scroll.
@@ -12,8 +13,7 @@ export default function AnchorNav({ items, label = "On this page" }) {
     if (!chip || !listRef.current) return;
     const box = listRef.current;
     const target = chip.offsetLeft - (box.clientWidth - chip.offsetWidth) / 2;
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    box.scrollTo({ left: Math.max(0, target), behavior: reduce ? "auto" : "smooth" }); // scrolls the chip row only, never the page
+    scrollBoxTo(box, Math.max(0, target)); // scrolls the chip row only, never the page
   }, [active]);
 
   return (

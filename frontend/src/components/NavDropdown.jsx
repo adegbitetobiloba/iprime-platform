@@ -17,9 +17,10 @@ export default function NavDropdown({ label, items }) {
     if (!open) return undefined;
     const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
     const onKey = (e) => { if (e.key === "Escape") { setOpen(false); btnRef.current?.focus(); } };
-    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
     document.addEventListener("keydown", onKey);
-    return () => { document.removeEventListener("pointerdown", onDown); document.removeEventListener("keydown", onKey); };
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("touchstart", onDown); document.removeEventListener("keydown", onKey); };
   }, [open]);
 
   const links = () => Array.from(rootRef.current?.querySelectorAll(".ws5-dd-menu a") || []).filter((a) => a.offsetParent !== null);
