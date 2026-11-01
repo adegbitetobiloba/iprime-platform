@@ -44,6 +44,7 @@ import LibrarySaved from "./pages/LibrarySaved.jsx";
 import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
 import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
 import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
+import AdminExamBuilder from "./pages/admin/AdminExamBuilder.jsx";
 import Toast from "./components/Toast.jsx";
 import WelcomeFlyer from "./components/WelcomeFlyer.jsx";
 import { useAuth } from "./auth.jsx";
@@ -150,6 +151,7 @@ export default function App() {
             <Route path="exams" element={<AdminExams />} />
             <Route path="exams/:id" element={<AdminExamEdit />} />
             <Route path="exams/:id/analytics" element={<AdminExamAnalytics />} />
+            <Route path="exams/new" element={<AdminExamBuilder />} />
             <Route path="import" element={<AdminImport />} />
             <Route path="applications" element={<AdminApplications />} />
             <Route path="bank" element={<AdminBank />} />

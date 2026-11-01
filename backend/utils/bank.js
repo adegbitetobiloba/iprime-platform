@@ -77,6 +77,13 @@ const fromHtml = (html, plain) => {
   return t ? { html: h, text: t } : { html: undefined, text: h ? "" : str(plain).trim() };
 };
 
+// Accepts the common ways a sheet says it (Easy, MEDIUM, moderate, Hard, difficult, basic/intermediate/advanced). Anything else is left unset, never guessed.
+const DIFFICULTY_WORDS = { easy: "easy", basic: "easy", simple: "easy", medium: "medium", moderate: "medium", intermediate: "medium", average: "medium", hard: "hard", difficult: "hard", advanced: "hard" };
+const normDifficulty = (v) => DIFFICULTY_WORDS[String(v == null ? "" : v).trim().toLowerCase()] || undefined;
+
+// A question's difficulty: the field if set, otherwise a "Difficulty" column an earlier import kept under `extra`. Never guessed.
+const difficultyOf = (q) => normDifficulty(q.difficulty) || normDifficulty(q.extra && (q.extra.Difficulty || q.extra.difficulty || q.extra.Difficulty_Level)) || null;
+
 function prepareImportItem(item, { allowIncomplete = false } = {}) {
   const tx = fromHtml(item.textHtml, item.text);
   const ex = fromHtml(item.explanationHtml, item.explanation);
@@ -91,6 +98,7 @@ function prepareImportItem(item, { allowIncomplete = false } = {}) {
     explanationSource: squash(item.explanationSource) || undefined,
     marks: item.marks === null || item.marks === undefined || item.marks === "" ? 1 : Number(item.marks),
     questionType: squash(item.questionType) || undefined,
+    difficulty: normDifficulty(item.difficulty),
     imageRef: squash(item.imageRef) || undefined,
     source: { refs: (item.sourceRefs || []).map(squash).filter(Boolean), page: squash(item.sourcePage) || undefined, label: squash(item.sourceLabel) || undefined },
     extra: item.extra && typeof item.extra === "object" ? item.extra : undefined,
@@ -116,7 +124,7 @@ function prepareImportItem(item, { allowIncomplete = false } = {}) {
 }
 
 // Fields an administrator may edit. Everything else is ignored.
-const EDITABLE = ["subject", "topic", "subtopic", "text", "options", "correctKey", "explanation", "marks", "questionType", "imageRef"];
+const EDITABLE = ["subject", "topic", "subtopic", "text", "options", "correctKey", "explanation", "marks", "questionType", "imageRef", "difficulty"];
 
 // Applies an administrator's edit to a plain bank-question object and recomputes every derived flag.
 function applyEdit(current, patch, adminId, now = new Date()) {
@@ -126,6 +134,7 @@ function applyEdit(current, patch, adminId, now = new Date()) {
   if (patch.text !== undefined && str(patch.text).trim() !== str(current.text).trim()) next.textHtml = undefined;
   if (patch.explanation !== undefined && str(patch.explanation).trim() !== str(current.explanation).trim()) next.explanationHtml = undefined;
   if (patch.options !== undefined) next.options = cleanOptions(patch.options).map((o) => { const old = (current.options || []).find((x) => x.key === o.key); return old && old.html && str(old.text).trim() === o.text ? { key: o.key, text: o.text, html: old.html } : { key: o.key, text: o.text }; });
+  if (patch.difficulty !== undefined) next.difficulty = normDifficulty(patch.difficulty);
   if (patch.correctKey !== undefined) next.correctKey = str(patch.correctKey).toUpperCase() || undefined;
   if (patch.solutionText !== undefined) {
     const t = str(patch.solutionText).trim();
@@ -171,4 +180,4 @@ function diffFields(before, after) {
   return out;
 }
 
-module.exports = { diffFields, LIMITS, cleanOptions, problemsOf, completeness, hasSolution, stemHashOf, contentHashOf, externalKeyOf, prepareImportItem, applyEdit, examSnapshot, escapeRegex, EDITABLE };
+module.exports = { difficultyOf, normDifficulty, diffFields, LIMITS, cleanOptions, problemsOf, completeness, hasSolution, stemHashOf, contentHashOf, externalKeyOf, prepareImportItem, applyEdit, examSnapshot, escapeRegex, EDITABLE };

@@ -9,6 +9,9 @@ const attemptSchema = new mongoose.Schema(
     deadline: { type: Date, required: true }, // fixed by the server at start; the countdown is derived from this
     submittedAt: { type: Date },
     autoSubmitted: { type: Boolean, default: false },
+    seed: { type: String }, 
+    shuffleQuestions: { type: Boolean, default: false }, 
+    shuffleOptions: { type: Boolean, default: false },
     answers: { type: Map, of: String, default: () => ({}) }, // questionId -> option key
     flagged: { type: [String], default: [] },                // questionIds marked for review
     // Filled by the server when the attempt is submitted:

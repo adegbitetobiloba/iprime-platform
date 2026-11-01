@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
-const { scoreAttempt, publicQuestion, deadlineFor, toPlain } = require("../utils/cbt");
+const { scoreAttempt, deadlineFor, toPlain } = require("../utils/cbt");
+const { newSeed, arrange, studentView, reviewView } = require("../utils/randomise");
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const serverError = (res, err) => {
@@ -56,7 +57,8 @@ const runningPayload = (attempt, exam) => ({
     serverNow: new Date().toISOString(),
   },
   exam: { id: String(exam._id), title: exam.title, subject: exam.subject, durationMinutes: exam.durationMinutes, instructions: exam.instructions || "" },
-  questions: exam.questions.map(publicQuestion),
+  // Each attempt has its own order (when the exam asks for it). Same attempt, same order, every time.
+  questions: arrange(exam.questions, attempt).map(studentView),
 });
 
 // Loads an attempt only if it belongs to the signed-in user. Others get "not found", not "forbidden".
@@ -132,7 +134,11 @@ exports.startAttempt = async (req, res) => {
 
     const startedAt = new Date();
     try {
-      const created = await Attempt.create({ examId: exam._id, userId: req.user.id, startedAt, deadline: deadlineFor(startedAt, exam.durationMinutes) });
+      // The switches are copied onto the attempt now, so editing the exam later can never reshuffle a student mid-exam.
+      const created = await Attempt.create({
+        examId: exam._id, userId: req.user.id, startedAt, deadline: deadlineFor(startedAt, exam.durationMinutes),
+        seed: newSeed(), shuffleQuestions: Boolean(exam.shuffleQuestions), shuffleOptions: Boolean(exam.shuffleOptions),
+      });
       return res.status(201).json(runningPayload(created.toObject(), exam));
     } catch (err) {
       if (err.code === 11000) { // two start requests at once: use the one that won
@@ -226,10 +232,7 @@ exports.result = async (req, res) => {
     // Correct answers are released only if the administrator allowed it for this exam, and only after submission.
     if (exam && exam.showAnswersAfter) {
       const given = toPlain(attempt.answers);
-      out.review = exam.questions.map((q) => ({
-        id: String(q._id), text: q.text, textHtml: q.textHtml || undefined, options: q.options.map((o) => ({ key: o.key, text: o.text, html: o.html || undefined })), marks: q.marks ?? 1,
-        yourChoice: given[String(q._id)] || null, correctKey: q.correctKey, explanation: q.explanation || "", explanationHtml: q.explanationHtml || undefined, explanationSource: q.explanation ? (q.explanationSource || "source") : null,
-      }));
+      out.review = arrange(exam.questions, attempt).map((entry) => reviewView(entry, given)); // the order and letters the student saw
     }
     res.json(out);
   } catch (err) { serverError(res, err); }

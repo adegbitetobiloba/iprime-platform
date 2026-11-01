@@ -28,7 +28,10 @@ export default function AdminExams() {
     <div className="admin-page">
       <div className="page-bar">
         <div><p className="eyebrow">Administration</p><h1>Examinations</h1></div>
-        <button type="button" className="btn btn-primary" onClick={() => setOpen((o) => !o)} aria-expanded={open}>{open ? "Close" : "New examination"}</button>
+        <div className="form-actions">
+          <Link to="/admin/exams/new" className="btn btn-primary">Build from question bank</Link>
+          <button type="button" className="btn btn-secondary" onClick={() => setOpen((o) => !o)} aria-expanded={open}>{open ? "Close" : "Blank examination"}</button>
+        </div>
       </div>
 
       {open && (

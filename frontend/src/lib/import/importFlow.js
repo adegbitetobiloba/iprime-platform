@@ -93,8 +93,8 @@ export const PROBLEM_LABELS = {
 };
 
 export function templateCsv() {
-  const head = ["Question_ID", "Subject", "Topic", "Question", "Option_A", "Option_B", "Option_C", "Option_D", "Option_E", "Option_F", "Correct_Answer", "Explanation", "Source_Reference", "Source_Page", "Question_Type", "Review_Status", "Review_Notes", "Explanation_Source", "Image_Reference", "Source_Label"];
-  const ex = ["CHM-0001", "Chemistry", "Atomic structure", "What is the charge of a proton?", "Positive", "Negative", "Neutral", "Variable", "", "", "A", "A proton carries a positive charge.", "Textbook p. 12", "12", "Multiple Choice", "Unverified", "", "Extracted from source", "", "Part 1"];
+  const head = ["Question_ID", "Subject", "Topic", "Question", "Option_A", "Option_B", "Option_C", "Option_D", "Option_E", "Option_F", "Correct_Answer", "Explanation", "Source_Reference", "Source_Page", "Question_Type", "Review_Status", "Review_Notes", "Explanation_Source", "Image_Reference", "Source_Label", "Difficulty"];
+  const ex = ["CHM-0001", "Chemistry", "Atomic structure", "What is the charge of a proton?", "Positive", "Negative", "Neutral", "Variable", "", "", "A", "A proton carries a positive charge.", "Textbook p. 12", "12", "Multiple Choice", "Unverified", "", "Extracted from source", "", "Part 1", "Easy"];
   const q = (v) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
   return `${head.join(",")}\n${ex.map(q).join(",")}\n`;
 }

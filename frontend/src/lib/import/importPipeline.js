@@ -41,7 +41,7 @@ export function toServerItem(q, { approved = false, skipIfDuplicate = false } = 
     text: q.text || "", textHtml: q.textHtml || "", explanationHtml: q.explanationHtml || "", sourceStatus: q.sourceStatus || "",
     options: (q.options || []).map((o) => ({ key: o.key, text: o.text || "", html: o.html || "" })),
     correctKey: q.correctKey || null, explanation: q.explanation || "", explanationSource: q.explanationSource || "",
-    questionType: q.questionType || "", imageRef: q.imageRef || "",
+    questionType: q.questionType || "", difficulty: q.difficulty || "", imageRef: q.imageRef || "",
     sourceRefs: (q.sourceRefs || []).slice(0, 10), sourcePage: q.sourcePage ?? "", sourceLabel: q.sourceLabel || "",
     reviewState: q.state === "ready" || q.state === "ready_partial" ? "ready" : "needs_review", approved: approved || undefined,
     issues: [...new Set((q.issues || []).map((i) => i.code))].slice(0, 20), reviewNotes: q.reviewNotes || "",
