@@ -14,6 +14,8 @@ const examFields = {
   durationMinutes: Joi.number().integer().min(1).max(360),
   maxAttempts: Joi.number().integer().min(1).max(20),
   showAnswersAfter: Joi.boolean(),
+  shuffleQuestions: Joi.boolean(), 
+  shuffleOptions: Joi.boolean(),
   availableFrom: optionalDate,
   availableUntil: optionalDate,
 };
