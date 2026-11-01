@@ -1,0 +1,17 @@
+/* Performance page. Builds on the dashboard classes (sd-*) and shared tokens. */
+.pf-note { margin: 0 0 .75rem; font-size: .92rem; }
+.pf-empty { margin: 0; }
+.pf-history { margin-top: 1rem; }
+.pf-topics { list-style: none; margin: 0; display: grid; gap: 1.1rem; }
+.pf-band { font-size: .8rem; font-weight: 600; padding: .15rem .6rem; border-radius: 999px; border: 1px solid var(--c-line); color: var(--c-text); white-space: nowrap; }
+.pf-band-strong { background: #E3F5EC; color: #0F5E3A; border-color: #B7E3CB; }
+.pf-band-developing { background: var(--c-tint); color: var(--c-link-strong); border-color: var(--c-line); }
+.pf-band-practice { background: var(--c-gold-soft); color: var(--c-gold-text); border-color: #F2D894; }
+.pf-band-none { background: var(--c-surface-2); color: var(--c-muted); }
+:root[data-theme="dark"] .pf-band-strong { background: #12301F; color: #7BDDA8; border-color: #1F5A3A; }
+.pf-change { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--c-muted); white-space: nowrap; }
+.pf-change.is-up { color: #17794B; }
+.pf-change.is-down { color: #B3261E; }
+:root[data-theme="dark"] .pf-change.is-up { color: #5FD39A; }
+:root[data-theme="dark"] .pf-change.is-down { color: #FF8F87; }
+.pf-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
