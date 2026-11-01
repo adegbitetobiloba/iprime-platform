@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
-const { scoreAttempt, deadlineFor, toPlain } = require("../utils/cbt");
+const { deadlineFor, toPlain } = require("../utils/cbt");
 const { newSeed, arrange, studentView, reviewView } = require("../utils/randomise");
+const { makeFinaliser } = require("../utils/attemptLifecycle");
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const serverError = (res, err) => {
@@ -15,16 +16,8 @@ const isOpen = (exam, at = new Date()) =>
 
 const totalMarks = (exam) => exam.questions.reduce((n, q) => n + (q.marks ?? 1), 0);
 
-// Scores and closes an attempt. Safe to call twice: only an attempt that is still in progress can be closed,
-// and scoring is deterministic, so concurrent calls cannot produce different results.
-async function finalise(attempt, exam, auto) {
-  const result = scoreAttempt(exam.questions, attempt.answers);
-  await Attempt.updateOne(
-    { _id: attempt._id, status: "in_progress" },
-    { $set: { status: "submitted", submittedAt: new Date(), autoSubmitted: Boolean(auto), questionCount: exam.questions.length, ...result } }
-  );
-  return Attempt.findById(attempt._id).lean();
-}
+// Scores and closes an attempt. Safe to call twice, and safe against a save arriving mid-way: see utils/attemptLifecycle.js.
+const finalise = makeFinaliser(Attempt);
 
 const summary = (a, exam) => ({
   id: String(a._id),
@@ -182,7 +175,7 @@ exports.saveAnswer = async (req, res) => {
     if (!question) return res.status(400).json({ error: "Unknown question" });
     if (choice && !question.options.some((o) => o.key === choice)) return res.status(400).json({ error: "That option does not exist for this question" });
 
-    const update = {};
+    const update = { $inc: { rev: 1 } }; // every save moves rev, so closing the attempt can detect a save that raced it
     if (choice !== undefined) {
       if (choice === null) update.$unset = { [`answers.${questionId}`]: "" };
       else update.$set = { [`answers.${questionId}`]: choice };
