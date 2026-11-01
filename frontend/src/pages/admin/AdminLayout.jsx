@@ -7,7 +7,7 @@ import "../../admin.css";
 const NAV = [
   { heading: null, items: [{ to: "/admin", label: "Overview", end: true }] },
   { heading: "Admissions", items: [{ to: "/admin/applications", label: "Applications", badge: true }, { to: "/admin/students", label: "Students and accounts" }] },
-  { heading: "Academics", items: [{ to: "/admin/exams", label: "Examinations" }, { to: "/admin/bank", label: "Question bank" }, { to: "/admin/import", label: "Import questions" }, { to: "/admin/programmes", label: "Programmes" }, { to: "/admin/library", label: "Library" }] },
+  { heading: "Academics", items: [{ to: "/admin/exams", label: "Examinations" }, { to: "/admin/bank", label: "Question bank" }, { to: "/admin/import", label: "Import questions" }, { to: "/admin/analytics", label: "Analytics" }, { to: "/admin/programmes", label: "Programmes" }, { to: "/admin/library", label: "Library" }] },
 ];
 
 export default function AdminLayout() {

@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../../useFetch.js";
+import ExportBar from "../../components/analytics/ExportBar.jsx";
 
 const pct = (v) => (v == null ? "No data" : `${v}%`);
 
@@ -25,10 +26,14 @@ export default function AdminExamAnalytics() {
         <div>
           <p className="eyebrow">Administration · Analytics</p>
           <h1>{d ? d.exam.title : "Examination analytics"}</h1>
-          {d && <p className="muted">{d.exam.subject ? `${d.exam.subject} · ` : ""}Based on each student's first submitted attempt</p>}
+          {d && <p className="muted">{d.exam.subject ? `${d.exam.subject} · ` : ""}Based on each student's first submitted attempt · Prepared {new Date(d.generatedAt).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</p>}
         </div>
-        <Link to={`/admin/exams/${id}`} className="btn btn-secondary btn-sm">Back to examination</Link>
+        <div className="aa-nav">
+          <Link to="/admin/analytics" className="btn btn-secondary btn-sm">All analytics</Link>
+          <Link to={`/admin/exams/${id}`} className="btn btn-secondary btn-sm">Back to examination</Link>
+        </div>
       </div>
+      <ExportBar examId={id} disabled={!d || d.participants === 0} />
 
       {loading && <div className="exam-card skeleton" aria-hidden="true" />}
       {error && <p className="alert alert-error" role="alert">{error} <button type="button" className="link-btn" onClick={reload}>Try again</button></p>}

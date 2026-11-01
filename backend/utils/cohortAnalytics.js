@@ -24,10 +24,9 @@ function quantile(sorted, q) {
   return round1(sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo));
 }
 
-function buildExamCohort({ exam, attempts = [] }) {
-  const questions = exam?.questions || [];
+// One place decides who counts and in what order, so the screen and the CSV export can never disagree.
+function rankFirstAttempts(attempts = []) {
   const submitted = attempts.filter((a) => a.status === "submitted" || a.submittedAt).sort((a, b) => toMs(a.submittedAt) - toMs(b.submittedAt));
-
   const firstByStudent = new Map();
   const countByStudent = new Map();
   for (const a of submitted) {
@@ -36,6 +35,20 @@ function buildExamCohort({ exam, attempts = [] }) {
     if (!firstByStudent.has(u)) firstByStudent.set(u, a);
   }
   const firsts = [...firstByStudent.values()];
+  const ordered = [...firsts].sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0) || toMs(a.submittedAt) - toMs(b.submittedAt));
+  let lastPct = null, lastRank = 0;
+  const ranking = ordered.map((a, i) => {
+    const pct = a.percentage ?? 0;
+    const rank = pct === lastPct ? lastRank : i + 1;
+    lastPct = pct; lastRank = rank;
+    return { userId: idOf(a.userId), attemptId: idOf(a._id ?? a.id), rank, percentage: pct, autoSubmitted: Boolean(a.autoSubmitted) };
+  });
+  return { submitted, firsts, countByStudent, ranking };
+}
+
+function buildExamCohort({ exam, attempts = [] }) {
+  const questions = exam?.questions || [];
+  const { submitted, firsts, countByStudent, ranking } = rankFirstAttempts(attempts);
   const participants = firsts.length;
   const limitedEvidence = participants < MIN_COHORT;
 
@@ -47,15 +60,6 @@ function buildExamCohort({ exam, attempts = [] }) {
   const distribution = Array.from({ length: 10 }, (_, i) => ({ from: i * 10, to: i === 9 ? 100 : i * 10 + 9.9, count: 0 }));
   for (const p of pcts) distribution[Math.min(9, Math.floor(p / 10))].count += 1;
 
-  // ranking with shared ranks for ties
-  const ordered = [...firsts].sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0) || toMs(a.submittedAt) - toMs(b.submittedAt));
-  let lastPct = null, lastRank = 0;
-  const ranking = ordered.map((a, i) => {
-    const pct = a.percentage ?? 0;
-    const rank = pct === lastPct ? lastRank : i + 1;
-    lastPct = pct; lastRank = rank;
-    return { userId: idOf(a.userId), attemptId: idOf(a._id ?? a.id), rank, percentage: pct, autoSubmitted: Boolean(a.autoSubmitted) };
-  });
   const top = ranking.filter((r) => r.rank <= 10);
 
   // question level, from verified first attempts only
@@ -113,4 +117,4 @@ function buildExamCohort({ exam, attempts = [] }) {
   };
 }
 
-module.exports = { buildExamCohort, quantile, MIN_COHORT, SUPPORT_BELOW };
+module.exports = { buildExamCohort, rankFirstAttempts, quantile, MIN_COHORT, SUPPORT_BELOW };
