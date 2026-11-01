@@ -37,6 +37,7 @@ router.get("/exams/:id/attempts", c.attempts);
 // Question bank (admin-only like everything in this file; the role is re-checked in the database on every request)
 router.post("/bank/import", validate(bankV.importBatch), bankC.importBatch);
 router.get("/bank/facets", bankC.facets);
+router.post("/bank/select", validate(bankV.select), bankC.select);
 router.post("/bank/add-to-exam", validate(bankV.addToExam), bankC.addToExam);
 router.get("/bank", bankC.list);
 router.get("/bank/:id", bankC.get);
