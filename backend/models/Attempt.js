@@ -10,6 +10,7 @@ const attemptSchema = new mongoose.Schema(
     submittedAt: { type: Date },
     autoSubmitted: { type: Boolean, default: false },
     seed: { type: String }, 
+    questionIds: { type: [String], default: undefined },
     shuffleQuestions: { type: Boolean, default: false }, 
     shuffleOptions: { type: Boolean, default: false },
     answers: { type: Map, of: String, default: () => ({}) }, // questionId -> option key
