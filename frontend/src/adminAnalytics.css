@@ -41,3 +41,5 @@
   .aa-bar { animation: none !important; background: #1F5FE0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .aa-grid { grid-template-columns: 1fr 1fr; }
 }
+.aa-more { margin-bottom: .25rem; }
+.aa-check select { min-height: 40px; padding: 0 .6rem; border: 1px solid var(--c-line-strong, #7D8BAF); border-radius: 10px; background: var(--c-surface, #fff); color: var(--c-text, #1B2640); font: inherit; }

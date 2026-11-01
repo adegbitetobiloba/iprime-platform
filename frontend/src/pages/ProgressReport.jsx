@@ -3,6 +3,7 @@ import { useFetch } from "../useFetch.js";
 import { useAuth } from "../auth.jsx";
 import Sparkline from "../components/dashboard/Sparkline.jsx";
 import { summarise } from "../lib/reportSummary.js";
+import { summariseLibrary } from "../lib/libraryReport.js";
 import "../studentDashboard.css";
 import "../performance.css";
 import "../progressReport.css";
@@ -25,7 +26,9 @@ function Item({ label, value, note }) {
 export default function ProgressReport() {
   const { user } = useAuth();
   const { data, error, loading, reload } = useFetch("/student/analytics");
+  const lib = useFetch("/library/me/summary"); // optional: if the Library is unavailable the section is simply left out
   const r = data ? summarise(data) : null;
+  const study = lib.data ? summariseLibrary(lib.data) : null;
   const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
 
   return (
@@ -81,6 +84,19 @@ export default function ProgressReport() {
                   </section>
                 )}
 
+                {study && (
+                  <section className="pr-block" aria-labelledby="pr-lib">
+                    <h2 id="pr-lib">Study in the Library</h2>
+                    <p className="pr-small">{study.lessonsCompleted} lesson{study.lessonsCompleted === 1 ? "" : "s"} completed{study.studyMinutes > 0 ? `, about ${study.studyMinutes} minutes of study` : ""}{study.coursesStarted ? `, ${study.coursesStarted} course${study.coursesStarted === 1 ? "" : "s"} started` : ""}.</p>
+                    {study.courses.length > 0 && (
+                      <table className="pr-table">
+                        <thead><tr><th scope="col">Course</th><th scope="col">Lessons</th><th scope="col">Progress</th></tr></thead>
+                        <tbody>{study.courses.map((c) => <tr key={c.id}><th scope="row">{c.title}</th><td>{c.completed} of {c.total}</td><td>{c.percent}%</td></tr>)}</tbody>
+                      </table>
+                    )}
+                  </section>
+                )}
+
                 <div className="pr-cols">
                   <section className="pr-block" aria-labelledby="pr-strong">
                     <h2 id="pr-strong">Going well</h2>
@@ -108,7 +124,7 @@ export default function ProgressReport() {
             <footer className="pr-foot">
               <h2>How to read this report</h2>
               <ul>
-                <li>It is based only on examinations this student submitted on iPrime. It is not a certificate or an official academic record.</li>
+                <li>It is based only on examinations this student submitted, and lessons they studied, on iPrime. It is not a certificate or an official academic record.</li>
                 <li>It compares the student with their own earlier work, never with other students.</li>
                 <li>A topic is only described once at least {data.definitions.minEvidence} questions in it have been answered.</li>
                 {data.totals.unverifiable > 0 && <li>{data.totals.unverifiable} attempt{data.totals.unverifiable === 1 ? " is" : "s are"} left out of the topic notes because the examination was changed afterwards. Scores are unaffected.</li>}

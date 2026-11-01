@@ -32,6 +32,7 @@ import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
 import AdminStudents from "./pages/admin/AdminStudents.jsx";
 import AdminExamAnalytics from "./pages/admin/AdminExamAnalytics.jsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.jsx";
+import AdminLibraryStudy from "./pages/admin/AdminLibraryStudy.jsx";
 import AdminImport from "./pages/admin/AdminImport.jsx";
 import AdminBank from "./pages/admin/AdminBank.jsx";
 import AdminApplications from "./pages/admin/AdminApplications.jsx";
@@ -158,6 +159,7 @@ export default function App() {
             <Route path="exams" element={<AdminExams />} />
             <Route path="exams/:id" element={<AdminExamEdit />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="analytics/library-study" element={<AdminLibraryStudy />} />
             <Route path="exams/:id/analytics" element={<AdminExamAnalytics />} />
             <Route path="exams/new" element={<AdminExamBuilder />} />
             <Route path="import" element={<AdminImport />} />

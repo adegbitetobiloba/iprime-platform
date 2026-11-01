@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useFetch, fmtDate } from "../useFetch.js";
 import Sparkline from "../components/dashboard/Sparkline.jsx";
+import LibraryCue from "../components/dashboard/LibraryCue.jsx";
 import "../studentDashboard.css"; // shared card, list and meter styles
 import "../performance.css";
 
@@ -95,6 +96,8 @@ export default function Performance() {
               )}
             </Block>
 
+            <LibraryCue />
+
             <Block id="pf-focus" title="Suggested revision" note="These are suggestions based on the topics above, not results.">
               {d.focus.length === 0 ? <Empty>No topic needs extra attention right now.</Empty> : (
                 <ul className="sd-reco">
@@ -103,7 +106,7 @@ export default function Performance() {
                       <span className="badge badge-quiet">Suggestion</span>
                       <h3>{f.topic}</h3>
                       <p className="muted sd-small">Why: {f.basis}.</p>
-                      <Link to="/exams" className="btn btn-secondary btn-sm">Find a practice exam</Link>
+                      <div className="pf-reco-actions"><Link to={`/library?q=${encodeURIComponent(f.topic)}`} className="btn btn-primary btn-sm">Search the Library</Link><Link to="/exams" className="btn btn-secondary btn-sm">Find a practice exam</Link></div>
                     </li>
                   ))}
                 </ul>

@@ -15,3 +15,4 @@
 :root[data-theme="dark"] .pf-change.is-up { color: #5FD39A; }
 :root[data-theme="dark"] .pf-change.is-down { color: #FF8F87; }
 .pf-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.pf-reco-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: auto; }
