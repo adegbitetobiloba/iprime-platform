@@ -15,7 +15,7 @@ const serverError = (res, err) => {
 const isOpen = (exam, at = new Date()) =>
   exam.status === "published" && (!exam.availableFrom || exam.availableFrom <= at) && (!exam.availableUntil || exam.availableUntil >= at);
 
-const totalMarks = (exam) => pool.shape(exam).totalMarks;
+const totalMarks = (exam) => exam.questions.reduce((n, q) => n + (q.marks ?? 1), 0);
 
 // Scores and closes an attempt. Safe to call twice, and safe against a save arriving mid-way: see utils/attemptLifecycle.js.
 const finalise = makeFinaliser(Attempt);
@@ -75,7 +75,7 @@ exports.listExams = async (req, res) => {
         const inProgress = theirs.find((a) => a.status === "in_progress");
         return {
           id: String(e._id), title: e.title, description: e.description, subject: e.subject, level: e.level, examType: e.examType,
-          durationMinutes: e.durationMinutes, questionCount: e.questions.length, totalMarks: totalMarks(e), maxAttempts: e.maxAttempts,
+          durationMinutes: e.durationMinutes, questionCount: pool.shape(e).questionCount, totalMarks: totalMarks(e), maxAttempts: e.maxAttempts,
           availableFrom: e.availableFrom, availableUntil: e.availableUntil,
           attemptsUsed: theirs.filter((a) => a.status === "submitted").length,
           inProgressAttemptId: inProgress ? String(inProgress._id) : null,
@@ -97,7 +97,7 @@ exports.getExam = async (req, res) => {
     res.json({
       exam: {
         id: String(e._id), title: e.title, description: e.description, subject: e.subject, level: e.level, examType: e.examType,
-        instructions: e.instructions, durationMinutes: e.durationMinutes, questionCount: e.questions.length, totalMarks: totalMarks(e),
+        instructions: e.instructions, durationMinutes: e.durationMinutes, questionCount: pool.shape(e).questionCount, totalMarks: totalMarks(e),
         maxAttempts: e.maxAttempts, availableFrom: e.availableFrom, availableUntil: e.availableUntil,
         attemptsUsed: mine.filter((a) => a.status === "submitted").length,
         inProgressAttemptId: inProgress ? String(inProgress._id) : null,
@@ -131,7 +131,7 @@ exports.startAttempt = async (req, res) => {
       // The switches are copied onto the attempt now, so editing the exam later can never reshuffle a student mid-exam.
       const created = await Attempt.create({
         examId: exam._id, userId: req.user.id, startedAt, deadline: deadlineFor(startedAt, exam.durationMinutes),
-        seed: newSeed(), shuffleQuestions: Boolean(exam.shuffleQuestions), shuffleOptions: Boolean(exam.shuffleOptions),
+        ...(await pool.planAttempt(Attempt, exam, req.user.id)),
       });
       return res.status(201).json(runningPayload(created.toObject(), exam));
     } catch (err) {
@@ -172,7 +172,7 @@ exports.saveAnswer = async (req, res) => {
     }
 
     const { questionId, choice, flagged } = req.body;
-    const question = exam.questions.find((q) => String(q._id) === questionId);
+    const question = pool.servedQuestions(exam, attempt).find((q) => String(q._id) === questionId);
     if (!question) return res.status(400).json({ error: "Unknown question" });
     if (choice && !question.options.some((o) => o.key === choice)) return res.status(400).json({ error: "That option does not exist for this question" });
 
