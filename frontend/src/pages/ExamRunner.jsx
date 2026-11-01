@@ -3,29 +3,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
 import Calculator from "../calculator/Calculator.jsx";
-import SafeHtml from "../components/SafeHtml.jsx";
-import "../examReliability.css";
 
 const fmt = (s) => {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
   const mm = String(m).padStart(2, "0"), ss = String(sec).padStart(2, "0");
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
-};
-
-// Answers the server has not confirmed yet are also kept on this device, so closing the tab or losing the
-// connection does not lose them. They are sent again when the attempt is reopened. Cleared once the attempt ends.
-const pendingKey = (id) => `iprime.exam.pending.${id}`;
-const readPending = (id) => {
-  try {
-    const v = JSON.parse(localStorage.getItem(pendingKey(id)) || "{}");
-    return v && typeof v === "object" && !Array.isArray(v) ? v : {};
-  } catch { return {}; }
-};
-const writePending = (id, obj) => {
-  try {
-    if (Object.keys(obj).length) localStorage.setItem(pendingKey(id), JSON.stringify(obj));
-    else localStorage.removeItem(pendingKey(id));
-  } catch { /* storage unavailable (private mode): in-memory retry still works */ }
 };
 
 // The examination screen. The countdown is derived from the deadline the SERVER set when the attempt began,
@@ -47,13 +29,10 @@ export default function ExamRunner() {
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [online, setOnline] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine !== false));
 
   const offsetRef = useRef(0);        // server clock minus device clock
   const deadlineRef = useRef(0);
   const inflight = useRef({});
-  const pendingRef = useRef({});      // questionId -> { choice?, flagged? } not yet confirmed by the server (mirrors localStorage)
-  const kickedRef = useRef(false);
   const submittingRef = useRef(false);
   const nextTryRef = useRef(0);
   const submitRef = useRef(() => {});
@@ -63,63 +42,40 @@ export default function ExamRunner() {
   const flaggedRef = useRef(flagged); flaggedRef.current = flagged;
   const saveStateRef = useRef(saveState); saveStateRef.current = saveState;
 
-  const clearPending = useCallback(() => { pendingRef.current = {}; writePending(id, {}); }, [id]);
-
-  // Load (or resume) the attempt from the server, then lay any unsent local answers on top of it.
+  // Load (or resume) the attempt from the server.
   useEffect(() => {
     let off = false;
     api(`/attempts/${id}`, { token })
       .then((d) => {
         if (off) return;
-        if (d.submitted) { writePending(id, {}); navRef.current(`/results/${id}`, { replace: true }); return; }
+        if (d.submitted) { navRef.current(`/results/${id}`, { replace: true }); return; }
         offsetRef.current = new Date(d.attempt.serverNow).getTime() - Date.now();
         deadlineRef.current = new Date(d.attempt.deadline).getTime();
-
-        const known = new Set(d.questions.map((x) => x.id));
-        const stored = readPending(id);
-        const pend = {};
-        const mergedAnswers = { ...(d.attempt.answers || {}) };
-        let mergedFlags = [...(d.attempt.flagged || [])];
-        for (const [qid, p] of Object.entries(stored)) {
-          if (!known.has(qid) || !p || typeof p !== "object") continue; // ignore anything that is not part of this attempt
-          pend[qid] = p;
-          if ("choice" in p) { if (p.choice === null) delete mergedAnswers[qid]; else mergedAnswers[qid] = p.choice; }
-          if ("flagged" in p) mergedFlags = p.flagged ? [...new Set([...mergedFlags, qid])] : mergedFlags.filter((x) => x !== qid);
-        }
-        pendingRef.current = pend;
-        writePending(id, pend);
-        setAnswers(mergedAnswers);
-        setFlagged(mergedFlags);
-        setSaveState(Object.fromEntries(Object.keys(pend).map((qid) => [qid, "failed"]))); // "failed" = still has to be sent
+        setAnswers(d.attempt.answers || {});
+        setFlagged(d.attempt.flagged || []);
         setData(d);
       })
       .catch((e) => { if (!off) setLoadError(e.message); });
     return () => { off = true; };
   }, [id, token]);
 
-  // Saves one change. Never pretends: a failure is shown and retried. The change is also kept on this device until confirmed.
+  // Saves one change. Never pretends: a failure is shown and retried.
   const save = useCallback(async (qid, body) => {
-    pendingRef.current[qid] = { ...(pendingRef.current[qid] || {}), ...body };
-    writePending(id, pendingRef.current);
     inflight.current[qid] = (inflight.current[qid] || 0) + 1;
     setSaveState((s) => ({ ...s, [qid]: "pending" }));
     try {
       const r = await api(`/attempts/${id}/answers`, { method: "PUT", token, body: { questionId: qid, ...body } });
       offsetRef.current = new Date(r.serverNow).getTime() - Date.now();
       inflight.current[qid] -= 1;
-      if (inflight.current[qid] === 0) {
-        delete pendingRef.current[qid];
-        writePending(id, pendingRef.current);
-        setSaveState((s) => { const n = { ...s }; delete n[qid]; return n; });
-      }
+      if (inflight.current[qid] === 0) setSaveState((s) => { const n = { ...s }; delete n[qid]; return n; });
       return true;
     } catch (e) {
       inflight.current[qid] -= 1;
-      if (e.code === "EXPIRED" || e.code === "SUBMITTED") { clearPending(); navRef.current(`/results/${id}`, { replace: true }); return false; }
+      if (e.code === "EXPIRED" || e.code === "SUBMITTED") { navRef.current(`/results/${id}`, { replace: true }); return false; }
       if (inflight.current[qid] === 0) setSaveState((s) => ({ ...s, [qid]: "failed" }));
       return false;
     }
-  }, [id, token, clearPending]);
+  }, [id, token]);
 
   // Re-sends the current local value of every question whose last save failed.
   const retryFailed = useCallback(async () => {
@@ -140,7 +96,6 @@ export default function ExamRunner() {
     try {
       if (!auto) await retryFailed();
       const r = await api(`/attempts/${id}/submit`, { method: "POST", token });
-      clearPending();
       navRef.current(`/results/${r.result.id}`, { replace: true });
     } catch (e) {
       setSubmitError(e.message);
@@ -148,15 +103,8 @@ export default function ExamRunner() {
       setSubmitting(false);
       nextTryRef.current = Date.now() + 5000;
     }
-  }, [id, token, retryFailed, clearPending]);
+  }, [id, token, retryFailed]);
   submitRef.current = submit;
-
-  // Send answers that were still unsent when the page was last closed, as soon as the attempt is loaded.
-  useEffect(() => {
-    if (!data || kickedRef.current) return;
-    kickedRef.current = true;
-    if (Object.keys(pendingRef.current).length) retryFailed();
-  }, [data, retryFailed]);
 
   // Countdown from the server deadline. At zero the attempt is submitted automatically (retrying if the network fails).
   useEffect(() => {
@@ -175,15 +123,6 @@ export default function ExamRunner() {
   useEffect(() => {
     const t = setInterval(() => { if (Object.values(saveStateRef.current).includes("failed")) retryFailed(); }, 6000);
     return () => clearInterval(t);
-  }, [retryFailed]);
-
-  // Show connection status, and send unsent answers the moment the connection comes back.
-  useEffect(() => {
-    const goOnline = () => { setOnline(true); retryFailed(); };
-    const goOffline = () => setOnline(false);
-    window.addEventListener("online", goOnline);
-    window.addEventListener("offline", goOffline);
-    return () => { window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
   }, [retryFailed]);
 
   useEffect(() => {
@@ -221,13 +160,6 @@ export default function ExamRunner() {
   const unsavedCount = Object.keys(saveState).length;
   const low = remaining !== null && remaining <= 300;
   const st = saveState[q.id];
-  const pill = !online
-    ? { state: "offline", text: "Offline. Answers kept on this device" }
-    : failedCount > 0
-      ? { state: "failed", text: `${failedCount} not saved` }
-      : unsavedCount > 0
-        ? { state: "saving", text: "Saving..." }
-        : { state: "saved", text: "All answers saved" };
 
   const choose = (qid, key) => {
     setAnswers((a) => { const n = { ...a }; if (key === null) delete n[qid]; else n[qid] = key; return n; });
@@ -251,20 +183,13 @@ export default function ExamRunner() {
           <span className="timer-num">{fmt(remaining ?? 0)}</span>
           {low && <span className="timer-note">Time is running low</span>}
         </div>
-        <span className="save-pill" data-state={pill.state} role="status" aria-live="polite">{pill.text}</span>
         <div className="runner-actions">
           <Calculator />
           <button type="button" className="btn btn-primary btn-sm" onClick={() => setConfirming(true)}>Submit</button>
         </div>
       </header>
 
-      {!online && (
-        <p className="runner-offline" role="status">
-          You are offline. Keep answering: your answers are kept on this device and will be sent automatically when you reconnect. The timer keeps running.
-        </p>
-      )}
-
-      {online && failedCount > 0 && (
+      {failedCount > 0 && (
         <p className="alert alert-error runner-alert" role="alert">
           {failedCount} answer{failedCount > 1 ? "s have" : " has"} not been saved. Check your connection.{" "}
           <button type="button" className="link-btn" onClick={retryFailed}>Retry now</button>
@@ -277,15 +202,15 @@ export default function ExamRunner() {
             <span id="q-title">Question {idx + 1} of {total}</span>
             <span>{q.marks} {q.marks === 1 ? "mark" : "marks"}</span>
           </p>
-          <SafeHtml className="q-text" html={q.textHtml} text={q.text} />
+          <p className="q-text">{q.text}</p>
 
           <fieldset className="options">
             <legend className="sr-only">Choose your answer</legend>
             {q.options.map((o) => (
               <label key={o.key} className={`option${answers[q.id] === o.key ? " is-selected" : ""}`}>
                 <input type="radio" name={`q-${q.id}`} value={o.key} checked={answers[q.id] === o.key} onChange={() => choose(q.id, o.key)} />
-                <span className="option-key">{o.label || o.key}</span>
-                <SafeHtml as="span" inline className="option-text" html={o.html} text={o.text} />
+                <span className="option-key">{o.key}</span>
+                <span className="option-text">{o.text}</span>
               </label>
             ))}
           </fieldset>

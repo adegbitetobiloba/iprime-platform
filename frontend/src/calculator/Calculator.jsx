@@ -10,26 +10,23 @@ const OPEN_FN = /(asin\(|acos\(|atan\(|sin\(|cos\(|tan\(|log\(|ln\(|\u221a\(|Ans
 const MAX_CHARS = 180;
 const KEY_ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 
+// Default layout (4 columns, the "=" key is two rows tall): C DEL ÷ × / 7 8 9 − / 4 5 6 + / 1 2 3 = / 0 . √
 const BASIC = [
-  { l: "(", ins: "(", k: "fn", a: "open bracket", kind: "open" },
-  { l: ")", ins: ")", k: "fn", a: "close bracket", kind: "close" },
-  { l: "%", ins: "%", k: "fn", a: "percent", kind: "post" },
+  { l: "C", act: "clear", k: "ac", a: "clear all" },
   { l: "DEL", act: "del", k: "del", a: "delete last" },
-  { l: "AC", act: "clear", k: "ac", a: "clear all" },
-  { l: "7", ins: "7", k: "num", kind: "num" }, { l: "8", ins: "8", k: "num", kind: "num" }, { l: "9", ins: "9", k: "num", kind: "num" },
   { l: "\u00f7", ins: "\u00f7", k: "op", a: "divide", kind: "op" },
-  { l: "\u221a", ins: "\u221a(", k: "fn", a: "square root", kind: "fn" },
-  { l: "4", ins: "4", k: "num", kind: "num" }, { l: "5", ins: "5", k: "num", kind: "num" }, { l: "6", ins: "6", k: "num", kind: "num" },
   { l: "\u00d7", ins: "\u00d7", k: "op", a: "multiply", kind: "op" },
-  { l: "x\u00b2", ins: "^2", k: "fn", a: "square", kind: "post" },
-  { l: "1", ins: "1", k: "num", kind: "num" }, { l: "2", ins: "2", k: "num", kind: "num" }, { l: "3", ins: "3", k: "num", kind: "num" },
+  { l: "7", ins: "7", k: "num", kind: "num" }, { l: "8", ins: "8", k: "num", kind: "num" }, { l: "9", ins: "9", k: "num", kind: "num" },
   { l: "\u2212", ins: "\u2212", k: "op", a: "subtract", kind: "op" },
-  { l: "Ans", ins: "Ans", k: "fn", a: "previous answer", kind: "const", needsAns: true },
-  { l: "0", ins: "0", k: "num", kind: "num" }, { l: ".", ins: ".", k: "num", a: "decimal point", kind: "num" },
+  { l: "4", ins: "4", k: "num", kind: "num" }, { l: "5", ins: "5", k: "num", kind: "num" }, { l: "6", ins: "6", k: "num", kind: "num" },
   { l: "+", ins: "+", k: "op", a: "add", kind: "op" },
-  { l: "=", act: "equals", k: "eq", a: "equals", wide: true },
+  { l: "1", ins: "1", k: "num", kind: "num" }, { l: "2", ins: "2", k: "num", kind: "num" }, { l: "3", ins: "3", k: "num", kind: "num" },
+  { l: "=", act: "equals", k: "eq", a: "equals", tall: true },
+  { l: "0", ins: "0", k: "num", kind: "num" }, { l: ".", ins: ".", k: "num", a: "decimal point", kind: "num" },
+  { l: "\u221a", ins: "\u221a(", k: "fn", a: "square root", kind: "fn" },
 ];
 
+// Extra keys, shown with the "Sci" button
 function sciKeys(inv) {
   return [
     inv ? { l: "sin\u207b\u00b9", ins: "asin(", a: "inverse sine", trig: true } : { l: "sin", ins: "sin(", a: "sine", trig: true },
@@ -40,8 +37,13 @@ function sciKeys(inv) {
     { l: "\u03c0", ins: "\u03c0", a: "pi", kind: "const" },
     { l: "e", ins: "e", a: "Euler's number e", kind: "const" },
     { l: "x\u02b8", ins: "^", a: "power", kind: "op" },
+    { l: "x\u00b2", ins: "^2", a: "square", kind: "post" },
     { l: "x\u207b\u00b9", ins: "^(-1)", a: "reciprocal", kind: "post" },
     { l: "n!", ins: "!", a: "factorial", kind: "post" },
+    { l: "%", ins: "%", a: "percent", kind: "post" },
+    { l: "(", ins: "(", a: "open bracket", kind: "open" },
+    { l: ")", ins: ")", a: "close bracket", kind: "close" },
+    { l: "Ans", ins: "Ans", a: "previous answer", kind: "const", needsAns: true, wide: true },
   ].map((x) => ({ k: "fn", kind: "fn", ...x }));
 }
 
@@ -54,7 +56,7 @@ function Calculator() {
   const [fresh, setFresh] = useState(false);   // true right after "=": the next number starts a new sum, an operator continues from Ans
   const [mode, setMode] = useState("deg");
   const [inv, setInv] = useState(false);
-  const [sci, setSci] = useState(() => typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(min-width: 640px)").matches : true);
+  const [sci, setSci] = useState(false);       // extra keys are one tap away
   const [pos, setPos] = useState(null);        // null = default place; otherwise { x, y } after the student moves it
   const [note, setNote] = useState("");
 
@@ -206,7 +208,7 @@ function Calculator() {
     <button
       key={key.l + (key.a || "")}
       type="button"
-      className={`calc-key calc-${key.k}${key.wide ? " calc-wide" : ""}`}
+      className={`calc-key calc-${key.k}${key.wide ? " calc-wide" : ""}${key.tall ? " calc-tall" : ""}`}
       aria-label={key.a || undefined}
       disabled={key.needsAns && ans === null}
       onClick={(e) => { press(key); refocusAfterPointer(e); }}
