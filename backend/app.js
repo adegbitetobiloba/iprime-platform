@@ -15,6 +15,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 const libraryRoutes = require("./routes/libraryRoutes");
 const adminLibraryRoutes = require("./routes/adminLibraryRoutes");
+const { startSweeper } = require("./utils/attemptSweeper");
 
 const isProd = process.env.NODE_ENV === "production";
 const app = express();
@@ -72,6 +73,7 @@ async function start() {
 
   const PORT = process.env.PORT || 3000;
   const server = app.listen(PORT, () => console.log(`iPrime API listening on ${PORT}`));
+  startSweeper(); // closes expired exam attempts even if the student never returns (EXAM_SWEEP_SECONDS, 0 = off)
   process.on("SIGTERM", () => server.close(() => mongoose.connection.close().finally(() => process.exit(0))));
 }
 
