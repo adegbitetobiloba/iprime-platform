@@ -24,18 +24,10 @@ test("headers are matched case-, space- and underscore-insensitively, and six op
   assert.equal(r.questions[0].externalId, "X1");
 });
 
-test("any subject works: the subject comes from the file; columns the importer does not know are kept, not dropped", () => {
-  const rows = [[...H, "Reviewer_Initials"], [...R(1, { Subject: "Economics" }), "TB"]];
+test("any subject works: the subject comes from the file; unmapped columns are kept, not dropped", () => {
+  const rows = [[...H, "Difficulty"], [...R(1, { Subject: "Economics" }), "Hard"]];
   const q = rowsToQuestions(rows).questions[0];
-  assert.equal(q.subject, "Economics"); assert.deepEqual(q.extra, { Reviewer_Initials: "TB" });
-});
-
-test("a Difficulty column is read as the question's difficulty (not parked in extra) and sent to the server", () => {
-  const rows = [[...H, "Difficulty"], [...R(1), "Hard"], [...R(2), "Moderate"], [...R(3), ""]];
-  const qs = rowsToQuestions(rows).questions;
-  assert.deepEqual(qs.map((q) => q.difficulty), ["Hard", "Moderate", undefined]);
-  assert.equal(qs[0].extra, undefined);
-  assert.equal(toServerItem(qs[0]).difficulty, "Hard"); assert.equal(toServerItem(qs[2]).difficulty, "");
+  assert.equal(q.subject, "Economics"); assert.deepEqual(q.extra, { Difficulty: "Hard" });
 });
 
 test("validation: missing answer, answer pointing at an empty option, too few options, empty text, bad marks", () => {
@@ -121,7 +113,7 @@ test("text parser: sequence guard keeps '3. Hence' inside a stem; answer list at
 test("CSV: quotes, doubled quotes, line breaks inside cells, and ; or tab delimiters", () => {
   assert.deepEqual(parseCsv('a,"b ""q"" c","line1\nline2"\n1,2,3').rows, [["a", 'b "q" c', "line1\nline2"], ["1", "2", "3"]]);
   assert.equal(parseCsv("a;b;c\n1;2;3").delimiter, ";"); assert.equal(parseCsv("a\tb\n1\t2").delimiter, "\t");
-  const t = parseCsv(templateCsv()); assert.equal(t.rows[0].length, 21); assert.equal(t.rows[0][20], "Difficulty");
+  const t = parseCsv(templateCsv()); assert.equal(t.rows[0].length, 20);
   assert.equal(rowsToQuestions(t.rows).questions[0].state, "ready");
 });
 
