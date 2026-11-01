@@ -4,6 +4,7 @@ import { useAuth } from "../auth.jsx";
 import Icon from "../components/Icon.jsx";
 import Reveal from "../components/Reveal.jsx";
 import Sparkline from "../components/dashboard/Sparkline.jsx";
+import "../studentDashboard.css";
 
 const greeting = () => {
   const h = new Date().getHours();

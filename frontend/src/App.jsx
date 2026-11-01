@@ -18,6 +18,7 @@ import Verify from "./pages/Verify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import Performance from "./pages/Performance.jsx";
+import ProgressReport from "./pages/ProgressReport.jsx";
 import ExamCentre from "./pages/ExamCentre.jsx";
 import ExamIntro from "./pages/ExamIntro.jsx";
 import ExamRunner from "./pages/ExamRunner.jsx";
@@ -94,6 +95,7 @@ const TITLES = {
   "/account": "My profile | iPrime",
   "/exams": "Examination centre | iPrime",
   "/performance": "Performance | iPrime",
+  "/performance/report": "Progress report | iPrime",
   "/results": "My results | iPrime",
 };
 
@@ -141,6 +143,7 @@ export default function App() {
           <Route path="/exams/:id" element={<Protected><ExamIntro /></Protected>} />
           <Route path="/attempts/:id" element={<Protected><ExamRunner /></Protected>} />
           <Route path="/performance" element={<Protected><Performance /></Protected>} />
+          <Route path="/performance/report" element={<Protected><ProgressReport /></Protected>} />
           <Route path="/results" element={<Protected><Results /></Protected>} />
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
           <Route path="/library" element={<Protected><Library /></Protected>} />
