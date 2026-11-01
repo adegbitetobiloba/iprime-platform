@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 import MobileActionBar from "./MobileActionBar.jsx";
+import BackToTop from "./BackToTop.jsx";
 
 export default function Footer() {
   const { token } = useAuth();
@@ -32,6 +33,7 @@ export default function Footer() {
       </div>
     </footer>
     <MobileActionBar />
+    <BackToTop />
     </>
   );
 }
