@@ -210,7 +210,7 @@ export default function ExamRunner() {
             {q.options.map((o) => (
               <label key={o.key} className={`option${answers[q.id] === o.key ? " is-selected" : ""}`}>
                 <input type="radio" name={`q-${q.id}`} value={o.key} checked={answers[q.id] === o.key} onChange={() => choose(q.id, o.key)} />
-                <span className="option-key">{o.key}</span>
+                <span className="option-key">{o.label || o.key}</span>
                 <SafeHtml as="span" inline className="option-text" html={o.html} text={o.text} />
               </label>
             ))}
