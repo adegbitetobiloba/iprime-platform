@@ -1,8 +1,8 @@
 const Joi = require("joi");
 
-// "teacher" and "admin" are deliberately missing: nobody can give themselves those roles at signup.
-// Admins are created with `npm run create-admin`; teachers are assigned by an admin.
-const SELF_SIGNUP_ROLES = ["student", "parent", "alumni"];
+// Self-signup is limited to student and parent. Admins are created with
+// `npm run create-admin`; teachers are assigned by an admin.
+const SELF_SIGNUP_ROLES = ["student", "parent"];
 
 const email = Joi.string().trim().lowercase().email().required();
 
@@ -18,7 +18,7 @@ const schemas = {
     country: Joi.string().trim().max(60).default("Nigeria"),
     state: Joi.string().trim().max(60).required(),
     role: Joi.string().valid(...SELF_SIGNUP_ROLES).default("student"),
-    // Only used when role is "alumni"
+    // These fields are kept for alumni flows outside direct self-signup.
     graduationYear: Joi.number().integer().min(1950).max(new Date().getFullYear() + 1),
     lastClass: Joi.string().trim().max(60).allow(""),
     // bcrypt only uses the first 72 bytes, so longer passwords add nothing.
@@ -28,7 +28,7 @@ const schemas = {
   resendOtp: Joi.object({ email }),
   login: Joi.object({ email, password: Joi.string().max(72).required() }),
   // Google sign-in. role is optional here: a new person who has not chosen yet is asked on the next screen.
-  // Only student, parent or alumni can ever be requested; admin cannot.
+  // Only student and parent can ever be requested here; admin cannot.
   google: Joi.object({
     credential: Joi.string().min(20).max(4096).required(),
     role: Joi.string().valid(...SELF_SIGNUP_ROLES),
