@@ -39,6 +39,8 @@ import NotFound from "./pages/NotFound.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import PendingApproval from "./pages/PendingApproval.jsx";
 import AdminDenied from "./pages/admin/AdminDenied.jsx";
+import Messages from "./pages/Messages.jsx";
+import AdminMessages from "./pages/admin/AdminMessages.jsx";
 import Library from "./pages/Library.jsx";
 import LibraryCourse from "./pages/LibraryCourse.jsx";
 import LibraryLesson from "./pages/LibraryLesson.jsx";
@@ -146,6 +148,7 @@ export default function App() {
           <Route path="/performance/report" element={<Protected><ProgressReport /></Protected>} />
           <Route path="/results" element={<Protected><Results /></Protected>} />
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
+          <Route path="/messages" element={<Protected><Messages /></Protected>} />
           <Route path="/library" element={<Protected><Library /></Protected>} />
           <Route path="/library/saved" element={<Protected><LibrarySaved /></Protected>} />
           <Route path="/library/courses/:slug" element={<Protected><LibraryCourse /></Protected>} />
@@ -162,6 +165,7 @@ export default function App() {
             <Route path="bank" element={<AdminBank />} />
             <Route path="programmes" element={<AdminProgrammes />} />
             <Route path="students" element={<AdminStudents />} />
+            <Route path="messages" element={<AdminMessages />} />
             <Route path="library" element={<AdminLibrary />} />
             <Route path="library/courses/:id" element={<AdminLibraryCourse />} />
             <Route path="library/analytics" element={<AdminLibraryAnalytics />} />
