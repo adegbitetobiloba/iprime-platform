@@ -3,38 +3,14 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 import AccountMenu from "./AccountMenu.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
-import NavDropdown from "./NavDropdown.jsx";
 import { TYPE_LABEL } from "../accountTypes.js";
 
-// Phone menu (unchanged): every public page.
 const PUBLIC_LINKS = [
   { to: "/about", label: "About" },
   { to: "/programmes", label: "Programmes" },
-  { to: "/how-it-works", label: "How it works" },
-  { to: "/achievements", label: "Achievements" },
-  { to: "/iprime", label: "iPrime" },
-  { to: "/faq", label: "FAQ" },
-  { to: "/contact", label: "Contact" },
-];
-const MORE_LINKS = [
   { to: "/events", label: "Events" },
   { to: "/news", label: "News" },
-];
-
-// Laptop top bar: only what always fits is shown directly. The rest lives in one dropdown, so the bar can never overlap the logo.
-const CORE_LINKS = [
-  { to: "/programmes", label: "Programmes" },
-  { to: "/how-it-works", label: "How it works" },
-];
-const WIDE_LINKS = [ // shown in the bar only on wide screens (1180px and up); otherwise they sit in the "More" menu
-  { to: "/about", label: "About" },
-  { to: "/achievements", label: "Achievements" },
-  { to: "/iprime", label: "iPrime" },
-];
-const ALWAYS_IN_MENU = [
-  { to: "/faq", label: "FAQ" },
   { to: "/contact", label: "Contact" },
-  ...MORE_LINKS,
 ];
 
 export default function Header() {
@@ -62,10 +38,6 @@ export default function Header() {
   const canExam = user && (user.role === "student" || user.role === "admin");
   const doLogout = async () => { setLeaving(true); await logout(); setLeaving(false); setOpen(false); navigate("/"); };
 
-  // Signed in: role links in the bar, every public page under "Explore". Signed out: two key links, "More" for the rest.
-  const exploreItems = [{ to: "/", label: "Home", end: true }, ...PUBLIC_LINKS, ...MORE_LINKS];
-  const moreItems = [...WIDE_LINKS.map((l) => ({ ...l, extra: true })), ...ALWAYS_IN_MENU];
-
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -77,23 +49,12 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Wide screens: a short row of links, one dropdown, and the account menu */}
-        <nav className="nav ws5-nav" aria-label="Main">
+        {/* Wide screens: links across the top and an account dropdown */}
+        <nav className="nav" aria-label="Main">
           <ul className="nav-links">
-            {token ? (
-              <>
-                {canExam && <li><NavLink to="/exams" className="nav-link">Exams</NavLink></li>}
-                {canExam && <li><NavLink to="/library" className="nav-link">Library</NavLink></li>}
-                {user && user.role === "admin" && <li><NavLink to="/admin" className="nav-link">Admin</NavLink></li>}
-                <NavDropdown label="Explore" items={exploreItems} />
-              </>
-            ) : (
-              <>
-                {CORE_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="nav-link">{l.label}</NavLink></li>))}
-                {WIDE_LINKS.map((l) => (<li key={l.to} className="nav-extra"><NavLink to={l.to} className="nav-link">{l.label}</NavLink></li>))}
-                <NavDropdown label="More" items={moreItems} />
-              </>
-            )}
+            {PUBLIC_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="nav-link">{l.label}</NavLink></li>))}
+            {canExam && <li><NavLink to="/exams" className="nav-link">Exams</NavLink></li>}
+            {user && user.role === "admin" && <li><NavLink to="/admin" className="nav-link">Admin</NavLink></li>}
           </ul>
           <div className="nav-actions">
             {token ? <AccountMenu /> : (
@@ -132,7 +93,6 @@ export default function Header() {
           <ul className="drawer-list">
             <li><NavLink to="/dashboard" className="drawer-link" onClick={close}>My dashboard</NavLink></li>
             {canExam && <li><NavLink to="/exams" className="drawer-link" onClick={close}>Examination centre</NavLink></li>}
-            {canExam && <li><NavLink to="/library" className="drawer-link" onClick={close}>Library</NavLink></li>}
             {canExam && <li><NavLink to="/results" className="drawer-link" onClick={close}>My results</NavLink></li>}
             {user.role === "admin" && <li><NavLink to="/admin" className="drawer-link" onClick={close}>Administration</NavLink></li>}
           </ul>
@@ -141,7 +101,8 @@ export default function Header() {
         <p className="drawer-heading">Explore</p>
         <ul className="drawer-list">
           <li><NavLink to="/" end className="drawer-link" onClick={close}>Home</NavLink></li>
-          {PUBLIC_LINKS.concat(MORE_LINKS).map((l) => (<li key={l.to}><NavLink to={l.to} className="drawer-link" onClick={close}>{l.label}</NavLink></li>))}
+          {PUBLIC_LINKS.map((l) => (<li key={l.to}><NavLink to={l.to} className="drawer-link" onClick={close}>{l.label}</NavLink></li>))}
+          <li><NavLink to="/faq" className="drawer-link" onClick={close}>FAQ</NavLink></li>
         </ul>
 
         <div className="drawer-foot">
@@ -151,7 +112,7 @@ export default function Header() {
             </button>
           ) : (
             <>
-              <Link to="/register" className="btn btn-primary btn-block btn-lg" onClick={close}>Create an account</Link>
+              <Link to="/register" className="btn btn-primary btn-block btn-lg" onClick={close}>Sign up</Link>
               <Link to="/login" className="btn btn-secondary btn-block btn-lg" onClick={close}>Log in</Link>
             </>
           )}

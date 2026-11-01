@@ -56,16 +56,16 @@
 
 /* Keys: 44px minimum for touch */
 .calc-keys { display: grid; gap: 6px; }
-.calc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .calc-key {
-  min-height: 44px; min-width: 0; padding: 0 2px; border: 1px solid var(--c-line); border-radius: 12px;
+  min-height: 48px; min-width: 0; padding: 0 2px; border: 1px solid var(--c-line); border-radius: 12px;
   background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: 1.05rem; font-weight: 700; cursor: pointer;
   transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease), transform 90ms var(--ease);
 }
 .calc-key:hover:not(:disabled) { border-color: var(--c-line-strong); background: var(--c-surface-2); }
 .calc-key:disabled { opacity: 0.45; cursor: not-allowed; }
 .calc-fn { background: var(--c-surface-2); font-size: 0.92rem; }
-.calc-op { background: var(--c-tint); font-size: 1.2rem; }
+.calc-op { background: var(--c-tint); font-size: 1.35rem; }
 .calc-op:hover:not(:disabled) { background: var(--c-tint); border-color: var(--c-link); }
 .calc-del { background: var(--c-tint); font-size: 0.85rem; }
 .calc-ac { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger); font-size: 0.9rem; }
@@ -73,6 +73,7 @@
 .calc-eq { background: var(--c-blue); border-color: var(--c-blue); color: #FFFFFF; font-size: 1.3rem; }
 .calc-eq:hover:not(:disabled) { background: var(--c-blue-press); border-color: var(--c-blue-press); }
 .calc-wide { grid-column: span 2; }
+.calc-tall { grid-row: span 2; }
 @media (prefers-reduced-motion: no-preference) { .calc-key:active:not(:disabled) { transform: scale(0.95); } }
 
 /* Phones and tablets: the panel is docked at the bottom, so the page gets room beneath it and the sticky Previous / Next bar rises above it */
@@ -92,7 +93,7 @@
 
 /* Mouse and trackpad users get slightly tighter keys so the panel leaves more of the screen free (touch keeps the full 44px) */
 @media (pointer: fine) {
-  .calc-key { min-height: 38px; font-size: 1rem; }
+  .calc-key { min-height: 42px; font-size: 1.05rem; }
   .calc-grip, .calc-sci-toggle, .calc-close { min-height: 38px; }
   .calc-close { width: 38px; }
   .calc-mode { min-height: 32px; }
