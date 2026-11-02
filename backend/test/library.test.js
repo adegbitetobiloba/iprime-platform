@@ -97,3 +97,49 @@ test("safe file names", () => {
   assert.equal(PDF.safeFileName(""), "document.pdf");
   assert.equal(PDF.safeFileName("Organic%20Notes.pdf"), "Organic Notes.pdf");
 });
+
+const R = require("../utils/libraryRange");
+const CD = require("../utils/libraryCountdown");
+test("range parsing", () => {
+  assert.equal(R.parseRange(undefined, 1000), null);
+  assert.deepEqual(R.parseRange("bytes=0-99", 1000), { start: 0, end: 99 });
+  assert.deepEqual(R.parseRange("bytes=900-", 1000), { start: 900, end: 999 });
+  assert.deepEqual(R.parseRange("bytes=-100", 1000), { start: 900, end: 999 });
+  assert.deepEqual(R.parseRange("bytes=500-5000", 1000), { start: 500, end: 999 });
+  assert.equal(R.parseRange("bytes=1000-1100", 1000), "invalid");
+  assert.equal(R.parseRange("bytes=5-1", 1000), "invalid");
+  assert.equal(R.parseRange("bytes=0-1,5-9", 1000), "invalid");
+  assert.equal(R.parseRange("items=0-1", 1000), "invalid");
+});
+test("countdown and plan", () => {
+  const now = Date.parse("2026-11-01T00:00:00+01:00");
+  assert.equal(CD.daysLeft("2027-03-15T00:00:00+01:00", now), 134);
+  assert.equal(CD.daysLeft("2026-10-01T00:00:00+01:00", now), 0);
+  assert.equal(CD.daysLeft("garbage", now), null);
+  assert.deepEqual(CD.studyPlan(70, 50), { daysLeft: 70, weeksLeft: 10, lessonsRemaining: 50, lessonsPerWeek: 5, enoughTime: true });
+  assert.equal(CD.studyPlan(3, 10).lessonsPerWeek, 10);
+  assert.equal(CD.studyPlan(3, 10).enoughTime, false);
+  assert.equal(CD.studyPlan(70, 0).lessonsPerWeek, 0);
+  assert.equal(CD.studyPlan(null, 5), null);
+});
+
+const IMG = require("../utils/libraryImage");
+test("image upload checks", () => {
+  const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, 1)]);
+  const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(200, 1)]);
+  const webp = Buffer.concat([Buffer.from("RIFF"), Buffer.from([1, 2, 3, 4]), Buffer.from("WEBP"), Buffer.alloc(200, 1)]);
+  assert.equal(IMG.checkImageBuffer(jpeg).type, "image/jpeg");
+  assert.equal(IMG.checkImageBuffer(png).type, "image/png");
+  assert.equal(IMG.checkImageBuffer(webp).type, "image/webp");
+  assert.match(IMG.checkImageBuffer(Buffer.from("GIF89a" + "x".repeat(300))).error, /Only JPEG/);
+  assert.match(IMG.checkImageBuffer(Buffer.from("<svg onload=alert(1)>" + "x".repeat(300))).error, /Only JPEG/);
+  assert.match(IMG.checkImageBuffer(Buffer.alloc(0)).error, /No image/);
+  assert.match(IMG.checkImageBuffer(Buffer.concat([jpeg.subarray(0, 4), Buffer.alloc(IMG.MAX_IMAGE_BYTES)])).error, /too large/);
+});
+test("reading percent", () => {
+  assert.equal(P.readingPercent({ page: 5, pageCount: 20 }), 25);
+  assert.equal(P.readingPercent({ page: 30, pageCount: 20 }), 100);
+  assert.equal(P.readingPercent({ percent: 42.6 }), 43);
+  assert.equal(P.readingPercent({ percent: 150 }), 100);
+  assert.equal(P.readingPercent({}), null);
+});

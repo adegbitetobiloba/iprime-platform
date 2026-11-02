@@ -6,6 +6,7 @@ const Lesson = require("../models/Lesson");
 const LibraryFile = require("../models/LibraryFile");
 const crypto = require("crypto");
 const { checkPdfBuffer, safeFileName } = require("../utils/libraryPdf");
+const store = require("../utils/libraryStore");
 const { slugify, canTransition, parseVideoUrl, publishProblems, lessonHasContent, STATUSES } = require("../utils/library");
 
 const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
@@ -232,14 +233,13 @@ exports.uploadPdf = async (req, res) => {
   if (lesson.contentType !== "pdf") return bad(res, "This lesson is not a PDF lesson.", 409);
   const problem = checkPdfBuffer(req.body);
   if (problem) return bad(res, problem, req.body && req.body.length > 0 ? 422 : 400);
-  const file = await LibraryFile.create({
-    data: req.body, size: req.body.length, sha256: crypto.createHash("sha256").update(req.body).digest("hex"),
-    originalName: safeFileName(req.headers["x-file-name"]), uploadedBy: req.user.id,
-  });
+  const name = safeFileName(req.headers["x-file-name"]);
+  const gridId = await store.saveBuffer(req.body, name);
+  const file = await LibraryFile.create({ gridId, size: req.body.length, sha256: crypto.createHash("sha256").update(req.body).digest("hex"), originalName: name, uploadedBy: req.user.id });
   const old = lesson.pdf && lesson.pdf.file;
   lesson.pdf = { file: file._id, originalName: file.originalName, size: file.size };
   lesson.updatedBy = req.user.id;
   await lesson.save();
-  if (old) await LibraryFile.deleteOne({ _id: old }); // the replaced file is removed, not kept
+  if (old) await store.removeFile(old); // the replaced file is removed, not kept
   res.json({ lesson });
 };
