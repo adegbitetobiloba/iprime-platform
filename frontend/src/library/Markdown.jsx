@@ -37,19 +37,6 @@ export function inline(text, base = "i") {
   });
 }
 
-export const headingId = (t) => `s-${String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}`;
-
-// Splits written material into its "## " sections (for the contents list and for searching inside the text).
-export function sectionsOf(body) {
-  const out = [];
-  let cur = null;
-  for (const line of String(body || "").split(/\r?\n/)) {
-    const h = line.match(/^##\s+(.*)$/);
-    if (h) { cur = { id: headingId(h[1]), title: h[1].trim(), text: "" }; out.push(cur); } else if (cur) cur.text += `${line}\n`;
-  }
-  return out;
-}
-
 const cells = (line) => line.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
 
 export default function Markdown({ text }) {
@@ -70,7 +57,7 @@ export default function Markdown({ text }) {
     const h = line.match(/^(#{1,3})\s+(.*)$/);
     if (h) { // # is shown as h2: the page title is the only h1
       const Tag = h[1].length === 3 ? "h3" : "h2";
-      blocks.push(<Tag key={blocks.length} id={headingId(h[2])}>{inline(h[2], `h${blocks.length}`)}</Tag>);
+      blocks.push(<Tag key={blocks.length}>{inline(h[2], `h${blocks.length}`)}</Tag>);
       i++; continue;
     }
     if (line.startsWith(">")) {

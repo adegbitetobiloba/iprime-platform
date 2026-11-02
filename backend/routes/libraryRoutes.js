@@ -6,7 +6,6 @@ const requireRole = require("../middleware/roleMiddleware");
 const { validate } = require("../validations/authValidation");
 const v = require("../validations/libraryValidation");
 const c = require("../controllers/libraryController");
-const m = require("../controllers/libraryMaterialsController");
 
 // Mounted at /api/library. It MUST be mounted before app.use("/api", cbtRoutes), because that router
 // applies its own student-only check to every /api path that reaches it.
@@ -31,15 +30,6 @@ router.post("/lessons/:id/practice-check", c.checkPractice);
 router.post("/lessons/:id/bookmark", c.addBookmark);
 router.delete("/lessons/:id/bookmark", c.removeBookmark);
 router.put("/lessons/:id/note", validate(v.note), c.saveNote);
-
-router.get("/hub", m.hub);
-router.get("/shelf", m.shelf);
-router.get("/materials", m.list);
-router.get("/materials/:id/pdf", pdfLimiter, m.stream);
-router.get("/materials/:id/images/:fileId", pdfLimiter, m.streamImage);
-router.get("/materials/:id", m.get);
-router.put("/materials/:id/shelf", validate(v.shelf), m.setShelf);
-router.put("/materials/:id/progress", progressLimiter, validate(v.materialProgress), m.progress);
 
 router.get("/bookmarks", c.listBookmarks);
 router.get("/me/summary", c.mySummary);

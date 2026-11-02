@@ -46,8 +46,6 @@ export default function AdminLibraryAnalytics() {
             cols={[{ label: "Lesson", render: (r) => r.title }, { label: "Course", render: (r) => r.course }, { label: "Opened by", render: (r) => r.openers }, { label: "Completed", render: (r) => `${r.completers} (${r.completionRate}%)` }]} />
           <Table title="Video engagement" note="Average share of each video that students have watched." rows={data.videoEngagement} empty="No video progress has been recorded yet."
             cols={[{ label: "Video lesson", render: (r) => r.title }, { label: "Viewers", render: (r) => r.viewers }, { label: "Average watched", render: (r) => `${r.avgWatchedPercent}%` }]} />
-          <Table title="Most opened study materials" rows={data.topMaterials || []} empty="No study material has been opened yet."
-            cols={[{ label: "Material", render: (r) => r.title }, { label: "Readers", render: (r) => r.readers }, { label: "Opens", render: (r) => r.opens }]} />
           <Table title="Practice after lessons" rows={data.practice} empty="No lesson has a practice exam attached."
             cols={[{ label: "Lesson", render: (r) => r.title }, { label: "Students", render: (r) => r.openers }, { label: "Passed practice", render: (r) => `${r.passed} (${r.passRate}%)` }]} />
         </>

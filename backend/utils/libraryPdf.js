@@ -1,5 +1,5 @@
 // Checks for uploaded PDFs. Pure functions so they can be tested without a server.
-const MAX_PDF_BYTES = 20 * 1024 * 1024; // stored in GridFS in chunks, so the old 16 MB document limit no longer applies
+const MAX_PDF_BYTES = 12 * 1024 * 1024; // keeps each file safely under MongoDB's 16 MB document limit
 
 // Returns an error message, or null when the buffer looks like a real PDF.
 function checkPdfBuffer(buf) {
