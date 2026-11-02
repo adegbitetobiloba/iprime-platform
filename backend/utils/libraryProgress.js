@@ -47,4 +47,12 @@ function pickNextLesson(lessons, completedIds, lastLessonId) {
   return lessons.find((l) => !done.has(String(l.id))) || null;
 }
 
-module.exports = { isLessonComplete, coursePercent, limitedGrowth, pickNextLesson, VIDEO_COMPLETE_FRACTION, MIN_READ_FRACTION };
+// Reading progress for a study material, 0 to 100. Uses an explicit percent (text, images) or page / pageCount (PDF).
+function readingPercent({ page, pageCount, percent } = {}) {
+  if (Number.isFinite(percent)) return Math.min(100, Math.max(0, Math.round(percent)));
+  if (page > 0 && pageCount > 0) return Math.min(100, Math.round((Math.min(page, pageCount) / pageCount) * 100));
+  return null;
+}
+const FINISHED_AT = 95; // reading this far moves a material to "Finished" once
+
+module.exports = { readingPercent, FINISHED_AT, isLessonComplete, coursePercent, limitedGrowth, pickNextLesson, VIDEO_COMPLETE_FRACTION, MIN_READ_FRACTION };

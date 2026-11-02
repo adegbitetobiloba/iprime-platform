@@ -2,6 +2,8 @@ const Course = require("../models/Course");
 const Lesson = require("../models/Lesson");
 const Progress = require("../models/LibraryProgress");
 const Enrolment = require("../models/LibraryEnrolment");
+const Material = require("../models/LibraryMaterial");
+const MaterialView = require("../models/LibraryMaterialView");
 
 const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 
@@ -37,6 +39,10 @@ exports.analytics = async (req, res) => {
   const video = videoRows.filter((r) => lMap[String(r._id)]).map((r) => ({ id: r._id, title: lMap[String(r._id)].title, viewers: r.viewers, avgWatchedPercent: Math.round(r.avgWatched * 100) }))
     .sort((a, b) => b.viewers - a.viewers).slice(0, 10);
 
+  const matRows = await MaterialView.aggregate([{ $group: { _id: "$material", readers: { $sum: 1 }, opens: { $sum: "$openCount" } } }, { $sort: { opens: -1 } }, { $limit: 10 }]);
+  const mats = await Material.find({ _id: { $in: matRows.map((r) => r._id) } }).select("title kind").lean();
+  const mMap = Object.fromEntries(mats.map((x) => [String(x._id), x]));
+  const topMaterials = matRows.filter((r) => mMap[String(r._id)]).map((r) => ({ id: r._id, title: mMap[String(r._id)].title, kind: mMap[String(r._id)].kind, readers: r.readers, opens: r.opens }));
   const e = enrolTotals[0] || { enrolments: 0, completed: 0 };
   res.json({
     totals: {
@@ -50,6 +56,7 @@ exports.analytics = async (req, res) => {
     dropOff: lessonRows.filter((l) => l.openers >= minOpeners).sort((a, b) => a.completionRate - b.completionRate).slice(0, 10),
     videoEngagement: video,
     practice: lessonRows.filter((l) => l.hasPractice).map((l) => ({ id: l.id, title: l.title, openers: l.openers, passed: l.practicePassed, passRate: pct(l.practicePassed, l.openers) })).slice(0, 20),
+    topMaterials,
     minOpeners,
   });
 };

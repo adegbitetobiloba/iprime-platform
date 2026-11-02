@@ -78,3 +78,28 @@ export function CourseOutline({ modules, currentId }) {
     </ol>
   );
 }
+
+export const KIND_LABEL = { syllabus: "Syllabus", textbook: "Textbook", "past-questions": "Past questions", notes: "Notes", other: "Other" };
+export const SHELF_LABEL = { want: "Want to read", reading: "Reading", done: "Finished" };
+
+export function MaterialCard({ m }) {
+  return (
+    <li className="lib-card">
+      <Link className="lib-card-link" to={`/library/materials/${m.id}`}>
+        <div className="lib-card-body">
+          <div className="exam-tags">
+            <span className="badge">{KIND_LABEL[m.kind]}</span>
+            {m.subject && <span className="badge badge-quiet">{m.subject.name}</span>}
+            {m.shelf && <span className={`badge ${m.shelf === "done" ? "badge-ok" : "badge-quiet"}`}>{SHELF_LABEL[m.shelf]}</span>}
+            {(m.examTags || []).slice(0, 2).map((t) => <span key={t} className="badge badge-quiet">{t}</span>)}
+          </div>
+          <h3>{m.title}</h3>
+          {m.author && <p className="muted" style={{ margin: 0 }}>{m.author}</p>}
+          {m.description && <p className="muted" style={{ margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{m.description}</p>}
+          {m.percent > 0 && m.percent < 100 && (<><ProgressBar percent={m.percent} label={`${m.title} read`} /><div className="lib-bar-label"><span>Continue reading</span><span>{m.percent}%</span></div></>)}
+          <p className="lib-meta" style={{ marginTop: "auto" }}>{m.source === "link" ? `Opens on ${m.host || "the web"}` : m.source === "text" ? "Written, loads fast" : m.source === "image" ? "Images, read in iPrime" : "Read in iPrime"}</p>
+        </div>
+      </Link>
+    </li>
+  );
+}
