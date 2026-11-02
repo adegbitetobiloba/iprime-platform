@@ -43,6 +43,10 @@ import AdminDenied from "./pages/admin/AdminDenied.jsx";
 import Messages from "./pages/Messages.jsx";
 import AdminMessages from "./pages/admin/AdminMessages.jsx";
 import Library from "./pages/Library.jsx";
+import LibraryMaterials from "./pages/LibraryMaterials.jsx";
+import LibraryMaterial from "./pages/LibraryMaterial.jsx";
+import LibraryUtme from "./pages/LibraryUtme.jsx";
+import LibraryShelf from "./pages/LibraryShelf.jsx";
 import LibraryCourse from "./pages/LibraryCourse.jsx";
 import LibraryLesson from "./pages/LibraryLesson.jsx";
 import LibrarySaved from "./pages/LibrarySaved.jsx";
@@ -152,6 +156,10 @@ export default function App() {
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
           <Route path="/messages" element={<Protected><Messages /></Protected>} />
           <Route path="/library" element={<Protected><Library /></Protected>} />
+          <Route path="/library/utme" element={<Protected><LibraryUtme /></Protected>} />
+          <Route path="/library/materials" element={<Protected><LibraryMaterials /></Protected>} />
+          <Route path="/library/materials/:id" element={<Protected><LibraryMaterial /></Protected>} />
+          <Route path="/library/shelf" element={<Protected><LibraryShelf /></Protected>} />
           <Route path="/library/saved" element={<Protected><LibrarySaved /></Protected>} />
           <Route path="/library/courses/:slug" element={<Protected><LibraryCourse /></Protected>} />
           <Route path="/library/lessons/:id" element={<Protected><LibraryLesson /></Protected>} />
