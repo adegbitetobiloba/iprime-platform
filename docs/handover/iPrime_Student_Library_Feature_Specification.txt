@@ -1,0 +1,559 @@
+iPRIME STUDENT LIBRARY
+Complete Features and Functionality Requirements
+
+1. LIBRARY DASHBOARD
+
+The library should have a personalised dashboard that gives students an overview of their learning activities.
+
+Features:
+- Welcome message with the student's name.
+- Recently accessed learning materials.
+- Continue Learning section.
+- Recently viewed courses and lessons.
+- Recommended learning materials.
+- Popular and recently added resources.
+- My Learning section.
+- Saved and bookmarked resources.
+- Learning progress overview.
+- Recently completed lessons.
+- Pending assignments and exercises.
+- Notifications about newly uploaded materials.
+- Quick access to subjects and courses.
+- Learning activity summary.
+
+2. SUBJECT AND COURSE CATEGORIES
+
+Organise the library into clearly structured subjects and courses.
+
+Possible categories include:
+- English Language
+- Mathematics
+- Physics
+- Chemistry
+- Biology
+- Economics
+- Government
+- Literature in English
+- Commerce
+- Accounting
+- Further Mathematics
+- Agricultural Science
+- Geography
+- Civic Education
+- Other approved subjects.
+
+Each subject should contain relevant courses, topics, learning materials and practice activities.
+
+Students should be able to:
+- Browse subjects.
+- View available courses under each subject.
+- Explore topics and subtopics.
+- See the number of available learning materials.
+- View their progress in each subject.
+- Filter materials by subject, topic and content type.
+
+3. COURSE MANAGEMENT AND LEARNING STRUCTURE
+
+Every course should have a structured learning environment.
+
+Recommended hierarchy:
+
+Subject → Course → Module/Chapter → Topic → Lesson.
+
+Each course should include:
+- Course title.
+- Course description.
+- Subject.
+- Course thumbnail or cover image.
+- Course instructor or tutor, where applicable.
+- Learning objectives.
+- Course requirements or prerequisites.
+- Number of modules.
+- Number of lessons.
+- Estimated learning duration.
+- Course access status.
+- Course completion progress.
+- Last accessed date.
+
+Students should be able to enrol in or access courses according to their assigned learning permissions.
+
+4. LESSON VIEWER
+
+Create a dedicated interface for reading and studying lessons.
+
+Supported lesson formats:
+- Written lessons.
+- PDF documents.
+- Video lessons.
+- Images and diagrams.
+- Presentations.
+- Audio lessons.
+- Embedded external learning resources.
+- Interactive learning content.
+
+Lesson viewer functionalities:
+- Clean and readable content layout.
+- Previous and Next Lesson navigation.
+- Mark as Completed button.
+- Save lesson progress.
+- Automatically remember the last reading position where supported.
+- Bookmark lessons.
+- Add personal notes.
+- View lesson attachments.
+- Display related lessons.
+- Display related practice questions.
+- Show lesson completion status.
+- Return to the course structure.
+- Continue from the last accessed lesson.
+
+5. DIGITAL RESOURCE LIBRARY
+
+Provide a dedicated section for standalone learning resources.
+
+Resource types should include:
+- PDF textbooks.
+- Lecture notes.
+- Study guides.
+- Past examination questions.
+- Revision materials.
+- Formula sheets.
+- Summary notes.
+- Educational presentations.
+- Diagrams and illustrations.
+- Reference materials.
+- Approved video resources.
+
+Each resource should display:
+- Resource title.
+- Short description.
+- Subject.
+- Topic.
+- Resource category.
+- File type.
+- File size, where applicable.
+- Date uploaded.
+- Author or source.
+- Access permissions.
+- Preview option, where supported.
+
+Student actions:
+- Open resources.
+- Preview supported documents.
+- Download resources where permitted.
+- Bookmark resources.
+- Share an authorised resource link.
+- Search for resources.
+- Filter and sort resources.
+- View recently accessed resources.
+
+6. SEARCH, FILTERING AND DISCOVERY
+
+Implement a powerful library search system.
+
+Students should be able to search by:
+- Resource title.
+- Subject.
+- Topic.
+- Subtopic.
+- Course name.
+- Lesson title.
+- Keywords.
+- Resource type.
+
+Filtering options:
+- Subject.
+- Course.
+- Topic.
+- Content type.
+- Recently uploaded.
+- Most popular.
+- Recently accessed.
+- Downloadable resources.
+- Bookmarked resources.
+
+Include:
+- Search suggestions.
+- Relevant search results.
+- Clear search option.
+- Useful empty search results state.
+- Pagination or efficient progressive loading.
+
+7. MY LEARNING
+
+Create a personalised section where students can manage their learning activities.
+
+Include:
+- My Courses.
+- My Subjects.
+- Continue Learning.
+- Completed Lessons.
+- Incomplete Lessons.
+- My Bookmarks.
+- My Notes.
+- Recently Viewed.
+- My Assignments.
+- My Learning History.
+
+Students should easily identify where they stopped and continue without searching through the entire library again.
+
+8. BOOKMARKS AND SAVED RESOURCES
+
+Students should be able to save useful materials for later.
+
+Features:
+- Bookmark courses.
+- Bookmark individual lessons.
+- Save PDFs and other resources.
+- Save useful topics.
+- Remove bookmarks.
+- Organise saved resources by subject.
+- Access all saved resources from one location.
+
+9. PERSONAL STUDY NOTES
+
+Provide a personal note-taking feature.
+
+Students should be able to:
+- Create notes.
+- Edit notes.
+- Delete notes.
+- Associate notes with a course, lesson or topic.
+- View notes by subject.
+- Search personal notes.
+- Access previously saved notes.
+
+Notes should be private to the student unless an explicit sharing feature is introduced.
+
+10. LEARNING PROGRESS TRACKING
+
+The library should monitor genuine learning activity.
+
+Track:
+- Courses accessed.
+- Lessons started.
+- Lessons completed.
+- Topics studied.
+- Resources viewed.
+- Learning time where reliably measurable.
+- Course completion percentage.
+- Last learning activity.
+- Learning streaks, if implemented responsibly.
+
+Provide visual progress indicators.
+
+Students should be able to see:
+- Overall learning progress.
+- Progress by subject.
+- Progress by course.
+- Completed modules.
+- Remaining lessons.
+- Recently studied topics.
+
+Do not treat simply opening a document as proof that the student has mastered its contents.
+
+11. PRACTICE AND ASSESSMENT INTEGRATION
+
+The library should connect directly to iPrime's existing examination and question-bank system.
+
+Features:
+- Practice questions attached to lessons.
+- Topic-based quizzes.
+- End-of-module assessments.
+- Course revision tests.
+- Related past questions.
+- Links to relevant CBT examinations.
+- View previous practice results.
+- Review explanations after permitted assessments.
+- Recommendations for topics requiring further study.
+
+Where possible, students should be able to move directly from learning a topic to practising questions on that same topic.
+
+Avoid creating a separate question bank for the library. Reuse the existing examination system and maintain consistent subject and topic relationships.
+
+12. ASSIGNMENTS AND LEARNING ACTIVITIES
+
+Support tutor-assigned learning activities.
+
+Features:
+- View assigned tasks.
+- Assignment descriptions.
+- Due dates.
+- Relevant learning materials.
+- Submission instructions.
+- Submission status.
+- Completion status.
+- Tutor feedback.
+- Scores where applicable.
+- Links to related lessons and practice activities.
+
+13. RECOMMENDED LEARNING MATERIALS
+
+Introduce a recommendation section that suggests relevant content.
+
+Recommendations may be based on:
+- Student's enrolled subjects.
+- Current courses.
+- Recently studied topics.
+- Incomplete lessons.
+- Previous examination performance.
+- Topics with weaker performance.
+- Related learning materials.
+
+For example:
+
+If a student repeatedly struggles with quadratic equations in CBT examinations, the library could recommend the relevant Mathematics lessons, revision materials and practice activities.
+
+Recommendations should be based on actual available data rather than fabricated learning insights.
+
+14. NOTIFICATIONS AND ANNOUNCEMENTS
+
+Students should receive relevant library notifications.
+
+Examples:
+- New course published.
+- New lesson uploaded.
+- New revision material available.
+- New assignment issued.
+- Assignment approaching its deadline.
+- Tutor feedback available.
+- Course content updated.
+- New practice activity available.
+
+Provide an in-app notification centre with read/unread states.
+
+15. RESOURCE PREVIEW AND DOCUMENT VIEWER
+
+Provide a convenient reading experience for supported documents.
+
+For PDF documents:
+- Embedded PDF viewer.
+- Page navigation.
+- Zoom controls.
+- Fit-to-width option.
+- Full-screen viewing.
+- Search within document where supported.
+- Download option according to permissions.
+- Resume from the last reading position where supported.
+
+The interface should work properly on desktop, tablets and mobile devices.
+
+16. STUDY EXPERIENCE AND ACCESSIBILITY
+
+The library should provide a comfortable learning environment.
+
+Consider:
+- Readable typography.
+- Appropriate line spacing.
+- Clear headings.
+- Responsive layouts.
+- Accessible colour contrast.
+- Keyboard navigation.
+- Screen-reader-friendly controls.
+- Clear loading indicators.
+- Empty states.
+- Error messages.
+- Offline/network interruption feedback.
+- Appropriate content previews.
+- Optional reading display preferences.
+
+A dark reading theme may also be introduced as an optional preference.
+
+17. ADMINISTRATIVE CONTENT MANAGEMENT
+
+Administrators and authorised content managers should have tools to manage library materials.
+
+They should be able to:
+
+Subjects
+- Create subjects.
+- Edit subjects.
+- Organise subjects.
+- Activate or deactivate subjects.
+
+Courses
+- Create courses.
+- Edit course details.
+- Assign subjects.
+- Upload course thumbnails.
+- Organise courses into modules.
+
+Modules and Topics
+- Create modules.
+- Create topics.
+- Rearrange learning content.
+- Edit and archive content.
+
+Lessons
+- Create lessons.
+- Upload lesson materials.
+- Add written content.
+- Embed videos.
+- Attach documents.
+- Add practice activities.
+- Edit and preview lessons.
+
+Resources
+- Upload learning resources.
+- Edit resource information.
+- Assign subjects and topics.
+- Manage access permissions.
+- Replace outdated resources.
+- Archive materials.
+
+Publishing Workflow
+- Draft.
+- Under Review.
+- Published.
+- Archived.
+
+Only approved and published content should be available to students.
+
+18. LIBRARY ANALYTICS FOR ADMINISTRATORS
+
+Provide useful insights into library usage.
+
+Administrators should be able to monitor:
+- Most accessed courses.
+- Most viewed lessons.
+- Popular resources.
+- Student course completion.
+- Subject engagement.
+- Lesson completion rates.
+- Inactive courses.
+- Resource usage.
+- Assignment completion.
+- Student learning activity.
+
+Where appropriate, tutors should be able to view learning activity for students assigned to them.
+
+19. LIBRARY ACCESS CONTROL AND SECURITY
+
+Implement proper access control.
+
+Requirements:
+- Students should only access content they are authorised to view.
+- Paid or restricted courses should respect enrolment and payment entitlements.
+- Administrators should have role-based permissions.
+- Private resources should not be exposed through unrestricted public URLs.
+- Validate uploaded files.
+- Restrict dangerous file types.
+- Enforce file-size limits.
+- Protect student notes and personal learning records.
+- Log important administrative content changes.
+- Prevent unauthorised content modification.
+
+Do not promise that disabling downloads prevents copying, screenshots or recording.
+
+20. INTEGRATION WITH THE REST OF IPRIME
+
+The library should not operate as an isolated feature.
+
+Integrate it with:
+- Student dashboard.
+- Student profile.
+- Examination system.
+- Question bank.
+- Performance analytics.
+- Assignment system.
+- Notifications.
+- Tutor dashboard.
+- Administration dashboard.
+- Course enrolment and access permissions.
+
+Maintain consistent subjects, topics, student identities and course relationships throughout iPrime.
+
+RECOMMENDED STUDENT LIBRARY NAVIGATION
+
+The student-facing library should have a simple and intuitive navigation structure:
+
+1. Library Home
+2. Explore Courses
+3. Subjects
+4. Learning Resources
+5. My Learning
+6. Continue Learning
+7. My Bookmarks
+8. My Notes
+9. Assignments
+10. Learning Progress
+
+Not every section needs to appear as a separate top-level navigation item. Group related features logically to avoid clutter.
+
+IMPORTANT DEVELOPMENT INSTRUCTIONS
+
+1. Inspect the existing iPrime codebase and library implementation before making changes.
+2. Build upon the existing library backend and data models rather than creating unnecessary duplicate systems.
+3. Reuse the existing examination and question-bank infrastructure.
+4. Maintain consistent database relationships between subjects, courses, modules, topics and lessons.
+5. Ensure student progress is persisted on the backend, not merely stored in browser state.
+6. Implement proper authentication, authorisation and access control.
+7. Ensure that all visible buttons and controls perform their intended functions.
+8. Build responsive interfaces for desktop, tablet and mobile.
+9. Maintain iPrime's established visual identity: royal navy blue, white and gold.
+10. Prioritise an excellent reading and learning experience over decorative interface elements.
+11. Implement proper loading, empty, success and error states.
+12. Do not fabricate courses, lessons, resources or student progress to make the library appear populated.
+13. Preserve existing working functionality and coordinate with other development workstreams before changing shared components or APIs.
+14. Test the complete student journey, from opening a course to completing a lesson, saving progress and returning to continue learning.
+
+IMPLEMENTATION PRIORITY
+
+Phase 1 — Essential Foundation
+- Library dashboard.
+- Subject and course organisation.
+- Modules, topics and lessons.
+- Resource catalogue.
+- Document and lesson viewer.
+- Search and filtering.
+- Student learning progress.
+- Continue Learning.
+- Administrative content management.
+
+Phase 2 — Student Learning Experience
+- Bookmarks.
+- Personal notes.
+- Course completion tracking.
+- Assignments.
+- Practice question integration.
+- Notifications.
+- Recommended learning materials.
+
+Phase 3 — Advanced Capabilities
+- Detailed learning analytics.
+- Personalised recommendations.
+- Advanced resource discovery.
+- Enhanced document viewer.
+- Tutor learning reports.
+- Additional accessibility and reading preferences.
+
+The objective is to make the iPrime Student Library a complete, organised and dependable digital learning environment where students can find resources, understand lessons, practise what they have learnt and monitor their academic development.
+
+MY RECOMMENDATIONS FOR IPRIME
+
+There are five features I would particularly prioritise because they can make the library significantly more useful than a conventional PDF library.
+
+Feature — Why it matters
+
+Continue Learning — Students can immediately resume where they stopped.
+
+Lesson-to-CBT integration — Students can study a topic and immediately practise questions on it.
+
+Personal notes and bookmarks — Students can organise their own revision materials.
+
+Topic-based recommendations — Students can revisit areas where their examination performance needs improvement.
+
+Learning progress tracking — Students can see what they have studied and what remains.
+
+ONE IMPORTANT ARCHITECTURAL RECOMMENDATION
+
+Since iPrime already has separate development workstreams for the examination system, analytics, administration and library, the library should integrate with those systems rather than duplicate their functionality.
+
+For example:
+- The examination system owns questions, examination attempts and examination results.
+- The library owns courses, lessons, learning resources and learning progress.
+- The analytics system combines learning activity and examination performance.
+- The administration system manages student permissions, enrolments and content access.
+
+This separation will make iPrime easier to maintain and expand as the platform grows.
+
+My strongest recommendation: Make the library a place where students don't just collect materials but actually follow a structured learning journey: Learn → Understand → Practise → Assess → Review → Improve.

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api.js";
 import { useAuth } from "../auth.jsx";
 import { useSubmit } from "../useSubmit.js";
@@ -125,6 +126,7 @@ export default function ExamSettings({ exam, locked, onSaved }) {
 
       <label className="flag-toggle"><input type="checkbox" checked={f.showAnswersAfter} onChange={flip("showAnswersAfter")} /> Let students review the correct answers after they submit</label>
       {locked && <p className="note">Question changes are locked, but these details can still be edited.</p>}
+      <p><Link to={`/admin/attempts?exam=${exam._id}`}>View student attempts for this examination</Link></p>
       {saved && <p className="alert alert-success" role="status">{saved}</p>}
       <FormStatus error={save.error} slow={save.slow} />
       <div className="form-actions">
