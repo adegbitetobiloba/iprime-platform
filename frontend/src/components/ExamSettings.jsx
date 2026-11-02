@@ -18,8 +18,15 @@ const toLocal = (iso) => {
 };
 const toIso = (local) => (local ? new Date(local).toISOString() : null);
 
-// The examination's details. Replaces the old "Details" panel on the edit page: same fields, plus the duration picker
-// and the two randomisation switches.
+// ExamGuard defaults. They mirror backend/utils/guard.js: an exam with nothing saved behaves like this.
+const GUARD_DEFAULTS = { enabled: true, monitorFocus: true, requireFullscreen: false, maxViolations: 3, autoSubmit: true, minAwaySeconds: 2, blockCopyPaste: true };
+const guardFrom = (g) => {
+  const o = { ...GUARD_DEFAULTS, ...(g || {}) };
+  return { ...o, maxViolations: String(o.maxViolations), minAwaySeconds: String(o.minAwaySeconds) };
+};
+
+// The examination's details. Replaces the old "Details" panel on the edit page: same fields, plus the duration picker,
+// the two randomisation switches and the ExamGuard security settings.
 export default function ExamSettings({ exam, locked, onSaved }) {
   const { token } = useAuth();
   const [f, setF] = useState(null);
@@ -32,6 +39,7 @@ export default function ExamSettings({ exam, locked, onSaved }) {
       shuffleQuestions: Boolean(exam.shuffleQuestions), shuffleOptions: Boolean(exam.shuffleOptions),
       questionsPerStudent: exam.questionsPerStudent ? String(exam.questionsPerStudent) : "", drawSpread: exam.drawSpread !== false, drawBalance: exam.drawBalance !== false, drawMixDifficulty: Boolean(exam.drawMixDifficulty),
       availableFrom: toLocal(exam.availableFrom), availableUntil: toLocal(exam.availableUntil),
+      guard: guardFrom(exam.guard),
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exam._id]);
@@ -40,7 +48,12 @@ export default function ExamSettings({ exam, locked, onSaved }) {
     const bad = durationProblem(f.durationMinutes);
     if (bad) throw new Error(bad);
     if (f.questionsPerStudent !== "" && !(Number.isInteger(Number(f.questionsPerStudent)) && Number(f.questionsPerStudent) >= 1 && Number(f.questionsPerStudent) <= MAX_PER_STUDENT)) throw new Error("Questions per student must be a whole number from 1 to 500.");
-    const body = { ...f, questionsPerStudent: f.questionsPerStudent === "" ? null : Number(f.questionsPerStudent), durationMinutes: Number(f.durationMinutes), maxAttempts: Number(f.maxAttempts), availableFrom: toIso(f.availableFrom), availableUntil: toIso(f.availableUntil) };
+    const mv = Number(f.guard.maxViolations);
+    if (!Number.isInteger(mv) || mv < 1 || mv > 20) throw new Error("Allowed warnings must be a whole number from 1 to 20.");
+    const ma = Number(f.guard.minAwaySeconds);
+    if (!Number.isFinite(ma) || ma < 0 || ma > 30) throw new Error("Ignore short absences must be from 0 to 30 seconds.");
+    const guard = { ...f.guard, maxViolations: mv, minAwaySeconds: ma };
+    const body = { ...f, guard, questionsPerStudent: f.questionsPerStudent === "" ? null : Number(f.questionsPerStudent), durationMinutes: Number(f.durationMinutes), maxAttempts: Number(f.maxAttempts), availableFrom: toIso(f.availableFrom), availableUntil: toIso(f.availableUntil) };
     const d = await api(`/admin/exams/${exam._id}`, { method: "PATCH", token, body });
     onSaved(d.exam);
     setSaved("Details saved.");
@@ -49,6 +62,9 @@ export default function ExamSettings({ exam, locked, onSaved }) {
   if (!f) return null;
   const set = (k) => (e) => { setSaved(""); setF((x) => ({ ...x, [k]: e.target.value })); };
   const flip = (k) => (e) => { setSaved(""); setF((x) => ({ ...x, [k]: e.target.checked })); };
+  const gset = (k) => (e) => { setSaved(""); setF((x) => ({ ...x, guard: { ...x.guard, [k]: e.target.value } })); };
+  const gflip = (k) => (e) => { setSaved(""); setF((x) => ({ ...x, guard: { ...x.guard, [k]: e.target.checked } })); };
+  const g = f.guard;
 
   return (
     <form className="panel form form-tight" onSubmit={(e) => { e.preventDefault(); save.run(); }}>
@@ -87,6 +103,24 @@ export default function ExamSettings({ exam, locked, onSaved }) {
         <label className="flag-toggle"><input type="checkbox" checked={f.shuffleOptions} onChange={flip("shuffleOptions")} /> Give each student their own answer-option order</label>
         <p className="muted xb-help">The order is fixed for each student when they start, so refreshing or resuming shows the same order. Answers are marked against the option itself, so shuffling can never change a score. Questions whose options refer to each other (for example, &ldquo;All of the above&rdquo;) always keep their option order.</p>
         {(f.shuffleQuestions !== Boolean(exam.shuffleQuestions) || f.shuffleOptions !== Boolean(exam.shuffleOptions)) && <p className="note">Students who have already started keep the order they began with.</p>}
+      </fieldset>
+
+      <fieldset className="xb-switches">
+        <legend>Exam security (ExamGuard)</legend>
+        <label className="flag-toggle"><input type="checkbox" checked={g.enabled} onChange={gflip("enabled")} /> Monitor this examination</label>
+        {g.enabled && (
+          <>
+            <label className="flag-toggle"><input type="checkbox" checked={g.monitorFocus} onChange={gflip("monitorFocus")} /> Warn when the student leaves the exam tab or window</label>
+            <label className="flag-toggle"><input type="checkbox" checked={g.requireFullscreen} onChange={gflip("requireFullscreen")} /> Require fullscreen (leaving it counts as a warning; phones that cannot do fullscreen are not penalised)</label>
+            <label className="flag-toggle"><input type="checkbox" checked={g.blockCopyPaste} onChange={gflip("blockCopyPaste")} /> Block copy, paste and the right-click menu (recorded, not counted)</label>
+            <label className="flag-toggle"><input type="checkbox" checked={g.autoSubmit} onChange={gflip("autoSubmit")} /> Submit the examination automatically when the limit is reached</label>
+            <div className="grid-2">
+              <Field label="Warnings allowed" id="g-max" type="number" min="1" max="20" value={g.maxViolations} onChange={gset("maxViolations")} hint={g.autoSubmit ? `The ${g.maxViolations || "?"}${Number(g.maxViolations) === 1 ? "st" : Number(g.maxViolations) === 2 ? "nd" : Number(g.maxViolations) === 3 ? "rd" : "th"} warning submits the exam.` : "Warnings are recorded and shown to the student."} />
+              <Field label="Ignore absences shorter than (seconds)" id="g-away" type="number" min="0" max="30" value={g.minAwaySeconds} onChange={gset("minAwaySeconds")} hint="Avoids penalising a notification or pop-up." />
+            </div>
+          </>
+        )}
+        <p className="muted xb-help">A web page can only see that the exam tab or window lost focus, fullscreen was left, or copy and paste were tried. It cannot see other devices, screenshots or another person helping, so use this as a deterrent and a record to review, not as proof. Losing the internet connection is recorded but is never counted as a warning. Changes apply to students who start after you save; students already examining keep the settings they began with.</p>
       </fieldset>
 
       <label className="flag-toggle"><input type="checkbox" checked={f.showAnswersAfter} onChange={flip("showAnswersAfter")} /> Let students review the correct answers after they submit</label>

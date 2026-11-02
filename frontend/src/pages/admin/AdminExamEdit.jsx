@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api.js";
 import { useAuth } from "../../auth.jsx";
-import { useFetch, fmtDate } from "../../useFetch.js";
+import { useFetch } from "../../useFetch.js";
 import { useSubmit } from "../../useSubmit.js";
 import ExamSettings from "../../components/ExamSettings.jsx";
+import AttemptIntegrity from "../../components/AttemptIntegrity.jsx";
 import Field from "../../components/Field.jsx";
 import FormStatus from "../../components/FormStatus.jsx";
 
@@ -244,28 +245,7 @@ export default function AdminExamEdit() {
         )}
       </div>
 
-      <div className="panel">
-        <h2 className="panel-title">Attempts</h2>
-        {attempts.loading && <p className="muted">Loading...</p>}
-        {!attempts.loading && attemptRows.length === 0 && <p className="note">No attempts yet.</p>}
-        {attemptRows.length > 0 && (
-          <div className="table-wrap">
-            <table className="data-table">
-              <thead><tr><th>Student</th><th>Status</th><th>Score</th><th>Started</th></tr></thead>
-              <tbody>
-                {attemptRows.map((a) => (
-                  <tr key={a.id}>
-                    <td><strong>{a.student}</strong><br /><span className="muted">{a.studentId}</span></td>
-                    <td>{a.status === "submitted" ? (a.autoSubmitted ? "Submitted (time up)" : "Submitted") : "In progress"}</td>
-                    <td>{a.status === "submitted" ? `${a.score} / ${a.totalMarks} (${a.percentage}%)` : "—"}</td>
-                    <td>{fmtDate(a.startedAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <AttemptIntegrity examId={id} />
 
       {!published && attemptRows.length === 0 && (
         <div className="panel">

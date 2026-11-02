@@ -24,6 +24,21 @@ const questionSchema = new mongoose.Schema({
   bankVersion: { type: Number },
 });
 
+// ExamGuard settings. No defaults here on purpose: a missing value means "use the default" (see utils/guard.js), so
+// older exams get sensible protection and changing a default later never rewrites stored exams.
+const guardSchema = new mongoose.Schema(
+  {
+    enabled: { type: Boolean },
+    monitorFocus: { type: Boolean },
+    requireFullscreen: { type: Boolean },
+    maxViolations: { type: Number, min: 1, max: 20 },
+    autoSubmit: { type: Boolean },
+    minAwaySeconds: { type: Number, min: 0, max: 30 },
+    blockCopyPaste: { type: Boolean },
+  },
+  { _id: false }
+);
+
 const examSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, maxlength: 150 },
@@ -42,6 +57,7 @@ const examSchema = new mongoose.Schema(
     drawBalance: { type: Boolean, default: true },        // spread each student's draw evenly across topics (or subjects)
     drawMixDifficulty: { type: Boolean, default: false }, // give each student the same easy/medium/hard mix (only for rated questions)
     shuffleOptions: { type: Boolean, default: false },   // each student gets their own option order (questions that refer to other options are never shuffled)
+    guard: { type: guardSchema },                         // ExamGuard security policy (see utils/guard.js)
     availableFrom: { type: Date },
     availableUntil: { type: Date },
     status: { type: String, enum: ["draft", "published"], default: "draft", index: true },

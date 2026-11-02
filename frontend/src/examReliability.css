@@ -1,9 +1,14 @@
-/* Save / connection status on the examination screen (M1: exam reliability). */
+/* Save / connection status and the "time is up" notice on the examination screen. */
 .save-pill { display: inline-flex; align-items: center; gap: .4rem; padding: .2rem .65rem; border-radius: 999px; font-size: .8rem; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
 .save-pill::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
 .save-pill[data-state="saved"] { color: #1b7a43; }
 .save-pill[data-state="saving"] { color: #8a6500; }
 .save-pill[data-state="failed"], .save-pill[data-state="offline"] { color: #b42318; }
 .runner-offline { background: #fff7e0; border: 1px solid #e0b100; color: #4d3b00; padding: .6rem .9rem; border-radius: 8px; margin: .5rem 1rem; }
+.runner-timeup { background: #fdecea; border: 1px solid #b42318; color: #5c1410; padding: .7rem .9rem; border-radius: 8px; margin: .5rem 1rem; font-weight: 600; }
+.runner-timeup small { display: block; font-weight: 400; margin-top: .25rem; }
+fieldset.options:disabled { opacity: .7; cursor: not-allowed; }
+fieldset.options:disabled .option { cursor: not-allowed; }
 @media (prefers-reduced-motion: no-preference) { .save-pill[data-state="saving"]::before { animation: save-pulse 1s ease-in-out infinite; } }
 @keyframes save-pulse { 50% { opacity: .3; } }
+.guard-count { font-size: .8rem; font-weight: 600; color: #b42318; white-space: nowrap; }
