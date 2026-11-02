@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../auth.jsx";
 import MobileActionBar from "./MobileActionBar.jsx";
 import BackToTop from "./BackToTop.jsx";
+import { CAMPAIGN } from "../campaign.js";
 
 export default function Footer() {
   const { token } = useAuth();
@@ -13,6 +14,11 @@ export default function Footer() {
           <p className="footer-name">Prime Excelerate Tutelage</p>
           <p className="footer-tagline">The Peak of Academic Excellence and Integrity</p>
           <p className="footer-small">iPrime is the digital platform of Prime Excelerate Tutelage.</p>
+          <p className="footer-small">
+            WhatsApp <a href={CAMPAIGN.contacts.whatsapp.href} target="_blank" rel="noopener noreferrer">{CAMPAIGN.contacts.whatsapp.display}</a>
+            {" "}&middot; Call <a href={CAMPAIGN.contacts.call.href}>{CAMPAIGN.contacts.call.display}</a>
+          </p>
+          <p className="footer-small">UTME learning hours {CAMPAIGN.learningHours}</p>
         </div>
         <nav className="footer-col" aria-label="Explore">
           <h2 className="footer-heading">Explore</h2>

@@ -2,6 +2,7 @@ import { IMAGES } from "./siteImages.js";
 
 // Details of the current campaign, taken from the 2027 UTME flyer supplied by the institution.
 // Keep ALL campaign facts in this one file so they can be corrected in one place when they change.
+// WhatsApp and call lines confirmed as the official lines by the institution on 2 Nov 2026.
 // Not shown anywhere on the website: the bank account details printed on the flyer image.
 export const CAMPAIGN = {
   title: "2027 UTME Tutorial Programme",
@@ -9,6 +10,8 @@ export const CAMPAIGN = {
   mode: "Online tutorials",
   startsOn: "2026-11-01",
   startsLabel: "1 November 2026",
+  learningHours: "8:30am to 6:00pm",        // UTME students' learning hours (confirmed by the institution, 2 Nov 2026)
+  physicalClassHours: "4:00pm to 6:00pm",   // physical classes for UTME, JSS and SSS (confirmed by the institution, 2 Nov 2026)
   registrationFee: "₦8,000",
   feeNote: "Registration fee as shown on the 2027 flyer. Ask the institution what it covers.",
   flyer: IMAGES.welcome,

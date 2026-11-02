@@ -6,6 +6,10 @@ import Countdown from "./Countdown.jsx";
 
 const KEY = "ws5.welcome.seen";
 
+// OFF by default. The owner decided the flyer belongs on the home page itself (the hero and the 2027 programme section),
+// not as a full-screen page that appears before the site. Set to true only if a full-screen start page is wanted again.
+const ENABLED = false;
+
 // Start page: the approved campaign flyer fills the screen for a first-time visitor to the home page, once per browser session.
 // It is only shown when IMAGES.welcome is set, never to signed-in users, and can always be skipped.
 export default function WelcomeFlyer() {
@@ -14,7 +18,7 @@ export default function WelcomeFlyer() {
   const flyer = IMAGES.welcome;
   const skipRef = useRef(null);
   const [open, setOpen] = useState(() => {
-    if (!flyer || typeof window === "undefined" || window.location.pathname !== "/") return false;
+    if (!ENABLED || !flyer || typeof window === "undefined" || window.location.pathname !== "/") return false;
     try { return !window.sessionStorage.getItem(KEY); } catch { return true; }
   });
 

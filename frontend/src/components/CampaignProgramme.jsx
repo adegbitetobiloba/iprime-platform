@@ -39,7 +39,7 @@ function SubjectExplorer() {
 
 // The 2027 UTME campaign, with details taken from the flyer. showFlyer=false when the flyer is already on screen nearby.
 export default function CampaignProgramme({ showFlyer = true }) {
-  const { title, tagline, mode, startsLabel, registrationFee, feeNote, contacts, reasons, flyer } = CAMPAIGN;
+  const { title, tagline, mode, startsLabel, registrationFee, feeNote, contacts, reasons, flyer, learningHours, physicalClassHours } = CAMPAIGN;
   const withFlyer = showFlyer && Boolean(flyer);
   return (
     <section className="section ws5-campaign">
@@ -52,9 +52,11 @@ export default function CampaignProgramme({ showFlyer = true }) {
           <dl className="ws5-keyfacts">
             <div><dt>Format</dt><dd>{mode}</dd></div>
             <div><dt>Lectures commence</dt><dd>{startsLabel}</dd></div>
+            <div><dt>Learning hours</dt><dd>{learningHours}</dd></div>
             <div><dt>Registration fee</dt><dd>{registrationFee}</dd></div>
           </dl>
           <p className="ws5-fine">{feeNote}</p>
+          <p className="ws5-fine">Physical classes for UTME, JSS and SSS also run between {physicalClassHours}.</p>
           <h3 className="ws5-h3">Available subjects</h3>
           <SubjectExplorer />
           <p className="ws5-btn-row">
