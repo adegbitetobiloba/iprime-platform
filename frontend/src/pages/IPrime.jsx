@@ -9,19 +9,21 @@ const NOW = [
   { icon: "test", title: "Timed practice examinations", text: "Practice examinations set by the institution, taken on screen with a countdown that keeps running even if you refresh the page." },
   { icon: "check", title: "Answers saved as you go", text: "Move between questions, mark ones to review and check what is unanswered before you submit." },
   { icon: "chart", title: "Results and history", text: "Your score is calculated by the system and kept, so you can look back at earlier attempts." },
+  { icon: "chart", title: "Performance by topic", text: "See your scores over time and which topics are strong and which need more work." },
+  { icon: "book", title: "Learning library", text: "Courses and lessons for signed-in students, added by the institution." },
   { icon: "user", title: "Accounts for students, parents and alumni", text: "Sign up with email or Google. Each account sees only its own information." },
 ];
 
 const SOON = [
   { icon: "user", title: "Student enrolment and payment status", text: "Apply to join a programme and follow your application, fee and access in one place." },
-  { icon: "book", title: "Learning library", text: "Study materials organised by subject and topic, linked to practice." },
-  { icon: "chart", title: "Progress by topic", text: "See which topics are strong and which need more work." },
+  { icon: "user", title: "Parent view of a child's progress", text: "Linking a parent account to a student, with a secure approval process." },
 ];
 
 const FAIR = [
   "The server controls the deadline, so changing the clock on a device does not add time.",
   "Correct answers and explanations are not sent to students while an attempt is in progress.",
   "Your answers are saved during the attempt, and a failed save is reported rather than hidden.",
+  "Some examinations warn a student who leaves the exam screen and keep a record for the examiner to review.",
 ];
 
 function Card({ item, soon }) {

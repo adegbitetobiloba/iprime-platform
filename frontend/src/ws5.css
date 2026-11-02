@@ -295,3 +295,50 @@ html { scroll-padding-top: 4.5rem; }
   .ws5-ach-media img { position: absolute; top: 0; left: 0; }
   .ws5-ach-mono { position: absolute; top: 35%; left: 0; width: 100%; text-align: center; }
 }
+
+/* ---------- v8: populated public pages (contact, FAQ, programmes, events and news) ---------- */
+.ws5-chips-sm { margin: 0.6rem 0; }
+.ws5-chips-sm .ws5-chip { font-size: 0.85rem; padding: 0.3rem 0.7rem; }
+.ws5-links { margin: 0 0 1rem; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
+
+/* Programme cards */
+.ws5-prog { display: flex; flex-direction: column; height: 100%; padding: 1.25rem; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-prog-badge { align-self: flex-start; margin: 0 0 0.6rem; }
+.ws5-prog h3 { margin: 0 0 0.35rem; color: var(--c-ink); font-size: 1.15rem; }
+.ws5-prog p { margin: 0 0 0.5rem; color: var(--c-text); }
+.ws5-prog .ws5-prog-who { color: var(--c-muted); font-size: 0.95rem; }
+.ws5-prog-cta { margin-top: auto; padding-top: 0.75rem; }
+
+/* Contact channels */
+.ws5-channel { display: flex; flex-direction: column; gap: 0.5rem; height: 100%; padding: 1.2rem; border: 1px solid var(--c-line); border-radius: var(--r-card); background: var(--c-surface); }
+.ws5-channel.has-value { border-top: 4px solid var(--c-gold); }
+.ws5-channel-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+.ws5-channel-head h3 { margin: 0; color: var(--c-ink); font-size: 1.05rem; }
+.ws5-channel-head .ws5-badge { margin-left: 0; }
+.ws5-channel-value { margin: 0.25rem 0 0.4rem; color: var(--c-ink); font-size: 1.5rem; font-weight: 800; letter-spacing: 0.01em; }
+.ws5-channel-note { margin: 0; color: var(--c-muted); }
+.ws5-channel .btn { align-self: flex-start; }
+.ws5-enquiry textarea, .ws5-enquiry select { width: 100%; }
+
+/* FAQ */
+.ws5-faq-tools { display: grid; gap: 0.9rem; margin-bottom: 1.5rem; }
+.ws5-faq-tools input[type="search"] { width: 100%; }
+.faq-item a { color: var(--c-link-strong); }
+
+/* Events and news */
+.ws5-news { margin: 0 0 2rem; padding: 0; list-style: none; display: grid; gap: 1rem; }
+.ws5-news-item { display: grid; gap: 0.75rem; padding: 1.25rem; border: 1px solid var(--c-line); border-left: 4px solid var(--c-gold); border-radius: var(--r-card); background: var(--c-surface); }
+@media (min-width: 640px) { .ws5-news-item { grid-template-columns: 9rem 1fr; } }
+.ws5-news-date strong { display: block; color: var(--c-ink); font-family: var(--font-display); font-size: 1.15rem; }
+.ws5-news-body h3 { margin: 0.4rem 0 0.25rem; color: var(--c-ink); }
+.ws5-news-body p { margin: 0 0 0.5rem; }
+.ws5-news-body .ws5-badge { margin-left: 0; }
+@media (prefers-reduced-motion: reduce) { .ws5-news-item { transition: none; } }
+
+/* ---------- v9: confirmed contact lines and learning hours ---------- */
+.ws5-hours { margin: 0.25rem 0 0.4rem; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
+.ws5-hours li { display: grid; gap: 0.1rem; padding: 0.7rem 0.9rem; border-radius: var(--r-ctl); background: var(--c-tint); }
+.ws5-hours span { color: var(--c-muted); font-size: 0.9rem; }
+.ws5-hours strong { color: var(--c-ink); font-size: 1.15rem; }
+.ws5-prog-hours { margin: 0 0 0.5rem; color: var(--c-ink); font-size: 0.95rem; }
+.site-footer .footer-small a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }

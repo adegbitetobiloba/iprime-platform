@@ -1,22 +1,24 @@
 import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
+import Reveal from "../components/Reveal.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import AnnouncementList from "../components/AnnouncementList.jsx";
+import { ANNOUNCEMENTS } from "../eventsContent.js";
 
 export default function News() {
   return (
     <>
       <PageHero eyebrow="News" title="News and announcements">
-        Official updates from Prime Excelerate Tutelage.
+        What is happening at Prime Excelerate Tutelage.
       </PageHero>
       <section className="section">
-        <div className="container">
-          <EmptyState
-            icon="news"
-            title="No announcements yet"
-            action={<Link to="/register" className="btn btn-secondary">Create an account</Link>}
-          >
-            Announcements published by the institution will appear here. Registered students and parents will see updates meant for them in their own dashboards as that feature is released.
-          </EmptyState>
+        <div className="container narrow-wide">
+          <Reveal><AnnouncementList items={ANNOUNCEMENTS} /></Reveal>
+          <Reveal>
+            <EmptyState icon="news" title="Follow this page for updates" action={<Link to="/events" className="btn btn-secondary">See key dates</Link>}>
+              Announcements about programmes, results and iPrime features appear here as the institution publishes them.
+            </EmptyState>
+          </Reveal>
         </div>
       </section>
     </>

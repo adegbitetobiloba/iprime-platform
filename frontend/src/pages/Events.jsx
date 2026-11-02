@@ -1,22 +1,24 @@
 import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero.jsx";
+import Reveal from "../components/Reveal.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import AnnouncementList from "../components/AnnouncementList.jsx";
+import { EVENTS, sortEvents } from "../eventsContent.js";
 
 export default function Events() {
   return (
     <>
-      <PageHero eyebrow="Events" title="Upcoming events">
-        Dates, venues and registration links for institutional events.
+      <PageHero eyebrow="Events" title="Events and key dates">
+        Programme start dates, orientation, mock and revision sessions announced by Prime Excelerate Tutelage.
       </PageHero>
       <section className="section">
-        <div className="container">
-          <EmptyState
-            icon="calendar"
-            title="No events have been announced yet"
-            action={<Link to="/register" className="btn btn-secondary">Create an account</Link>}
-          >
-            When Prime Excelerate Tutelage announces an event, it will appear on this page with its date, time and how to attend.
-          </EmptyState>
+        <div className="container narrow-wide">
+          <Reveal><AnnouncementList items={sortEvents(EVENTS)} dated /></Reveal>
+          <Reveal>
+            <EmptyState icon="calendar" title="More dates will be added here" action={<Link to="/contact" className="btn btn-secondary">Ask about upcoming dates</Link>}>
+              Orientation, mock examinations and revision sessions are listed once the institution confirms their dates. A date that has passed is marked automatically.
+            </EmptyState>
+          </Reveal>
         </div>
       </section>
     </>
