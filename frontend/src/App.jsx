@@ -50,6 +50,8 @@ import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
 import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
 import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
 import AdminExamBuilder from "./pages/admin/AdminExamBuilder.jsx";
+import AdminAttempts from "./pages/admin/AdminAttempts.jsx";
+import AdminAttemptReview from "./pages/admin/AdminAttemptReview.jsx";
 import Toast from "./components/Toast.jsx";
 import WelcomeFlyer from "./components/WelcomeFlyer.jsx";
 import { useAuth } from "./auth.jsx";
@@ -162,6 +164,8 @@ export default function App() {
             <Route path="analytics/library-study" element={<AdminLibraryStudy />} />
             <Route path="exams/:id/analytics" element={<AdminExamAnalytics />} />
             <Route path="exams/new" element={<AdminExamBuilder />} />
+            <Route path="attempts" element={<AdminAttempts />} />
+            <Route path="attempts/:id" element={<AdminAttemptReview />} />
             <Route path="import" element={<AdminImport />} />
             <Route path="applications" element={<AdminApplications />} />
             <Route path="bank" element={<AdminBank />} />
