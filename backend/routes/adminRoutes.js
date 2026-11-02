@@ -10,7 +10,6 @@ const prog = require("../controllers/programmeController");
 const users = require("../controllers/adminUserController");
 const progV = require("../validations/programmeValidation");
 const bankC = require("../controllers/bankController");
-const attemptsC = require("../controllers/adminAttemptController");
 const bankV = require("../validations/bankValidation");
 
 // Everything under /api/admin requires a signed-in account whose role is "admin" in the database.
@@ -40,8 +39,6 @@ router.get("/exams/:id/attempts", c.attempts);
 router.post("/bank/import", validate(bankV.importBatch), bankC.importBatch);
 router.get("/bank/facets", bankC.facets);
 router.post("/bank/select", validate(bankV.select), bankC.select);
-router.get("/attempts", attemptsC.list);
-router.get("/attempts/:id", attemptsC.detail);
 router.post("/bank/add-to-exam", validate(bankV.addToExam), bankC.addToExam);
 router.get("/bank", bankC.list);
 router.get("/bank/:id", bankC.get);
