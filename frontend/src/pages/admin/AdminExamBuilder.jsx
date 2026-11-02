@@ -45,6 +45,7 @@ export default function AdminExamBuilder() {
   const [saveError, setSaveError] = useState("");
   const [created, setCreated] = useState(null);
   const [showAll, setShowAll] = useState(false);
+  const [showPool, setShowPool] = useState(false); // with per-student draws the list is hidden until asked for
 
   const subjects = facets.data?.subjects || [];
   const topicsHere = useMemo(() => (facets.data?.topics || []).filter((t) => !src.subjects.length || src.subjects.includes(t.subject)), [facets.data, src.subjects]);
@@ -129,6 +130,7 @@ export default function AdminExamBuilder() {
     }
   };
 
+  const hidePool = cfg.perStudent !== "" && !showPool;
   const warn = result?.warnings;
   const short = result && result.shortfall > 0;
 
@@ -220,6 +222,28 @@ export default function AdminExamBuilder() {
             <label className="flag-toggle"><input type="checkbox" checked={src.verifiedOnly} onChange={(e) => setS("verifiedOnly", e.target.checked)} /> Use verified questions only</label>
           </fieldset>
 
+          <fieldset className="xb-fieldset">
+            <legend>Different questions for each student?</legend>
+            <label className="flag-toggle">
+              <input type="checkbox" checked={cfg.perStudent !== ""} onChange={(e) => setCfg((c) => ({ ...c, perStudent: e.target.checked ? String(Math.min(40, Math.max(1, Math.floor((Number(src.count) || 2) / 2)))) : "" }))} />
+              Give each student their own different questions
+            </label>
+            {cfg.perStudent === "" ? (
+              <p className="muted xb-help">Off: every student gets exactly the questions you pick below, the same for everyone. Turn this on to pick a large pool and let iPrime give each student a different set from it.</p>
+            ) : (
+              <>
+                <p className="muted xb-help">On: the number you pick above is the <strong>pool</strong> (the bigger, the more different the papers). Each student is given their own draw from it when they start.</p>
+                <Field label="Questions each student gets" id="s-per" type="number" min="1" max={MAX_PER_STUDENT} value={cfg.perStudent} onChange={(e) => setCfg((c) => ({ ...c, perStudent: e.target.value }))} />
+                <p className="note" role="status">{describePool(cfg.perStudent, result ? result.selected : Number(src.count) || 0).text}</p>
+                {result && result.available.total > result.selected && (
+                  <p className="note">You have {result.available.total} usable questions available but are only using {result.selected} as the pool. For more different papers, set <strong>Number of questions to pick</strong> to {result.available.total} and press <strong>Pick again</strong>.{" "}
+                    <button type="button" className="link-btn" onClick={() => setS("count", String(result.available.total))}>Use all {result.available.total}</button>
+                  </p>
+                )}
+              </>
+            )}
+          </fieldset>
+
           {src.mode !== "random" && (
             <fieldset className="xb-fieldset">
               <legend>Pick by hand ({manualCount} ticked)</legend>
@@ -261,6 +285,11 @@ export default function AdminExamBuilder() {
                 {warn?.neighbourDependent > 0 && <li>{plural(warn.neighbourDependent, "question")} may refer to a shared passage or to neighbouring questions. If you randomise question order, those could be separated from what they refer to.</li>}
                 {warn?.fixedOptions > 0 && <li>{plural(warn.fixedOptions, "question")} will always keep {warn.fixedOptions === 1 ? "its" : "their"} option order because the options refer to each other.</li>}
               </ul>
+              {hidePool ? (
+                <p className="note">The list of questions is hidden because every student will be given their own draw from this pool, so you do not need to check them one by one. The breakdown above shows what the pool contains.{" "}
+                  <button type="button" className="link-btn" onClick={() => setShowPool(true)}>Show the pool's questions</button></p>
+              ) : (
+                <>
               <ol className="xb-qlist" aria-label="Chosen questions">
                 {(showAll ? chosen : chosen.slice(0, 25)).map((c, i) => (
                   <li key={c.id} className="xb-q">
@@ -270,6 +299,9 @@ export default function AdminExamBuilder() {
                 ))}
               </ol>
               {chosen.length > 25 && <button type="button" className="btn btn-quiet btn-sm" onClick={() => setShowAll((v) => !v)}>{showAll ? "Show fewer" : `Show all ${chosen.length}`}</button>}
+                  {cfg.perStudent !== "" && <button type="button" className="btn btn-quiet btn-sm" onClick={() => setShowPool(false)}>Hide the questions</button>}
+                </>
+              )}
               {short && <p className="muted">Removed or short? Press <strong>Pick again</strong> to fill the gap with other matching questions.</p>}
             </div>
           )}
@@ -339,9 +371,15 @@ export default function AdminExamBuilder() {
             {warn?.neighbourDependent > 0 && cfg.shuffleQuestions && <li className="is-warn">Question order is randomised but {plural(warn.neighbourDependent, "question")} may depend on a shared passage</li>}
             {!cfg.showAnswersAfter && <li>Students will not see correct answers after submitting</li>}
           </ul>
+          {hidePool ? (
+            <p className="note">Each student gets their own {cfg.perStudent} of the {chosen.length} questions, so there is no single paper to preview. <button type="button" className="link-btn" onClick={() => setShowPool(true)}>Show the pool's questions</button></p>
+          ) : (
+            <>
           <h3>Preview of questions{chosen.length > 25 && !showAll ? ` (first 25 of ${chosen.length})` : ""}</h3>
           {chosen.length > 25 && <button type="button" className="btn btn-quiet btn-sm" onClick={() => setShowAll((v) => !v)}>{showAll ? "Show fewer" : `Show all ${chosen.length}`}</button>}
           <ol className="xb-qlist">{(showAll ? chosen : chosen.slice(0, 25)).map((c, i) => <li key={c.id} className="xb-q"><div><p><strong>{i + 1}.</strong> {c.text}</p><div className="meta">{[c.topic, c.difficulty && cap(c.difficulty)].filter(Boolean).map((m) => <span key={m}>{m}</span>)}</div></div></li>)}</ol>
+            </>
+          )}
           {saveError && <p className="alert alert-error" role="alert">{saveError} {created?.examId && <Link to={`/admin/exams/${created.examId}`}>Open the draft</Link>}</p>}
           {saving && <p className="alert alert-info" role="status">{saving}</p>}
           <div className="form-actions">
