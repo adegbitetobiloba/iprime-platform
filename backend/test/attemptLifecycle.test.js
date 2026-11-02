@@ -4,33 +4,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { makeFinaliser, MAX_TRIES } = require("../utils/attemptLifecycle");
 const { makeSweeper } = require("../utils/attemptSweeper");
+const { fakeAttemptModel, clone } = require("./helpers/fakeAttemptModel");
 
-// ---- a tiny in-memory stand-in for the Attempt model (only what the code under test uses) ----
-const clone = (o) => (o ? JSON.parse(JSON.stringify(o)) : o);
-function fakeAttemptModel(docs, hooks = {}) {
-  const matches = (d, f) => Object.entries(f).every(([k, v]) => {
-    if (k === "_id" && v && v.$nin) return !v.$nin.includes(d._id);
-    if (k === "deadline" && v && v.$lte) return new Date(d.deadline) <= v.$lte;
-    if (v && typeof v === "object" && "$exists" in v) return (d[k] !== undefined) === v.$exists;
-    return d[k] === v;
-  });
-  return {
-    docs,
-    async updateOne(filter, update) {
-      if (hooks.beforeUpdate) hooks.beforeUpdate(docs);
-      const d = [...docs.values()].find((x) => matches(x, filter));
-      if (!d) return { matchedCount: 0 };
-      Object.assign(d, update.$set || {});
-      return { matchedCount: 1 };
-    },
-    findById(id) { return { lean: async () => clone(docs.get(id)) }; },
-    find(filter) {
-      let rows = [...docs.values()].filter((d) => matches(d, filter));
-      const q = { sort() { rows.sort((a, b) => new Date(a.deadline) - new Date(b.deadline)); return q; }, limit(n) { rows = rows.slice(0, n); return q; }, lean: async () => clone(rows) };
-      return q;
-    },
-  };
-}
 const exam = { questions: [
   { _id: "q1", correctKey: "A", marks: 1 },
   { _id: "q2", correctKey: "B", marks: 2 },
@@ -55,7 +30,6 @@ test("finalise twice returns the same stored result (no re-scoring, no overwrite
 });
 
 test("a save that lands after the snapshot is read is included in the score", async () => {
-  // The caller holds a stale snapshot (rev 0, no answers); the database already has a newer answer (rev 1).
   const stale = inProgress({ rev: 0, answers: {} });
   const docs = new Map([["a1", inProgress({ rev: 1, answers: { q2: "B" } })]]);
   const done = await makeFinaliser(fakeAttemptModel(docs))(stale, exam, false);
@@ -109,6 +83,19 @@ test("sweeper closes expired in-progress attempts only, as auto-submitted", asyn
   assert.equal(docs.get("live").status, "in_progress");
 });
 
+test("sweeper leaves an attempt alone while it is inside the reconnection grace period", async () => {
+  const docs = new Map([
+    ["grace", inProgress({ _id: "grace", examId: "e", deadline: past(), closeAt: future() })],
+    ["over", inProgress({ _id: "over", examId: "e", deadline: past(), closeAt: past() })],
+  ]);
+  const Attempt = fakeAttemptModel(docs);
+  const sweep = makeSweeper({ Attempt, Exam: { findById: () => ({ lean: async () => exam }) }, finalise: makeFinaliser(Attempt), log: silent });
+  const r = await sweep();
+  assert.equal(r.closed, 1);
+  assert.equal(docs.get("grace").status, "in_progress");
+  assert.equal(docs.get("over").status, "submitted");
+});
+
 test("an attempt whose exam is gone does not block the others or get retried forever", async () => {
   const docs = new Map([
     ["orphan", inProgress({ _id: "orphan", examId: "gone", deadline: new Date(Date.now() - 90000).toISOString() })],
@@ -117,9 +104,9 @@ test("an attempt whose exam is gone does not block the others or get retried for
   const Attempt = fakeAttemptModel(docs);
   const Exam = { findById: (id) => ({ lean: async () => (id === "e" ? exam : null) }) };
   const sweep = makeSweeper({ Attempt, Exam, finalise: makeFinaliser(Attempt), log: silent });
-  const first = await sweep(new Date(), 1); // batch of 1: the orphan is first in line
+  const first = await sweep(new Date(), 1);
   assert.equal(first.failed, 1);
-  const second = await sweep(new Date(), 1); // the orphan is now skipped, so the next one is reached
+  const second = await sweep(new Date(), 1);
   assert.equal(second.closed, 1);
   assert.equal(docs.get("ok").status, "submitted");
 });
@@ -136,7 +123,7 @@ test("overlapping sweeps are skipped", async () => {
 const read = (p) => fs.readFileSync(path.join(__dirname, "..", p), "utf8");
 
 test("every saved answer bumps rev, and the model declares it", () => {
-  assert.match(read("controllers/examController.js"), /\$inc:\s*\{\s*rev:\s*1\s*\}/);
+  assert.match(read("controllers/examController.js"), /\$inc:\s*\{\s*rev:\s*1/);
   assert.match(read("models/Attempt.js"), /rev:\s*\{\s*type:\s*Number/);
 });
 
@@ -152,4 +139,22 @@ test("correct answers still never reach a running exam", () => {
   const src = read("controllers/examController.js");
   const running = src.slice(src.indexOf("const runningPayload"), src.indexOf("// Loads an attempt only"));
   assert.ok(!/correctKey|explanation/.test(running));
+});
+
+test("the close reason is stored: student by default, time_up for automatic, or the one given", async () => {
+  for (const [auto, reason, expected] of [[false, undefined, "student"], [true, undefined, "time_up"], [true, "violation_limit", "violation_limit"]]) {
+    const docs = new Map([["a1", inProgress()]]);
+    const done = await makeFinaliser(fakeAttemptModel(docs))(docs.get("a1"), exam, auto, reason);
+    assert.equal(done.submitReason, expected);
+  }
+});
+
+test("onClosed runs once, only for the call that closed the attempt, and cannot break the close", async () => {
+  const docs = new Map([["a1", inProgress({ answers: { q1: "A" } })]]);
+  const calls = [];
+  const fin = makeFinaliser(fakeAttemptModel(docs), { onClosed: async (a, info) => { calls.push(info.reason); throw new Error("log failed"); } });
+  const first = await fin(clone(docs.get("a1")), exam, false);
+  await fin(clone(docs.get("a1")), exam, false); // already closed
+  assert.equal(first.status, "submitted");
+  assert.deepEqual(calls, ["student"]);
 });

@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const { OPTION_KEYS } = require("../utils/cbt");
+const { CLIENT_EVENT_TYPES } = require("../utils/guard");
 
 const optionalDate = Joi.date().allow(null, "");
 
@@ -20,6 +21,15 @@ const examFields = {
   drawSpread: Joi.boolean(),
   drawBalance: Joi.boolean(),
   drawMixDifficulty: Joi.boolean(),
+  guard: Joi.object({
+    enabled: Joi.boolean(),
+    monitorFocus: Joi.boolean(),
+    requireFullscreen: Joi.boolean(),
+    maxViolations: Joi.number().integer().min(1).max(20),
+    autoSubmit: Joi.boolean(),
+    minAwaySeconds: Joi.number().min(0).max(30),
+    blockCopyPaste: Joi.boolean(),
+  }),
   availableFrom: optionalDate,
   availableUntil: optionalDate,
 };
@@ -51,4 +61,24 @@ module.exports = {
     choice: Joi.string().valid(...OPTION_KEYS).allow(null),
     flagged: Joi.boolean(),
   }).or("choice", "flagged"),
+  // What the exam screen reports about the student's own browser (see utils/guard.js). The server decides what counts.
+  attemptEvents: Joi.object({
+    events: Joi.array().items(Joi.object({
+      eid: Joi.string().trim().min(8).max(64).required(),
+      type: Joi.string().valid(...CLIENT_EVENT_TYPES).required(),
+      at: Joi.date().iso(),
+      durationMs: Joi.number().integer().min(0).max(6 * 3600 * 1000),
+      reasons: Joi.array().items(Joi.string().valid("hidden", "blur")).max(2),
+    })).min(1).max(50).required(),
+  }),
+  // Everything the student's device still holds, sent in one go when submitting (see utils/lateSync.js).
+  // answeredAt is when the device says the change was made; the server checks it against the deadline.
+  syncAnswers: Joi.object({
+    answers: Joi.array().items(Joi.object({
+      questionId: Joi.string().hex().length(24).required(),
+      choice: Joi.string().valid(...OPTION_KEYS).allow(null),
+      flagged: Joi.boolean(),
+      answeredAt: Joi.date().iso(),
+    }).or("choice", "flagged")).max(600).default([]),
+  }),
 };
