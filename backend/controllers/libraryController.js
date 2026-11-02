@@ -7,7 +7,7 @@ const Progress = require("../models/LibraryProgress");
 const Enrolment = require("../models/LibraryEnrolment");
 const Bookmark = require("../models/LibraryBookmark");
 const Note = require("../models/LibraryNote");
-const Setting = require("../models/LibrarySetting");
+const LibraryFile = require("../models/LibraryFile");
 const { isLessonComplete, limitedGrowth, pickNextLesson, coursePercent } = require("../utils/libraryProgress");
 
 const PRACTICE_PASS_MARK = 50; // percent on the linked exam needed to count as a passed knowledge check
@@ -118,9 +118,7 @@ exports.home = async (req, res) => {
   const popCourses = await Course.find({ _id: { $in: popIds }, ...published }).populate("subject", "name slug").lean();
   const popular = popIds.map((id) => popCourses.find((c) => String(c._id) === String(id))).filter(Boolean).slice(0, 6);
 
-  const countdown = await Setting.publicCountdown();
   res.json({
-    countdown,
     subjects: subjects.filter((s) => sc[String(s._id)]).map((s) => ({ id: s._id, name: s.name, slug: s.slug, group: s.group, courseCount: sc[String(s._id)] })),
     examTags: tagRows.map((r) => ({ tag: r._id, courseCount: r.n })),
     featured: await cards(featured),
@@ -386,15 +384,21 @@ exports.mySummary = async (req, res) => {
   });
 };
 
-// Streams a lesson PDF to a signed-in student who may see the lesson. No permanent link exists: every request is authenticated.
-// Byte ranges are supported so the first pages appear fast. (This cannot stop screenshots or screen recording.)
+// Streams a lesson PDF to a signed-in student who may see the lesson. No permanent link exists: every request is authenticated,
+// and the response asks browsers and proxies not to store it. (This cannot stop screenshots or screen recording.)
 exports.streamPdf = async (req, res) => {
   const loaded = await loadLesson(req, res);
   if (!loaded) return;
   const { lesson } = loaded;
   if (lesson.contentType !== "pdf" || !(lesson.pdf && lesson.pdf.file)) return bad(res, "No document is attached to this lesson.", 404);
-  return require("../utils/libraryStore").servePdf(req, res, lesson.pdf.file);
+  const file = await LibraryFile.findById(lesson.pdf.file).select("+data size sha256");
+  if (!file) return bad(res, "The document could not be found.", 404);
+  res.set({
+    "Content-Type": "application/pdf",
+    "Content-Length": String(file.size),
+    "Content-Disposition": "inline",
+    "Cache-Control": "private, no-store, max-age=0",
+    "X-Content-Type-Options": "nosniff",
+  });
+  res.end(file.data);
 };
-
-// Shared with the study-materials controller.
-exports._h = { statsFor, cards };

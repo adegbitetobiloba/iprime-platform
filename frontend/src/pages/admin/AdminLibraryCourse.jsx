@@ -258,13 +258,6 @@ export default function AdminLibraryCourse() {
     else setMsg(`Course is now ${STATUS_LABEL[status].toLowerCase()}.`);
   });
 
-  const allLessons = modules.flatMap((m) => m.lessons);
-  const steps = [
-    ["Write a description and learning objectives", !!(course.description && course.description.trim()) && (course.objectives || []).length > 0],
-    ["Add a chapter", modules.length > 0],
-    ["Add a lesson with content", allLessons.some((l) => (l.contentType === "text" && l.body) || (l.contentType === "video" && l.video) || (l.contentType === "link" && l.externalUrl) || (l.contentType === "pdf" && l.pdf && l.pdf.file))],
-    ["Publish the course", course.status === "published"],
-  ];
   return (
     <div className="admin-page">
       <p className="lib-crumbs"><Link to="/admin/library">Library</Link> › {course.title}</p>
@@ -281,13 +274,6 @@ export default function AdminLibraryCourse() {
         <div className="alert alert-error" role="alert">
           {err}
           {problems.length > 0 && <ul>{problems.map((p, i) => <li key={i}>{p}</li>)}</ul>}
-        </div>
-      )}
-
-      {course.status !== "published" && (
-        <div className="lib-callout" style={{ marginBottom: 16 }}>
-          <strong>Getting this course ready</strong>
-          <ul className="lib-steps" style={{ marginTop: 8 }}>{steps.map(([label, done]) => <li key={label}><span className={`lib-dot${done ? " done" : ""}`} aria-hidden="true">{done ? "✓" : ""}</span><span>{label}<span className="sr-only">{done ? " (done)" : " (to do)"}</span></span></li>)}</ul>
         </div>
       )}
 

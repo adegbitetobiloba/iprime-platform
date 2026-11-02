@@ -140,7 +140,7 @@ export default function LibraryLesson() {
             )}
 
             {lesson.contentType === "pdf" && (lesson.pdf && lesson.pdf.available
-              ? <PdfViewer key={lesson.id} path={`/library/lessons/${lesson.id}/pdf`} token={token} startPage={data.progress ? data.progress.lastPage : 1} onPage={(pg, n) => send({ page: pg, pageCount: n })} />
+              ? <PdfViewer key={lesson.id} lessonId={lesson.id} token={token} startPage={data.progress ? data.progress.lastPage : 1} onPage={(pg, n) => send({ page: pg, pageCount: n })} />
               : <p className="note">No document has been attached to this lesson yet.</p>)}
 
             <div className="lib-actions">
