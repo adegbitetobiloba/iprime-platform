@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 
-// Private storage for lesson PDFs, inside the existing MongoDB (no extra service or credentials).
-// `data` is never selected by default, so listing or loading a lesson can never leak file bytes.
+// Metadata for a private PDF. The bytes live in GridFS (bucket "librarypdfs"), which stores files in chunks and can serve byte ranges,
+// so the reader gets the first pages quickly instead of waiting for the whole file. `data` is only used by files saved by the first PDF release.
 const fileSchema = new mongoose.Schema(
   {
-    data: { type: Buffer, required: true, select: false },
+    gridId: { type: mongoose.Schema.Types.ObjectId },
+    data: { type: Buffer, select: false },
     size: { type: Number, required: true },
     sha256: { type: String, required: true },
     originalName: { type: String, maxlength: 150 },

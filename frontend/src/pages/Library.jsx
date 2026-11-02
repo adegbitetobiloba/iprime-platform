@@ -5,6 +5,8 @@ import { useAuth } from "../auth.jsx";
 import { useFetch } from "../useFetch.js";
 import EmptyState from "../components/EmptyState.jsx";
 import { CourseCard, ProgressBar, TYPE_LABEL } from "../library/parts.jsx";
+import Countdown from "../library/Countdown.jsx";
+import { MaterialCard } from "../library/parts.jsx";
 import "../library/library.css";
 
 function Skeleton() {
@@ -33,9 +35,10 @@ export default function Library() {
   if (subject) qs.set("subject", subject);
   if (tag) qs.set("tag", tag);
   if (difficulty) qs.set("difficulty", difficulty);
+  const reading = useFetch("/library/shelf?status=reading&limit=6");
   const { data, error, loading, reload } = useFetch(browsing ? `/library/courses?${qs}` : "/library/home");
 
-  const [q, setQ] = useState((params.get("q") || "").slice(0, 60)); // lets other pages (e.g. Performance) open the Library with a search
+  const [q, setQ] = useState("");
   const [results, setResults] = useState(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
@@ -69,6 +72,14 @@ export default function Library() {
             <input id="lib-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search a subject, topic or lesson" autoComplete="off" maxLength={60} />
           </form>
         </div>
+
+        {home && data.countdown && <Countdown countdown={data.countdown} linkTo="/library/utme" />}
+        <ul className="lib-shortcuts">
+          <li><Link className="lib-shortcut" to="/library/utme"><strong>UTME hub</strong><span className="muted">Syllabus, textbooks, past questions and a study plan</span></Link></li>
+          <li><Link className="lib-shortcut" to="/library/materials"><strong>Study materials</strong><span className="muted">Textbooks, notes and papers to read</span></Link></li>
+          <li><Link className="lib-shortcut" to="/library/shelf"><strong>My shelf</strong><span className="muted">Materials you are reading or want to read</span></Link></li>
+          <li><Link className="lib-shortcut" to="/library/saved"><strong>Saved lessons</strong><span className="muted">Lessons you bookmarked</span></Link></li>
+        </ul>
 
         <div className="lib-sr-live" aria-live="polite">{searching ? "Searching" : results ? `${results.courses.length} courses and ${results.lessons.length} lessons found` : ""}</div>
 
@@ -117,6 +128,12 @@ export default function Library() {
                         </div></div>
                       ))}
                     </div>
+                  </Section>
+                )}
+
+                {reading.data && reading.data.materials.length > 0 && (
+                  <Section title="Continue reading" action={<Link to="/library/shelf" className="link-btn">My shelf</Link>}>
+                    <ul className="lib-grid">{reading.data.materials.map((m) => <MaterialCard key={m.id} m={m} />)}</ul>
                   </Section>
                 )}
 
