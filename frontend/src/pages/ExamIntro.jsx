@@ -28,6 +28,7 @@ export default function ExamIntro() {
   }
 
   const e = data.exam;
+  const g = e.guard;
   const resuming = Boolean(e.inProgressAttemptId);
   const noAttempts = !resuming && e.attemptsUsed >= e.maxAttempts;
   const notYet = e.availableFrom && new Date(e.availableFrom) > new Date();
@@ -57,6 +58,24 @@ export default function ExamIntro() {
             <li>You will see a summary before you submit. When time is up, your attempt is submitted automatically.</li>
           </ul>
         </div>
+
+        {g && g.enabled && (
+          <div className="panel">
+            <h2 className="panel-title">This examination is monitored</h2>
+            <ul className="plain-list">
+              {g.monitorFocus && (
+                <li>
+                  Stay on the exam screen. Each time you leave it (another tab, another app, pulling down the notification panel) is recorded as a warning.{" "}
+                  {g.autoSubmit ? `Warning ${g.maxViolations} submits your examination automatically.` : "Your examiner will see these warnings."}
+                </li>
+              )}
+              {g.requireFullscreen && <li>The exam must stay in fullscreen. Leaving fullscreen counts as a warning. (Phones that cannot do fullscreen are not affected.)</li>}
+              {g.blockCopyPaste && <li>You cannot select, copy, print or long-press search the questions, and the questions are hidden whenever you leave the exam screen.</li>}
+              <li>Losing your internet connection is not a warning. Your answers stay on your device and are sent when you reconnect.</li>
+            </ul>
+            <p className="muted"><strong>On a phone, before you press Start:</strong> turn on Do Not Disturb so messages do not pop up. For the best protection, use Screen pinning (Android: search &ldquo;App pinning&rdquo; in Settings) or Guided Access (iPhone: Settings, Accessibility), which also stop notification swipes.</p>
+          </div>
+        )}
 
         <FormStatus error={start.error} slow={start.slow} />
         <div className="form-actions" style={{ marginTop: "var(--s5)" }}>

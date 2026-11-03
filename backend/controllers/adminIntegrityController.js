@@ -4,6 +4,7 @@ const Attempt = require("../models/Attempt");
 const AttemptEvent = require("../models/AttemptEvent");
 const User = require("../models/User");
 const { normalizePolicy } = require("../utils/guard");
+const { summarise } = require("../utils/integritySummary");
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const serverError = (res, err) => {
@@ -34,9 +35,7 @@ exports.exam = async (req, res) => {
       byAttempt.set(k, o);
     }
 
-    res.json({
-      exam: { id: String(exam._id), title: exam.title, guard: normalizePolicy(exam.guard) },
-      attempts: attempts.map((a) => {
+    const rows = attempts.map((a) => {
         const u = byUser.get(String(a.userId)) || {};
         const ev = byAttempt.get(String(a._id)) || { counts: {}, awayMs: 0 };
         return {
@@ -52,8 +51,8 @@ exports.exam = async (req, res) => {
           awaySeconds: Math.round(ev.awayMs / 1000),
           counts: ev.counts,
         };
-      }),
-    });
+      });
+    res.json({ exam: { id: String(exam._id), title: exam.title, guard: normalizePolicy(exam.guard) }, summary: summarise(rows), attempts: rows });
   } catch (err) { serverError(res, err); }
 };
 

@@ -193,3 +193,20 @@ test("a running exam is sent the policy but never any answer key", () => {
   assert.match(running, /guard:/);
   assert.ok(!/correctKey|explanation/.test(running));
 });
+
+// ---- content protection (M1.2) ----
+test("the browser may also report selecting, printing, shortcuts and a top-edge swipe, and none of them is a violation", () => {
+  for (const type of ["select_blocked", "print_blocked", "shortcut_blocked", "edge_swipe"]) {
+    assert.ok(CLIENT_EVENT_TYPES.includes(type), type);
+    assert.equal(classify({ type, durationMs: 60000 }, normalizePolicy({})), false, type);
+  }
+});
+
+test("the start page is told how the exam is monitored, and the running payload still has no answer key", () => {
+  const src = read("controllers/examController.js");
+  assert.match(src, /guard: normalizePolicy\(e\.guard\)/);
+});
+
+test("the integrity report includes a roll-up", () => {
+  assert.match(read("controllers/adminIntegrityController.js"), /summary: summarise\(rows\)/);
+});

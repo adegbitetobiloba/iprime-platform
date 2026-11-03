@@ -12,3 +12,10 @@ fieldset.options:disabled .option { cursor: not-allowed; }
 @media (prefers-reduced-motion: no-preference) { .save-pill[data-state="saving"]::before { animation: save-pulse 1s ease-in-out infinite; } }
 @keyframes save-pulse { 50% { opacity: .3; } }
 .guard-count { font-size: .8rem; font-weight: 600; color: #b42318; white-space: nowrap; }
+
+/* Content protection (ExamGuard "blockCopyPaste"): the questions cannot be selected or long-pressed, and are hidden while the student is away. */
+.protect-text, .protect-text * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.protect-text img, .protect-text svg { -webkit-user-drag: none; pointer-events: none; }
+html.exam-away .protect-text * { visibility: hidden; }
+html.exam-away .protect-text::after { content: "Return to the exam window to see the question."; display: block; padding: 2.5rem 1rem; text-align: center; font-weight: 600; visibility: visible; }
+@media print { .runner { display: none !important; } body::before { content: "Printing is not allowed during an examination."; display: block; padding: 2rem; } }

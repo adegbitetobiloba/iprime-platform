@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../../useFetch.js";
 import ExportBar from "../../components/analytics/ExportBar.jsx";
+import IntegritySummary from "../../components/IntegritySummary.jsx";
 import "../../studentDashboard.css";
 import "../../adminAnalytics.css";
 
@@ -55,6 +56,8 @@ export default function AdminExamAnalytics() {
             <Card label="Middle half" value={`${d.stats.q1}% – ${d.stats.q3}%`} note={`Lowest ${d.stats.min}% · highest ${d.stats.max}%`} />
             <Card label="Retook it" value={d.retakers} note={d.autoSubmitted ? `${d.autoSubmitted} timed out on their first attempt` : "None timed out"} />
           </ul>
+
+          <IntegritySummary examId={id} />
 
           <section className="panel aa-block" aria-labelledby="aa-dist">
             <h2 className="panel-title" id="aa-dist">Score distribution</h2>

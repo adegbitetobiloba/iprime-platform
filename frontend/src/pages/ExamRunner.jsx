@@ -273,6 +273,7 @@ export default function ExamRunner() {
   const questions = data.questions;
   const total = questions.length;
   const q = questions[idx];
+  const protect = Boolean(data.attempt.guard.enabled && data.attempt.guard.blockCopyPaste); // content protection: see useExamGuard.js
   const answeredCount = questions.filter((x) => answers[x.id]).length;
   const flaggedCount = questions.filter((x) => flagged.includes(x.id)).length;
   const failedCount = Object.values(saveState).filter((v) => v === "failed").length;
@@ -355,7 +356,7 @@ export default function ExamRunner() {
       )}
 
       <div className="runner-body">
-        <section className="q-card" ref={cardRef} aria-labelledby="q-title">
+        <section className={`q-card${protect ? " protect-text" : ""}`} ref={cardRef} aria-labelledby="q-title">
           <p className="q-meta">
             <span id="q-title">Question {idx + 1} of {total}</span>
             <span>{q.marks} {q.marks === 1 ? "mark" : "marks"}</span>

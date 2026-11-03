@@ -116,6 +116,7 @@ exports.getExam = async (req, res) => {
       exam: {
         id: String(e._id), title: e.title, description: e.description, subject: e.subject, level: e.level, examType: e.examType,
         instructions: e.instructions, durationMinutes: e.durationMinutes, questionCount: pool.shape(e).questionCount, totalMarks: totalMarks(e),
+        guard: normalizePolicy(e.guard), // so the start page can tell students how the examination is monitored
         maxAttempts: e.maxAttempts, availableFrom: e.availableFrom, availableUntil: e.availableUntil,
         attemptsUsed: mine.filter((a) => a.status === "submitted").length,
         inProgressAttemptId: inProgress ? String(inProgress._id) : null,
