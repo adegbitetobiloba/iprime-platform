@@ -3,6 +3,8 @@ import { useAuth } from "../auth.jsx";
 import MobileActionBar from "./MobileActionBar.jsx";
 import BackToTop from "./BackToTop.jsx";
 import { CAMPAIGN } from "../campaign.js";
+import { OFFICIAL_EMAIL, SOCIALS } from "../contactContent.js";
+import SocialLinks from "./SocialLinks.jsx";
 
 export default function Footer() {
   const { token } = useAuth();
@@ -18,7 +20,9 @@ export default function Footer() {
             WhatsApp <a href={CAMPAIGN.contacts.whatsapp.href} target="_blank" rel="noopener noreferrer">{CAMPAIGN.contacts.whatsapp.display}</a>
             {" "}&middot; Call <a href={CAMPAIGN.contacts.call.href}>{CAMPAIGN.contacts.call.display}</a>
           </p>
+          <p className="footer-small">Email <a href={`mailto:${OFFICIAL_EMAIL}`}>{OFFICIAL_EMAIL}</a></p>
           <p className="footer-small">UTME learning hours {CAMPAIGN.learningHours}</p>
+          <SocialLinks items={SOCIALS} variant="icons" />
         </div>
         <nav className="footer-col" aria-label="Explore">
           <h2 className="footer-heading">Explore</h2>

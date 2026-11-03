@@ -342,3 +342,19 @@ html { scroll-padding-top: 4.5rem; }
 .ws5-hours strong { color: var(--c-ink); font-size: 1.15rem; }
 .ws5-prog-hours { margin: 0 0 0.5rem; color: var(--c-ink); font-size: 0.95rem; }
 .site-footer .footer-small a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- v10: social links ---------- */
+.ws5-social { margin: 0.25rem 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ws5-social a { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 0.95rem; border: 1px solid var(--c-line); border-radius: var(--r-pill); background: var(--c-surface); color: var(--c-ink); font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+.ws5-social a:hover { background: var(--c-tint); }
+.ws5-footer-social { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; }
+@supports not (aspect-ratio: 1 / 1) { .ws5-social li, .ws5-footer-social a { margin: 0 0.5rem 0.5rem 0; } }
+
+/* ---------- v11: social icons ---------- */
+.ws5-social a { gap: 0.5rem; }
+.ws5-social svg { width: 1.25rem; height: 1.25rem; flex: none; }
+.ws5-social-icons { gap: 0.6rem; margin-top: 0.75rem; }
+.ws5-social-icons a { width: 2.75rem; height: 2.75rem; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; }
+.site-footer .ws5-social-icons a { border-color: rgba(255, 255, 255, 0.4); background: transparent; color: #fff; }
+.site-footer .ws5-social-icons a:hover, .site-footer .ws5-social-icons a:focus-visible { background: var(--c-gold); border-color: var(--c-gold); color: #0B1F4B; }
+.ws5-swipe .programme-card { height: 100%; }

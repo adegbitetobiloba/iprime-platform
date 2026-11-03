@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { filterFaqs, FAQS, FAQ_CATEGORIES } from "../src/faqContent.js";
-import { validateEnquiry, buildEnquiry, whatsappLink, programmeEnquiry, CHANNELS, TOPICS } from "../src/contactContent.js";
+import { validateEnquiry, buildEnquiry, whatsappLink, programmeEnquiry, emailLink, CHANNELS, TOPICS, SOCIALS, OFFICIAL_EMAIL } from "../src/contactContent.js";
 import { PROGRAMME_AREAS } from "../src/programmesContent.js";
 import { eventState, sortEvents, EVENTS } from "../src/eventsContent.js";
 
@@ -25,7 +25,7 @@ test("FAQ filter: category, search words, and no match", () => {
 test("FAQ answers make no unsupported claims about fees, dates or contacts", () => {
   const all = FAQS.map((f) => f.a).join(" ");
   assert.ok(!/18,000/.test(all));
-  assert.ok(!/@[a-z0-9-]+\.[a-z]{2,}/i.test(all));
+  assert.ok(!/@[a-z0-9-]+\.[a-z]{2,}/i.test(all.split(OFFICIAL_EMAIL).join("")));
 });
 test("enquiry validation", () => {
   assert.deepEqual(Object.keys(validateEnquiry({})).sort(), ["message", "name", "topic"]);
@@ -41,11 +41,21 @@ test("WhatsApp link encodes the message safely", () => {
   assert.equal(decodeURIComponent(link.split("?text=")[1]), text);
   assert.ok(programmeEnquiry("WAEC preparation").includes("WAEC"));
 });
-test("only confirmed details appear as contact values; the rest say to be confirmed", () => {
-  assert.deepEqual(CHANNELS.filter((c) => c.value).map((c) => c.id).sort(), ["call", "whatsapp"]);
-  assert.ok(CHANNELS.filter((c) => c.status === "official").map((c) => c.id).sort().join() === "call,hours,whatsapp");
-  assert.deepEqual(CHANNELS.filter((c) => c.status === "tbc").map((c) => c.id).sort(), ["address", "email", "social"]);
+test("official channels carry values; only the address is still to be confirmed", () => {
+  assert.deepEqual(CHANNELS.filter((c) => c.value).map((c) => c.id).sort(), ["call", "email", "whatsapp"]);
+  assert.equal(CHANNELS.find((c) => c.id === "email").href, "mailto:primeexcelerate@gmail.com");
+  assert.deepEqual(CHANNELS.filter((c) => c.status === "official").map((c) => c.id).sort(), ["call", "email", "hours", "social", "whatsapp"]);
+  assert.deepEqual(CHANNELS.filter((c) => c.status === "tbc").map((c) => c.id), ["address"]);
   assert.ok(CHANNELS.filter((c) => c.status === "tbc").every((c) => !c.value && c.note));
+});
+test("social links are secure and have no tracking parameters", () => {
+  assert.equal(SOCIALS.length, 5);
+  assert.ok(SOCIALS.every((s) => s.href.startsWith("https://") && !s.href.includes("?si=")));
+});
+test("email link is prepared safely", () => {
+  const l = emailLink("Fees and payment", "Is it \u20a68,000 & what's included?");
+  assert.ok(l.startsWith("mailto:primeexcelerate@gmail.com?subject="));
+  assert.ok(!/[\n ]/.test(l));
 });
 test("learning hours are exactly as confirmed", () => {
   const hours = CHANNELS.find((c) => c.id === "hours").hours;

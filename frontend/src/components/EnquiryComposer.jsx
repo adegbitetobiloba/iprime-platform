@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CAMPAIGN } from "../campaign.js";
-import { TOPICS, MAX_MESSAGE, validateEnquiry, buildEnquiry, whatsappLink } from "../contactContent.js";
+import { TOPICS, MAX_MESSAGE, validateEnquiry, buildEnquiry, whatsappLink, emailLink } from "../contactContent.js";
 import Field from "./Field.jsx";
 
 // An enquiry that needs no server: it prepares a WhatsApp message to the institution's official WhatsApp line (confirmed by the
@@ -29,6 +29,11 @@ export default function EnquiryComposer() {
     if (!check()) return;
     window.open(whatsappLink(CAMPAIGN.contacts.whatsapp.href, text()), "_blank", "noopener");
     setNote("WhatsApp should open with your message ready to send. If it did not, use Copy message and send it yourself.");
+  };
+  const email = () => {
+    if (!check()) return;
+    window.location.href = emailLink(v.topic, text());
+    setNote("Your email app should open with the message ready to send to the institution.");
   };
   const copy = async () => {
     if (!check()) return;
@@ -64,6 +69,7 @@ export default function EnquiryComposer() {
       {note && <p className="alert alert-success" role="status">{note}</p>}
       <div className="form-actions ws5-btn-row">
         <button type="submit" className="btn btn-primary">Open in WhatsApp</button>
+        <button type="button" className="btn btn-secondary" onClick={email}>Send by email</button>
         <button type="button" className="btn btn-secondary" onClick={copy}>Copy message</button>
       </div>
     </form>
