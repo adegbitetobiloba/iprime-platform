@@ -12,7 +12,7 @@ const DEFAULT_GUARD = Object.freeze({
   maxViolations: 3,         // the violation that reaches this number ends the exam
   autoSubmit: true,         // submit automatically when the limit is reached (false: only record and warn)
   minAwaySeconds: 2,        // leaving for less than this is ignored (a notification, a system pop-up)
-  blockCopyPaste: true,     // block copy, cut, paste and the right-click menu while examining (logged, not counted)
+  blockCopyPaste: true,     // content protection: no selecting/copying the questions, no long-press search, no printing; questions are hidden while the student is away (logged, not counted)
 });
 
 const num = (v, lo, hi, dflt) => {
@@ -37,7 +37,7 @@ function normalizePolicy(raw) {
 }
 
 // What the student's browser may report. Anything else is refused by validation.
-const CLIENT_EVENT_TYPES = ["away", "fullscreen_exit", "fullscreen_enter", "fullscreen_unsupported", "offline", "online", "copy_blocked", "paste_blocked", "contextmenu_blocked"];
+const CLIENT_EVENT_TYPES = ["away", "fullscreen_exit", "fullscreen_enter", "fullscreen_unsupported", "offline", "online", "copy_blocked", "paste_blocked", "contextmenu_blocked", "select_blocked", "print_blocked", "shortcut_blocked", "edge_swipe"];
 
 // Does this reported event count as a violation under the policy? Network loss never does.
 function classify(evt, policy) {

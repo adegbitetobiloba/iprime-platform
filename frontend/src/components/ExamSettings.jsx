@@ -113,7 +113,7 @@ export default function ExamSettings({ exam, locked, onSaved }) {
           <>
             <label className="flag-toggle"><input type="checkbox" checked={g.monitorFocus} onChange={gflip("monitorFocus")} /> Warn when the student leaves the exam tab or window</label>
             <label className="flag-toggle"><input type="checkbox" checked={g.requireFullscreen} onChange={gflip("requireFullscreen")} /> Require fullscreen (leaving it counts as a warning; phones that cannot do fullscreen are not penalised)</label>
-            <label className="flag-toggle"><input type="checkbox" checked={g.blockCopyPaste} onChange={gflip("blockCopyPaste")} /> Block copy, paste and the right-click menu (recorded, not counted)</label>
+            <label className="flag-toggle"><input type="checkbox" checked={g.blockCopyPaste} onChange={gflip("blockCopyPaste")} /> Protect the questions: no selecting, copying, long-press search or printing, and hide them whenever the student leaves the exam screen (recorded, not counted)</label>
             <label className="flag-toggle"><input type="checkbox" checked={g.autoSubmit} onChange={gflip("autoSubmit")} /> Submit the examination automatically when the limit is reached</label>
             <div className="grid-2">
               <Field label="Warnings allowed" id="g-max" type="number" min="1" max="20" value={g.maxViolations} onChange={gset("maxViolations")} hint={g.autoSubmit ? `The ${g.maxViolations || "?"}${Number(g.maxViolations) === 1 ? "st" : Number(g.maxViolations) === 2 ? "nd" : Number(g.maxViolations) === 3 ? "rd" : "th"} warning submits the exam.` : "Warnings are recorded and shown to the student."} />
@@ -121,7 +121,7 @@ export default function ExamSettings({ exam, locked, onSaved }) {
             </div>
           </>
         )}
-        <p className="muted xb-help">A web page can only see that the exam tab or window lost focus, fullscreen was left, or copy and paste were tried. It cannot see other devices, screenshots or another person helping, so use this as a deterrent and a record to review, not as proof. Losing the internet connection is recorded but is never counted as a warning. Changes apply to students who start after you save; students already examining keep the settings they began with.</p>
+        <p className="muted xb-help">A web page can only see that the exam tab or window lost focus, fullscreen was left, or copy and paste were tried. It cannot see other devices, screenshots or another person helping, and it cannot stop a screenshot or a system search tool (such as Google Lens or Circle to Search), or stop the notification panel being pulled down. Use this as a deterrent and a record to review, not as proof. For phones, Screen pinning (Android) or Guided Access (iPhone) also stops notification swipes. Losing the internet connection is recorded but is never counted as a warning. Changes apply to students who start after you save; students already examining keep the settings they began with.</p>
       </fieldset>
 
       <label className="flag-toggle"><input type="checkbox" checked={f.showAnswersAfter} onChange={flip("showAnswersAfter")} /> Let students review the correct answers after they submit</label>

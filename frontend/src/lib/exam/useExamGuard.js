@@ -128,16 +128,65 @@ export default function useExamGuard({ id, token, policy, active, initialViolati
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, [on, policy && policy.requireFullscreen, enqueue, throttled]);
 
-  // Copy, cut, paste and the right-click menu are blocked and logged (not counted).
+  // Content protection (the "blockCopyPaste" setting). The questions cannot be selected, copied, long-pressed for the browser's
+  // search menu, dragged or printed, and they are hidden while the student is away from the exam screen. Attempts are logged,
+  // not counted. Limits: this stops the browser's own tools. It cannot stop a screenshot, a screen recording, or system tools
+  // that read the screen (Google Lens, Circle to Search, Live Text); hiding the questions the moment the page loses focus only
+  // helps when the tool takes focus first.
   useEffect(() => {
     if (!on || !policy.blockCopyPaste) return undefined;
+    const root = document.documentElement;
+    const inside = (t) => {
+      const el = t && t.nodeType === 3 ? t.parentElement : t;
+      return Boolean(el && el.closest && el.closest(".protect-text"));
+    };
     const block = (type) => (e) => { e.preventDefault(); throttled(type); };
-    const c = block("copy_blocked"), p = block("paste_blocked"), m = block("contextmenu_blocked");
-    document.addEventListener("copy", c); document.addEventListener("cut", c);
-    document.addEventListener("paste", p); document.addEventListener("contextmenu", m);
+    const copy = block("copy_blocked"), paste = block("paste_blocked"), menu = block("contextmenu_blocked");
+    const select = (e) => { if (inside(e.target)) { e.preventDefault(); throttled("select_blocked"); } };
+    const drag = (e) => { if (inside(e.target)) e.preventDefault(); };
+    const keys = (e) => {
+      if ((e.ctrlKey || e.metaKey) && ["a", "c", "x", "p", "s", "u"].includes(String(e.key).toLowerCase())) {
+        e.preventDefault();
+        throttled(String(e.key).toLowerCase() === "p" ? "print_blocked" : "shortcut_blocked");
+      }
+    };
+    const beforePrint = () => throttled("print_blocked");
+
+    // Hide the questions as soon as the page loses focus or is hidden; show them again when the student is back.
+    const shieldOn = () => root.classList.add("exam-away");
+    const shieldOff = () => { if (document.visibilityState === "visible") root.classList.remove("exam-away"); };
+    const onVis = () => (document.visibilityState === "visible" ? shieldOff() : shieldOn());
+
+    // Swiping down from the very top edge on a touch screen usually opens the notification panel. A web page cannot block or
+    // reliably see that, so a clear downward swipe from the top edge is only written to the log.
+    let y0 = null;
+    const ts = (e) => { const t = e.touches && e.touches[0]; y0 = t && t.clientY <= 18 ? t.clientY : null; };
+    const tm = (e) => { if (y0 == null) return; const t = e.touches && e.touches[0]; if (t && t.clientY - y0 >= 40) { y0 = null; throttled("edge_swipe"); } };
+    const te = () => { y0 = null; };
+
+    document.addEventListener("copy", copy); document.addEventListener("cut", copy);
+    document.addEventListener("paste", paste); document.addEventListener("contextmenu", menu);
+    document.addEventListener("selectstart", select); document.addEventListener("dragstart", drag);
+    document.addEventListener("keydown", keys, true);
+    window.addEventListener("beforeprint", beforePrint);
+    window.addEventListener("blur", shieldOn); window.addEventListener("focus", shieldOff);
+    document.addEventListener("visibilitychange", onVis);
+    // Any touch, click or key press means the student is back in the page, so the questions are never stuck hidden.
+    for (const ev of ["pointerdown", "touchstart", "keydown"]) document.addEventListener(ev, shieldOff, true);
+    document.addEventListener("touchstart", ts, { passive: true });
+    document.addEventListener("touchmove", tm, { passive: true });
+    document.addEventListener("touchend", te, { passive: true });
     return () => {
-      document.removeEventListener("copy", c); document.removeEventListener("cut", c);
-      document.removeEventListener("paste", p); document.removeEventListener("contextmenu", m);
+      document.removeEventListener("copy", copy); document.removeEventListener("cut", copy);
+      document.removeEventListener("paste", paste); document.removeEventListener("contextmenu", menu);
+      document.removeEventListener("selectstart", select); document.removeEventListener("dragstart", drag);
+      document.removeEventListener("keydown", keys, true);
+      window.removeEventListener("beforeprint", beforePrint);
+      window.removeEventListener("blur", shieldOn); window.removeEventListener("focus", shieldOff);
+      document.removeEventListener("visibilitychange", onVis);
+      for (const ev of ["pointerdown", "touchstart", "keydown"]) document.removeEventListener(ev, shieldOff, true);
+      document.removeEventListener("touchstart", ts); document.removeEventListener("touchmove", tm); document.removeEventListener("touchend", te);
+      root.classList.remove("exam-away");
     };
   }, [on, policy && policy.blockCopyPaste, throttled]);
 

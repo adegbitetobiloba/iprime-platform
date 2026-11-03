@@ -8,6 +8,8 @@ const TYPE = {
   answers_synced_late: "Answers sent after reconnecting", away: "Left the exam tab or window", fullscreen_exit: "Left fullscreen",
   fullscreen_enter: "Entered fullscreen", fullscreen_unsupported: "Fullscreen not supported by this browser", offline: "Internet connection lost",
   online: "Internet connection back", copy_blocked: "Tried to copy", paste_blocked: "Tried to paste", contextmenu_blocked: "Tried the right-click menu",
+  select_blocked: "Tried to select text", print_blocked: "Tried to print", shortcut_blocked: "Tried a copy, select-all or print shortcut",
+  edge_swipe: "Swiped down from the top edge (possible notification panel)",
 };
 const secs = (ms) => (ms == null ? "" : ms >= 60000 ? `${Math.floor(ms / 60000)} min ${Math.round((ms % 60000) / 1000)} s` : `${Math.round(ms / 1000)} s`);
 const clock = (iso) => (iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "");
