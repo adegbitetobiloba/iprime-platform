@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { useFetch } from "../useFetch.js";
 import { useAuth } from "../auth.jsx";
 import EmptyState from "./EmptyState.jsx";
-import Reveal from "./Reveal.jsx";
+import SwipeCards from "./SwipeCards.jsx";
 
 const MODE = { physical: "In person", online: "Online", hybrid: "In person and online" };
 
 // Programmes published by the institution through the admin area. Nothing here is hard-coded.
+// On phones the cards swipe one at a time; on wider screens they sit in a grid.
 export default function ProgrammeCards({ limit, detailed = false }) {
   const { user } = useAuth();
   const { data, error, loading, reload } = useFetch("/public/programmes");
@@ -27,24 +28,22 @@ export default function ProgrammeCards({ limit, detailed = false }) {
     );
   }
   return (
-    <ul className="programme-grid">
-      {items.map((p, i) => (
-        <Reveal as="li" key={p.id} delay={i * 90}>
-          <article className="programme-card card-hover">
-            <div className="exam-tags">
-              {p.audience && <span className="badge">{p.audience}</span>}
-              {p.mode && <span className="badge badge-quiet">{MODE[p.mode]}</span>}
-            </div>
-            <h3>{p.title}</h3>
-            {p.summary && <p className="muted">{p.summary}</p>}
-            {detailed && p.description && <p>{p.description}</p>}
-            {p.subjects?.length > 0 && (
-              <ul className="chips" aria-label="Subjects">{p.subjects.map((s) => <li key={s}>{s}</li>)}</ul>
-            )}
-            {detailed && p.schedule && <p className="programme-schedule"><strong>Schedule:</strong> {p.schedule}</p>}
-          </article>
-        </Reveal>
+    <SwipeCards label="Programmes" gridFrom="md">
+      {items.map((p) => (
+        <article key={p.id} className="programme-card card-hover">
+          <div className="exam-tags">
+            {p.audience && <span className="badge">{p.audience}</span>}
+            {p.mode && <span className="badge badge-quiet">{MODE[p.mode]}</span>}
+          </div>
+          <h3>{p.title}</h3>
+          {p.summary && <p className="muted">{p.summary}</p>}
+          {detailed && p.description && <p>{p.description}</p>}
+          {p.subjects?.length > 0 && (
+            <ul className="chips" aria-label="Subjects">{p.subjects.map((s) => <li key={s}>{s}</li>)}</ul>
+          )}
+          {detailed && p.schedule && <p className="programme-schedule"><strong>Schedule:</strong> {p.schedule}</p>}
+        </article>
       ))}
-    </ul>
+    </SwipeCards>
   );
 }

@@ -43,7 +43,7 @@ export const FAQS = [
   { id: "change", cat: "account", q: "Can I change my details later?", a: "Yes. Log in, open your dashboard and choose Edit profile. You can update your name, phone number, state and date of birth. Your email address cannot be changed from there." },
   { id: "student-id", cat: "account", q: "What is a student ID?", a: "Verified student accounts receive a unique student ID that starts with PET-. It identifies your account within iPrime. It is not a password, so never use it to log in or share it as one." },
   { id: "password", cat: "account", q: "I forgot my password.", a: "Password reset is not available yet. It is planned for a later update. If you signed up with Google, you can keep signing in with Google." },
-  { id: "reach", cat: "account", q: "How do I contact the institution?", a: "Use the Contact page. You can call or message the institution's official WhatsApp line, or send an enquiry through WhatsApp from there.", link: { to: "/contact", label: "Contact" } },
+  { id: "reach", cat: "account", q: "How do I contact the institution?", a: "Use the Contact page. You can call or message the institution's official WhatsApp line, email primeexcelerate@gmail.com, or send an enquiry from there.", link: { to: "/contact", label: "Contact" } },
 ];
 
 /** Filters by category and by search words (every word must appear in the question or the answer). */

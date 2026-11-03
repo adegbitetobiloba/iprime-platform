@@ -4,10 +4,22 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import { AuthProvider } from "./auth.jsx";
 import { initTheme } from "./theme.js";
+// Global stylesheets. EVERY one of these must be listed: a missing line leaves a whole part of the site unstyled.
+// Order matters (base first, newest/feature styles after, ws5.css last). Feature folders (library, calculator) import their own CSS.
 import "./styles.css";
 import "./redesign.css";
 import "./tokens.css";
 import "./v2.css";
+import "./studentDashboard.css";
+import "./performance.css";
+import "./progressReport.css";
+import "./adminAnalytics.css";
+import "./admin.css";
+import "./messages.css";
+import "./import.css";
+import "./rich.css";
+import "./examReliability.css";
+import "./ws5.css";
 
 initTheme();
 

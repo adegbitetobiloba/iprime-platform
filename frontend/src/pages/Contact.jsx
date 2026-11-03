@@ -4,6 +4,7 @@ import Reveal from "../components/Reveal.jsx";
 import Icon from "../components/Icon.jsx";
 import SwipeCards from "../components/SwipeCards.jsx";
 import EnquiryComposer from "../components/EnquiryComposer.jsx";
+import SocialLinks from "../components/SocialLinks.jsx";
 import { CHANNELS } from "../contactContent.js";
 
 function Channel({ c }) {
@@ -18,6 +19,8 @@ function Channel({ c }) {
           <p className="ws5-channel-value">{c.value}</p>
           <a className="btn btn-primary btn-sm" href={c.href} {...(c.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{c.action}</a>
         </>
+      ) : c.links ? (
+        <SocialLinks items={c.links} />
       ) : c.hours ? (
         <>
           <ul className="ws5-hours">
