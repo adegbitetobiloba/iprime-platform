@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const c = require("../controllers/enrolmentController");
+const access = require("../controllers/studentAccessController");
 const protect = require("../middleware/authMiddleware");
 const requireRole = require("../middleware/roleMiddleware");
 const { validate } = require("../validations/authValidation");
@@ -8,6 +9,7 @@ const v = require("../validations/enrolmentValidation");
 
 // Students only. The server re-reads the role from the database on every request.
 router.use(protect, requireRole("student"));
+router.get("/info", access.info); // the notice, payment status and whether the form is open. Must stay above "/:id".
 router.post("/", validate(v.createDraft), c.create);
 router.get("/mine", c.mine); // must stay above "/:id"
 router.get("/:id", c.getOne);

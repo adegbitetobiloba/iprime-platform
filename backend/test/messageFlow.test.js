@@ -61,10 +61,12 @@ const stubs = {
   mongoose: { isValidObjectId: (v) => typeof v === "string" && v.length > 0 },
   "../models/Conversation": Conversation, "../models/Message": Message, "../models/User": User, "../models/Attempt": Attempt, "../models/Exam": Exam,
   "../utils/paging": paging, "../utils/audit": { audit: async (req, e) => { audits.push(e); } },
+  "../models/MessageFile": { find: () => query([]), updateMany: async () => {} },
+  "../utils/messageNotify": { notifyStudentNewMessage: async () => false, notifyAdminsNewMessage: async () => false },
 };
 const orig = Module._load;
 Module._load = function (request, parent, ...rest) {
-  if (parent && /(messageController|adminMessageController)\.js$/.test(parent.filename) && stubs[request]) return stubs[request];
+  if (parent && /(messageController|adminMessageController|messageFileController)\.js$/.test(parent.filename) && stubs[request]) return stubs[request];
   return orig.call(this, request, parent, ...rest);
 };
 const student = require("../controllers/messageController");
@@ -128,7 +130,7 @@ test("a student sees the team as 'team': no administrator name or id", async () 
 });
 test("a student with no thread gets an empty list, not an error", async () => {
   const r = await call(student.thread, { user: as("s1"), query: {} });
-  assert.deepEqual(r.body, { unread: 0, messages: [], hasMore: false });
+  assert.deepEqual(r.body, { unread: 0, messages: [], hasMore: false, blocked: false });
 });
 test("unread: the team's message raises it, opening the thread clears it", async () => {
   await asend("s1", "Please see me on Monday");

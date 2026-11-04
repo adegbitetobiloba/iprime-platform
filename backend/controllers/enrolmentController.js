@@ -4,13 +4,14 @@ const Programme = require("../models/Programme");
 const { canTransition, generateReference, toMinorUnits } = require("../utils/enrolmentRules");
 const { missingForSubmit, buildConsents } = require("../utils/enrolmentSubmit");
 const { audit } = require("../utils/audit");
+const { canOpenEnrolmentForm, LOCKED } = require("../utils/access");
 
 const OPEN = ["draft", "submitted", "under_review", "more_info_required", "approved"];
 const EDITABLE = ["draft", "more_info_required"];
 
 const serverError = (res, err) => { console.error(err); res.status(500).json({ error: "Something went wrong. Please try again." }); };
 // Defence in depth: even if route validation changed, only these keys can ever be written by a student.
-const STUDENT_FIELDS = ["student", "guardian", "academic", "subjectsRequested", "otherSubject", "studyMode", "session", "technology", "payment", "health", "referral", "mockScore"];
+const STUDENT_FIELDS = ["student", "guardian", "academic", "department", "subjectsRequested", "otherSubject", "studyMode", "session", "technology", "payment", "health", "referral", "mockScore"];
 const pick = (obj) => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => STUDENT_FIELDS.includes(k)));
 const isPlain = (v) => Object.prototype.toString.call(v) === "[object Object]";
 
@@ -44,6 +45,7 @@ function studentView(doc) {
 // POST /api/enrolments { programmeId, ...optional fields } : start a draft
 exports.create = async (req, res) => {
   try {
+    if (!(await canOpenEnrolmentForm(req.user.id))) return res.status(403).json(LOCKED);
     const programmeId = req.body.programmeId;
     const fields = pick(req.body);
     if (!mongoose.isValidObjectId(programmeId)) return res.status(400).json({ error: "Choose a programme." });
@@ -91,6 +93,7 @@ exports.getOne = async (req, res) => {
 exports.save = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ error: "Application not found" });
+    if (!(await canOpenEnrolmentForm(req.user.id))) return res.status(403).json(LOCKED);
     const body = pick(req.body);
     if (!normalisePayment(body)) return res.status(400).json({ error: "Enter a valid amount." });
     const $set = flatten(body);
@@ -109,6 +112,7 @@ exports.save = async (req, res) => {
 exports.submit = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ error: "Application not found" });
+    if (!(await canOpenEnrolmentForm(req.user.id))) return res.status(403).json(LOCKED);
     const doc = await Enrolment.findOne({ _id: req.params.id, userId: req.user.id }).lean();
     if (!doc) return res.status(404).json({ error: "Application not found" });
     if (!canTransition(doc.status, "submitted")) return res.status(409).json({ error: "This application has already been submitted." });

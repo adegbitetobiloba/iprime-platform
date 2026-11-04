@@ -53,3 +53,22 @@
 @media (prefers-reduced-motion: reduce) { .msg-thread { scroll-behavior: auto; } }
 @media (max-width: 900px) { .msg-desktop-only { display: none; } }
 .msg-composer textarea, .msg-search input, .msg-attach select { box-sizing: border-box; max-width: 100%; }
+
+/* Attachments, assignment and blocking */
+.msg-bubble { display: grid; gap: 6px; }
+.msg-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.msg-file { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; border: 1px solid currentColor; background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.msg-file:focus-visible { outline: 3px solid var(--c-gold, #F2B33D); outline-offset: 2px; }
+.msg-file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.msg-file-size { font-size: .78rem; opacity: .85; flex: 0 0 auto; }
+.msg-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.msg-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--c-tint, #E8F0FF); color: var(--c-ink, #0B1F4B); font-size: .85rem; }
+.msg-chip button { border: 0; background: transparent; color: inherit; font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 4px; border-radius: 50%; }
+.msg-chip button:focus-visible { outline: 2px solid var(--c-blue, #1F5FE0); }
+.msg-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.msg-tools select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--c-line-strong, #7D8BAF); font: inherit; background: var(--c-surface, #fff); color: var(--c-text, #1B2640); max-width: 100%; }
+.msg-flag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .74rem; font-weight: 800; background: var(--c-gold-soft, #FDF1D6); color: var(--c-ink, #0B1F4B); }
+.msg-hit { width: 100%; text-align: left; padding: 9px 12px; border: 1px solid var(--c-line, #D5DDEC); border-radius: 12px; background: var(--c-surface, #fff); color: var(--c-text, #1B2640); font: inherit; cursor: pointer; display: grid; gap: 2px; }
+.msg-hit:hover, .msg-hit:focus-visible { border-color: var(--c-blue, #1F5FE0); outline: none; }
+.msg-hit small { color: var(--c-muted, #465273); }
+.msg-live { font-size: .78rem; color: var(--c-muted, #465273); }

@@ -14,9 +14,10 @@ const enrolmentSchema = new mongoose.Schema(
     status: { type: String, enum: ENROLMENT_STATUSES, default: "draft", index: true },
     submittedAt: Date,
 
-    student: sub({ preferredName: str(60), dob: Date, maritalStatus: str(30), stateOfOrigin: str(60), lga: str(80), address: str(300), phone: str(20), whatsapp: str(20), email: str(120) }),
+    student: sub({ preferredName: str(60), gender: { type: String, enum: ["", "male", "female"] }, dob: Date, maritalStatus: str(30), stateOfOrigin: str(60), lga: str(80), address: str(300), phone: str(20), whatsapp: str(20), email: str(120) }),
     guardian: sub({ name: str(100), relationship: str(60), occupation: str(100), phone: str(20), altPhone: str(20), email: str(120), address: str(300) }),
     academic: sub({ currentSchool: str(120), currentClass: str(60), graduationYear: Number, examinationWritten: str(120), bestGrades: str(500) }),
+    department: str(80), // Section A: the department the student is joining
     subjectsRequested: { type: [str(60)], default: [] },
     otherSubject: str(80),
     studyMode: { type: String, enum: ["", "physical", "online", "hybrid"], default: "" },

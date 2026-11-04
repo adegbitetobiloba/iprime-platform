@@ -10,6 +10,11 @@ const conversationSchema = new mongoose.Schema(
     lastSenderRole: { type: String, enum: ["student", "admin"] },
     studentUnread: { type: Number, default: 0, min: 0 }, // messages from the team the student has not opened
     adminUnread: { type: Number, default: 0, min: 0 },   // messages from the student no administrator has opened
+    // An administrator can switch a student's messaging off (for example after abuse). The student can still read the thread.
+    blocked: { at: Date, by: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, reason: { type: String, maxlength: 300 } },
+    // Optional: the administrator who looks after this student's messages.
+    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
+    assignedName: { type: String, maxlength: 80 },
   },
   { timestamps: true }
 );
