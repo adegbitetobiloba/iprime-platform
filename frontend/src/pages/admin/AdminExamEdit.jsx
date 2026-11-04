@@ -6,6 +6,7 @@ import { useFetch } from "../../useFetch.js";
 import { useSubmit } from "../../useSubmit.js";
 import ExamSettings from "../../components/ExamSettings.jsx";
 import AttemptIntegrity from "../../components/AttemptIntegrity.jsx";
+import LiveControl from "../../components/LiveControl.jsx";
 import Field from "../../components/Field.jsx";
 import FormStatus from "../../components/FormStatus.jsx";
 
@@ -245,6 +246,7 @@ export default function AdminExamEdit() {
         )}
       </div>
 
+      {published && <LiveControl examId={id} />}
       <AttemptIntegrity examId={id} />
 
       {!published && attemptRows.length === 0 && (

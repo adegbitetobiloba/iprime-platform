@@ -5,9 +5,12 @@ function matches(d, f) {
   return Object.entries(f).every(([k, v]) => {
     if (k === "$or") return v.some((sub) => matches(d, sub));
     if (k === "_id" && v && v.$nin) return !v.$nin.includes(d._id);
-    if (v && typeof v === "object" && !(v instanceof Date)) {
+    if (v === null) return d[k] == null; // matches a missing field too, like MongoDB
+    if (v instanceof Date) return d[k] != null && new Date(d[k]).getTime() === v.getTime();
+    if (v && typeof v === "object") {
       if ("$exists" in v) return (d[k] !== undefined) === v.$exists;
-      if ("$lte" in v) return d[k] !== undefined && new Date(d[k]) <= v.$lte;
+      if ("$lte" in v) return d[k] != null && new Date(d[k]) <= v.$lte;
+      if ("$gt" in v) return d[k] != null && new Date(d[k]) > v.$gt;
     }
     return d[k] === v;
   });

@@ -29,7 +29,7 @@ function makeEventService({ Attempt, AttemptEvent, finalise }) {
       let counted = 0;
       let n = 0;
       for (const evt of events) {
-        const c = phase === "open" ? classify(evt, policy) : false; // after the deadline events are only logged, never counted
+        const c = phase === "open" && !attempt.pausedAt ? classify(evt, policy) : false; // after the deadline, or while paused, events are only logged, never counted
         if (!c && stored + n >= MAX_EVENTS_PER_ATTEMPT) continue;
         try {
           const r = await AttemptEvent.updateOne(
