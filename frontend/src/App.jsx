@@ -24,6 +24,7 @@ import ExamIntro from "./pages/ExamIntro.jsx";
 import ExamRunner from "./pages/ExamRunner.jsx";
 import Results from "./pages/Results.jsx";
 import ResultDetail from "./pages/ResultDetail.jsx";
+import Enrolment from "./pages/Enrolment.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import AdminHome from "./pages/admin/AdminHome.jsx";
 import AdminExams from "./pages/admin/AdminExams.jsx";
@@ -36,6 +37,9 @@ import AdminLibraryStudy from "./pages/admin/AdminLibraryStudy.jsx";
 import AdminImport from "./pages/admin/AdminImport.jsx";
 import AdminBank from "./pages/admin/AdminBank.jsx";
 import AdminApplications from "./pages/admin/AdminApplications.jsx";
+import AdminPeople from "./pages/admin/AdminPeople.jsx";
+import AdminCheckin from "./pages/admin/AdminCheckin.jsx";
+import AdminEnrolmentSettings from "./pages/admin/AdminEnrolmentSettings.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import PendingApproval from "./pages/PendingApproval.jsx";
@@ -155,6 +159,7 @@ export default function App() {
           <Route path="/results" element={<Protected><Results /></Protected>} />
           <Route path="/results/:id" element={<Protected><ResultDetail /></Protected>} />
           <Route path="/messages" element={<Protected><Messages /></Protected>} />
+          <Route path="/enrolment" element={<Protected><Enrolment /></Protected>} />
           <Route path="/library" element={<Protected><Library /></Protected>} />
           <Route path="/library/utme" element={<Protected><LibraryUtme /></Protected>} />
           <Route path="/library/materials" element={<Protected><LibraryMaterials /></Protected>} />
@@ -176,6 +181,9 @@ export default function App() {
             <Route path="bank" element={<AdminBank />} />
             <Route path="programmes" element={<AdminProgrammes />} />
             <Route path="students" element={<AdminStudents />} />
+            <Route path="people" element={<AdminPeople />} />
+            <Route path="checkin" element={<AdminCheckin />} />
+            <Route path="enrolment-settings" element={<AdminEnrolmentSettings />} />
             <Route path="messages" element={<AdminMessages />} />
             <Route path="library" element={<AdminLibrary />} />
             <Route path="library/courses/:id" element={<AdminLibraryCourse />} />
