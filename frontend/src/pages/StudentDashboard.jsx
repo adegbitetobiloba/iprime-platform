@@ -45,6 +45,7 @@ const NAV = [
   { to: "/results", icon: "clock", label: "Examination history", hint: "Every result you have saved" },
   { to: "/performance", icon: "chart", label: "Performance", hint: "Scores, topics and progress" },
   { to: "/library", icon: "book", label: "Library", hint: "Study notes, videos and PDFs" },
+  { to: "/enrolment", icon: "check", label: "Enrolment", hint: "Payment status and your student registration" },
   { to: "/account", icon: "user", label: "My profile", hint: "Update your details" },
 ];
 
@@ -126,7 +127,7 @@ function ContinueLearning({ data }) {
                   <li key={m.id} className="sd-row">
                     <div>
                       <strong>{m.title}</strong>
-                      <span className="muted">{[TYPE_LABEL[m.contentType] || "Lesson", m.lastPage ? `Page ${m.lastPage} of ${m.pageCount}` : null, m.positionSec ? `Resume at ${clock(m.positionSec)}` : null, m.completed ? "Completed" : null].filter(Boolean).join(" · ")}</span>
+                      <span className="muted">{[TYPE_LABEL[m.contentType] || "Lesson", m.lastPage ? `Page ${m.lastPage} of ${m.pageCount}` : null, m.positionSec ? `Resume at ${clock(m.positionSec)}` : null].filter(Boolean).join(" · ")}</span>
                     </div>
                     <Link className="btn btn-secondary btn-sm" to={`/library/lessons/${m.id}`}>{m.completed ? "Review" : "Continue"}</Link>
                   </li>
