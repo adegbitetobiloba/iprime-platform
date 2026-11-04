@@ -1,8 +1,8 @@
-// Administrator approval for new student accounts.
+// Administrator approval for new student accounts (and teacher applications).
 //
 // SAFETY RULE: an account with NO approval value (every account created before this feature existed) counts as approved,
 // so nobody who already had an account is locked out and no database migration is needed.
-const ROLES_NEEDING_APPROVAL = ["student"]; // parents, alumni and staff are handled by their own rules
+const ROLES_NEEDING_APPROVAL = ["student"]; // parents, alumni and staff are handled by their own rules (teacher applications set "pending" themselves)
 
 // The owner can switch the whole feature off with REQUIRE_STUDENT_APPROVAL=false (it is on by default).
 const approvalEnabled = () => String(process.env.REQUIRE_STUDENT_APPROVAL ?? "true").toLowerCase() !== "false";
@@ -17,6 +17,9 @@ function approvalBlock(user) {
   if (isApproved(user)) return null;
   if (user.approval === "rejected") {
     return { status: "rejected", code: "ACCOUNT_REJECTED", error: "Your registration was not approved. Please contact the institution if you think this is a mistake." };
+  }
+  if (user.approval === "suspended") {
+    return { status: "suspended", code: "ACCOUNT_SUSPENDED", error: "Your account has been suspended. Please contact the institution." };
   }
   return { status: "pending", code: "PENDING_APPROVAL", error: "Your account is waiting for approval by an administrator. We will email you as soon as it is approved." };
 }

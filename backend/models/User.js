@@ -22,13 +22,23 @@ const userSchema = new mongoose.Schema({
     note: { type: String, trim: true, maxlength: 300 },
     reviewedAt: { type: Date },
   },
+  // Teachers only. What the applicant says about themselves; an administrator reviews it before approving.
+  // Arrays default to undefined so students and parents do not get an empty teacherProfile in API responses.
+  teacherProfile: {
+    subjects: { type: [{ type: String, trim: true, maxlength: 60 }], default: undefined },
+    qualification: { type: String, trim: true, maxlength: 200 },
+    bio: { type: String, trim: true, maxlength: 1000 },
+    yearsExperience: { type: Number, min: 0, max: 60 },
+    appliedAt: { type: Date },
+  },
   // Public student identifier, e.g. PET-7K4M9Q2X. Assigned by the server only; never edited by users.
   studentId: { type: String, unique: true, sparse: true },
   password: { type: String, required: unlessGoogle },
   googleId: { type: String, unique: true, sparse: true }, // Google's stable id for the account (never shown to users)
   isVerified: { type: Boolean, default: false },
-  // Administrator approval (new students start as "pending"). Accounts created before this existed have no value and count as approved.
-  approval: { type: String, enum: ["pending", "approved", "rejected"] },
+  // Administrator approval (new students and teacher applicants start as "pending"). Accounts created before this existed have no value and count as approved
+  // (teacher routes are stricter: they require an explicit "approved"). "suspended" is a temporary block an administrator can lift.
+  approval: { type: String, enum: ["pending", "approved", "rejected", "suspended"] },
   approvalReview: { by: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, at: Date, note: { type: String, trim: true, maxlength: 300 } },
   createdAt: { type: Date, default: Date.now },
 });

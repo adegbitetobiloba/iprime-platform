@@ -24,12 +24,19 @@ const materialSchema = new mongoose.Schema(
     sourceNote: { type: String, trim: true, maxlength: 300 }, // shown to students, e.g. "Source: JAMB UTME syllabus."
     status: { type: String, enum: STATUSES, default: "draft", index: true },
     featured: { type: Boolean, default: false },
+    // Teacher submissions: a teacher can only create drafts. They ask for review here; an administrator publishes (or returns it with a note).
+    review: {
+      requestedAt: { type: Date },
+      returnedAt: { type: Date },
+      note: { type: String, trim: true, maxlength: 300 },
+    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
 );
 materialSchema.index({ status: 1, kind: 1, updatedAt: -1 });
+materialSchema.index({ createdBy: 1, updatedAt: -1 });
 
 module.exports = mongoose.model("LibraryMaterial", materialSchema);
 module.exports.KINDS = KINDS;

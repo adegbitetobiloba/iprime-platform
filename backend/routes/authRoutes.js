@@ -5,6 +5,7 @@ const router = express.Router();
 const { register, verifyOtp, resendOtp, login, me, updateMe, logout, adminStatus, requestAlumniVerification } = require("../controllers/authController");
 const { schemas, validate } = require("../validations/authValidation");
 const protect = require("../middleware/authMiddleware");
+const rejectTeacherOnPublicLogin = require("../middleware/rejectTeacherOnPublicLogin");
 const google = require("../controllers/googleController");
 
 // Slows down password / OTP guessing from a single IP.
@@ -19,7 +20,8 @@ const limiter = rateLimit({
 router.post("/register", limiter, validate(schemas.register), register);
 router.post("/verify-otp", limiter, validate(schemas.verifyOtp), verifyOtp);
 router.post("/resend-otp", limiter, validate(schemas.resendOtp), resendOtp);
-router.post("/login", limiter, validate(schemas.login), login);
+// Teachers sign in only at /teacher/login (POST /api/teacher/auth/login); the public form answers them as if the details were wrong.
+router.post("/login", limiter, validate(schemas.login), rejectTeacherOnPublicLogin, login);
 // Password and code guesses get a tighter limit than the rest.
 const strictLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, limit: 12, standardHeaders: true, legacyHeaders: false,
