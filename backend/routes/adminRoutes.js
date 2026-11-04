@@ -21,6 +21,7 @@ router.use("/people", require("./adminPeopleRoutes"));
 router.use("/checkin", require("./adminCheckinRoutes"));
 router.use("/settings", require("./adminSettingsRoutes"));
 router.use("/integrity", require("./adminIntegrityRoutes")); // exam activity log and integrity report
+router.use("/teachers", require("./adminTeacherRoutes"));    // teacher applications, approval, suspension, student assignment, library review
 router.get("/overview", users.overview);
 router.get("/students", users.listStudents);
 router.get("/students/:id", users.getStudent);
