@@ -7,7 +7,7 @@ import "../../messages.css";
 // The sidebar groups the admin area by job. Only pages that exist are listed: no placeholder links.
 const NAV = [
   { heading: null, items: [{ to: "/admin", label: "Overview", end: true }] },
-  { heading: "Admissions", items: [{ to: "/admin/applications", label: "Applications", badge: "applications" }, { to: "/admin/students", label: "Students and accounts" }] },
+  { heading: "Admissions", items: [{ to: "/admin/applications", label: "Applications", badge: "applications" }, { to: "/admin/students", label: "Students and accounts" }, { to: "/admin/people", label: "People and records" }, { to: "/admin/checkin", label: "Check-in" }, { to: "/admin/enrolment-settings", label: "Enrolment notice" }] },
   { heading: "Academics", items: [{ to: "/admin/exams", label: "Examinations" }, { to: "/admin/bank", label: "Question bank" }, { to: "/admin/import", label: "Import questions" }, { to: "/admin/analytics", label: "Analytics" }, { to: "/admin/programmes", label: "Programmes" }, { to: "/admin/library", label: "Library" }] },
   { heading: "Communication", items: [{ to: "/admin/messages", label: "Messages", badge: "messages" }] },
 ];
