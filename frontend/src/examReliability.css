@@ -19,3 +19,9 @@ fieldset.options:disabled .option { cursor: not-allowed; }
 html.exam-away .protect-text * { visibility: hidden; }
 html.exam-away .protect-text::after { content: "Return to the exam window to see the question."; display: block; padding: 2.5rem 1rem; text-align: center; font-weight: 600; visibility: visible; }
 @media print { .runner { display: none !important; } body::before { content: "Printing is not allowed during an examination."; display: block; padding: 2rem; } }
+
+/* ExamControl live panel (admin) */
+.lc-pill { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .75rem; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
+.lc-pill[data-s="online"] { color: #1b7a43; } .lc-pill[data-s="quiet"] { color: #8a6500; } .lc-pill[data-s="disconnected"] { color: #b42318; } .lc-pill[data-s="paused"] { color: #3b5bdb; }
+.lc-bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .5rem 0; }
+.lc-time { font-variant-numeric: tabular-nums; }

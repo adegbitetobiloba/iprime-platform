@@ -25,6 +25,7 @@ const limiter = (limit, message) => rateLimit({
 const saveLimiter = limiter(240, "You are saving too quickly. Please wait a moment.");
 const syncLimiter = limiter(30, "Too many submit attempts. Please wait a moment and try again.");
 const eventLimiter = limiter(60, "Too many reports. Please wait a moment.");
+const beatLimiter = limiter(30, "Too many check-ins. Please wait a moment.");
 
 router.get("/exams", c.listExams);
 router.get("/exams/:id", c.getExam);
@@ -32,6 +33,7 @@ router.post("/exams/:id/start", c.startAttempt);
 router.get("/attempts", c.history);
 router.get("/attempts/:id", c.getAttempt);
 router.put("/attempts/:id/answers", saveLimiter, validate(cbt.saveAnswer), c.saveAnswer);
+router.post("/attempts/:id/heartbeat", beatLimiter, c.heartbeat);
 router.post("/attempts/:id/events", eventLimiter, validate(cbt.attemptEvents), c.recordEvents);
 router.post("/attempts/:id/sync", syncLimiter, validate(cbt.syncAnswers), c.syncAttempt);
 router.post("/attempts/:id/submit", c.submitAttempt);

@@ -5,6 +5,7 @@ import { useAuth } from "../auth.jsx";
 import Calculator from "../calculator/Calculator.jsx";
 import SafeHtml from "../components/SafeHtml.jsx";
 import useExamGuard from "../lib/exam/useExamGuard.js";
+import useExamControl from "../lib/exam/useExamControl.js";
 import "../examReliability.css";
 
 const fmt = (s) => {
@@ -49,10 +50,12 @@ export default function ExamRunner() {
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [paused, setPaused] = useState(false);   // an administrator paused the exam: the clock is stopped and answers are held
   const [online, setOnline] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine !== false));
 
   const offsetRef = useRef(0);        // server clock minus device clock
   const deadlineRef = useRef(0);
+  const pausedAtRef = useRef(null);   // server time the exam was paused at, or null
   const inflight = useRef({});
   const pendingRef = useRef({});      // questionId -> { choice?, flagged?, at } not yet confirmed by the server (mirrors localStorage)
   const kickedRef = useRef(false);
@@ -77,6 +80,8 @@ export default function ExamRunner() {
         if (d.submitted) { writePending(id, {}); navRef.current(`/results/${id}`, { replace: true }); return; }
         offsetRef.current = new Date(d.attempt.serverNow).getTime() - Date.now();
         deadlineRef.current = new Date(d.attempt.deadline).getTime();
+        pausedAtRef.current = d.attempt.paused && d.attempt.pausedAt ? new Date(d.attempt.pausedAt).getTime() : null;
+        setPaused(Boolean(d.attempt.paused));
 
         const known = new Set(d.questions.map((x) => x.id));
         const stored = readPending(id);
@@ -139,6 +144,7 @@ export default function ExamRunner() {
 
   // Re-sends the current local value of every question whose last save failed.
   const retryFailed = useCallback(async () => {
+    if (pausedAtRef.current != null) return false; // paused: answers are held until it resumes
     if (deadlineRef.current && serverNow() >= deadlineRef.current) return false; // time is up: handled by submit
     const failed = Object.keys(saveStateRef.current).filter((q) => saveStateRef.current[q] === "failed");
     let ok = true;
@@ -190,9 +196,11 @@ export default function ExamRunner() {
   useEffect(() => {
     if (!data) return undefined;
     const tick = () => {
-      const rem = Math.max(0, Math.ceil((deadlineRef.current - serverNow()) / 1000));
+      // While paused the clock is frozen at the moment of the pause.
+      const ref = pausedAtRef.current != null ? pausedAtRef.current : serverNow();
+      const rem = Math.max(0, Math.ceil((deadlineRef.current - ref) / 1000));
       setRemaining(rem);
-      if (rem === 0 && !submittingRef.current && Date.now() >= nextTryRef.current) submitRef.current(true);
+      if (pausedAtRef.current == null && rem === 0 && !submittingRef.current && Date.now() >= nextTryRef.current) submitRef.current(true);
     };
     tick();
     const t = setInterval(tick, 1000);
@@ -239,10 +247,22 @@ export default function ExamRunner() {
   const guard = useExamGuard({
     id, token,
     policy: data ? data.attempt.guard : null,
-    active: Boolean(data) && remaining !== 0,
+    active: Boolean(data) && remaining !== 0 && !paused,
     initialViolations: data ? data.attempt.violations || 0 : 0,
     beforeFlush: retryFailed,
     now: () => Date.now() + offsetRef.current,
+  });
+  // ExamControl: check in with the server, and receive an administrator's pause, extra time or request to submit.
+  useExamControl({
+    id, token, active: Boolean(data),
+    onState: (r) => {
+      if (r.serverNow) offsetRef.current = new Date(r.serverNow).getTime() - Date.now();
+      if (r.closed) { navRef.current(`/results/${id}`, { replace: true }); return; }
+      deadlineRef.current = new Date(r.deadline).getTime();
+      pausedAtRef.current = r.paused && r.pausedAt ? new Date(r.pausedAt).getTime() : null;
+      setPaused(Boolean(r.paused));
+      if (r.command === "submit" && !submittingRef.current) submitRef.current(true); // answers still on this device are sent with it
+    },
   });
   const warnRef = useRef(null);
   useEffect(() => { if (guard.closed) clearPending(); }, [guard.closed, clearPending]);
@@ -280,6 +300,7 @@ export default function ExamRunner() {
   const unsavedCount = Object.keys(saveState).length;
   const low = remaining !== null && remaining > 0 && remaining <= 300;
   const locked = remaining === 0; // time is up: answers are frozen, only the hand-in is left
+  const frozen = locked || paused; // paused by an administrator: nothing can be changed until it resumes
   const st = saveState[q.id];
   const graceMs = new Date(data.attempt.closeAt || data.attempt.deadline).getTime() - new Date(data.attempt.deadline).getTime();
   const reconnectBy = graceMs > 0
@@ -294,12 +315,12 @@ export default function ExamRunner() {
         : { state: "saved", text: "All answers saved" };
 
   const choose = (qid, key) => {
-    if (locked) return;
+    if (frozen) return;
     setAnswers((a) => { const n = { ...a }; if (key === null) delete n[qid]; else n[qid] = key; return n; });
     save(qid, { choice: key });
   };
   const toggleFlag = (qid) => {
-    if (locked) return;
+    if (frozen) return;
     const on = !flagged.includes(qid);
     setFlagged((f) => (on ? [...f, qid] : f.filter((x) => x !== qid)));
     save(qid, { flagged: on });
@@ -323,7 +344,7 @@ export default function ExamRunner() {
         )}
         <div className="runner-actions">
           <Calculator />
-          {!locked && <button type="button" className="btn btn-primary btn-sm" onClick={() => setConfirming(true)}>Submit</button>}
+          {!frozen && <button type="button" className="btn btn-primary btn-sm" onClick={() => setConfirming(true)}>Submit</button>}
         </div>
       </header>
 
@@ -363,7 +384,7 @@ export default function ExamRunner() {
           </p>
           <SafeHtml className="q-text" html={q.textHtml} text={q.text} />
 
-          <fieldset className="options" disabled={locked}>
+          <fieldset className="options" disabled={frozen}>
             <legend className="sr-only">Choose your answer</legend>
             {q.options.map((o) => (
               <label key={o.key} className={`option${answers[q.id] === o.key ? " is-selected" : ""}`}>
@@ -376,9 +397,9 @@ export default function ExamRunner() {
 
           <div className="q-tools">
             <label className="flag-toggle">
-              <input type="checkbox" checked={flagged.includes(q.id)} onChange={() => toggleFlag(q.id)} disabled={locked} /> Mark for review
+              <input type="checkbox" checked={flagged.includes(q.id)} onChange={() => toggleFlag(q.id)} disabled={frozen} /> Mark for review
             </label>
-            <button type="button" className="btn btn-quiet btn-sm" onClick={() => choose(q.id, null)} disabled={locked || !answers[q.id]}>Clear answer</button>
+            <button type="button" className="btn btn-quiet btn-sm" onClick={() => choose(q.id, null)} disabled={frozen || !answers[q.id]}>Clear answer</button>
             <span className="save-status" role="status">
               {st === "pending" ? "Saving..." : st === "failed" ? "Not saved" : answers[q.id] ? "Saved" : ""}
             </span>
@@ -389,7 +410,7 @@ export default function ExamRunner() {
             {idx < total - 1 ? (
               <button type="button" className="btn btn-primary" onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}>Next</button>
             ) : (
-              !locked && <button type="button" className="btn btn-primary" onClick={() => setConfirming(true)}>Finish and submit</button>
+              !frozen && <button type="button" className="btn btn-primary" onClick={() => setConfirming(true)}>Finish and submit</button>
             )}
           </div>
         </section>
@@ -424,7 +445,16 @@ export default function ExamRunner() {
         </aside>
       </div>
 
-      {guard.warning && !locked && (
+      {paused && !locked && (
+        <div className="dialog-overlay">
+          <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="pause-title">
+            <h2 id="pause-title">Examination paused</h2>
+            <p>Your invigilator has paused the examination. Your time is stopped and your answers are safe. Please wait: it will carry on by itself when it resumes. You do not need to do anything.</p>
+          </div>
+        </div>
+      )}
+
+      {guard.warning && !locked && !paused && (
         <div className="dialog-overlay">
           <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="guard-title" aria-describedby="guard-text">
             <h2 id="guard-title">Warning {guard.warning.violations} of {guard.warning.max}</h2>

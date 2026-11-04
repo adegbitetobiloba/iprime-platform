@@ -9,6 +9,7 @@ const { makeFinaliser } = require("../utils/attemptLifecycle");
 const { graceSecondsFromEnv, phaseOf, makeSyncer } = require("../utils/lateSync");
 const { normalizePolicy } = require("../utils/guard");
 const { makeLogger, makeEventService } = require("../utils/attemptEvents");
+const { makeCache } = require("../utils/examCache");
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const serverError = (res, err) => {
@@ -26,8 +27,17 @@ const logger = makeLogger(AttemptEvent);
 // Scores and closes an attempt. Safe to call twice, and safe against a save arriving mid-way: see utils/attemptLifecycle.js.
 // Every close is written to the activity log, with the reason (student, time_up, violation_limit).
 const finalise = makeFinaliser(Attempt, {
-  onClosed: (a, info) => logger.log(a, info.reason === "violation_limit" ? "auto_submitted_violations" : info.auto ? "auto_submitted_time" : "submitted", { reason: info.reason }),
+  onClosed: (a, info) => logger.log(
+    a,
+    info.reason === "violation_limit" ? "auto_submitted_violations"
+      : info.reason === "admin_forced" || info.reason === "admin_terminated" ? "closed_by_admin"
+        : info.auto ? "auto_submitted_time" : "submitted",
+    { reason: info.reason }
+  ),
 });
+// What every answer save needs to know about the exam: just the question ids and option letters, kept for a minute.
+const examKeys = makeCache(60 * 1000);
+const loadKeys = (examId) => () => Exam.findById(examId).select("questions._id questions.options.key").lean();
 // Violation counting and the client activity reports (ExamGuard).
 const eventService = makeEventService({ Attempt, AttemptEvent, finalise });
 // Applies what an offline student's device still holds (within the grace period), then closes: see utils/lateSync.js.
@@ -64,6 +74,8 @@ const runningPayload = (attempt, exam) => ({
     timeUp: phaseOf(attempt) !== "open",           // true when the student is inside the grace period (reopened after the deadline)
     answers: toPlain(attempt.answers),
     flagged: attempt.flagged || [],
+    paused: Boolean(attempt.pausedAt), // an administrator has paused the exam: the clock is stopped
+    pausedAt: attempt.pausedAt || null,
     guard: normalizePolicy(attempt.guard || exam.guard), // what the exam screen should monitor and warn about
     violations: attempt.violations || 0,
     serverNow: new Date().toISOString(),
@@ -153,11 +165,13 @@ exports.startAttempt = async (req, res) => {
     const graceSeconds = graceSecondsFromEnv(); // copied onto the attempt, so changing it later never alters a running exam
     try {
       // The switches are copied onto the attempt now, so editing the exam later can never reshuffle a student mid-exam.
+      const plan = await pool.planAttempt(Attempt, exam, req.user.id);
       const created = await Attempt.create({
         examId: exam._id, userId: req.user.id, startedAt, deadline,
         graceSeconds, closeAt: new Date(new Date(deadline).getTime() + graceSeconds * 1000),
         guard: normalizePolicy(exam.guard), // fixed now: editing the exam later never changes a running attempt
-        ...(await pool.planAttempt(Attempt, exam, req.user.id)),
+        totalQuestions: Array.isArray(plan.questionIds) && plan.questionIds.length ? plan.questionIds.length : exam.questions.length,
+        ...plan,
       });
       logger.log(created, "exam_started", { durationMinutes: exam.durationMinutes });
       return res.status(201).json(runningPayload(created.toObject(), exam));
@@ -189,18 +203,24 @@ exports.saveAnswer = async (req, res) => {
   try {
     const attempt = await ownAttempt(req);
     if (!attempt) return res.status(404).json({ error: "Attempt not found" });
-    const exam = await Exam.findById(attempt.examId).lean();
-    if (!exam) return res.status(404).json({ error: "Attempt not found" });
 
     if (attempt.status !== "in_progress") return res.status(409).json({ error: "This attempt has already been submitted.", code: "SUBMITTED" });
+    // An administrator paused the exam: the clock is stopped and answers are held until it resumes.
+    if (attempt.pausedAt) return res.status(409).json({ error: "The examination is paused. Your answers will be kept.", code: "PAUSED" });
     const phase = phaseOf(attempt);
     if (phase === "ended") {
-      await finalise(attempt, exam, true);
+      const full = await Exam.findById(attempt.examId).lean(); // closing needs the whole exam; saving does not
+      if (!full) return res.status(404).json({ error: "Attempt not found" });
+      await finalise(attempt, full, true);
       return res.status(409).json({ error: "Time is up. Your attempt was submitted.", code: "EXPIRED" });
     }
     // After the deadline but inside the grace period: a plain save is refused (it could not be told apart from a late
     // answer). The exam screen sends everything it holds through /sync instead, where timestamps are checked.
     if (phase === "grace") return res.status(409).json({ error: "Time is up. Your answers will be sent when you submit.", code: "TIME_UP" });
+
+    // Only the question ids and option letters are needed to check an answer, so that is all that is loaded (and it is kept for a minute).
+    const exam = await examKeys.get(attempt.examId, loadKeys(attempt.examId));
+    if (!exam) return res.status(404).json({ error: "Attempt not found" });
 
     const { questionId, choice, flagged } = req.body;
     const question = pool.servedQuestions(exam, attempt).find((q) => String(q._id) === questionId);
@@ -245,6 +265,29 @@ exports.syncAttempt = async (req, res) => {
       rejected: r.rejected.length,
       graceEnded: r.outcome === "grace_ended",
       alreadySubmitted: r.outcome === "already_submitted",
+    });
+  } catch (err) { serverError(res, err); }
+};
+
+// POST /api/attempts/:id/heartbeat
+// The exam screen checks in about every 20 seconds. This tells administrators the student is connected, and it is how an
+// administrator's pause, extra time or request to submit reaches the student's screen (no paid real-time service needed).
+exports.heartbeat = async (req, res) => {
+  try {
+    const attempt = await ownAttempt(req);
+    if (!attempt) return res.status(404).json({ error: "Attempt not found" });
+    const now = new Date();
+    if (attempt.status === "in_progress" && phaseOf(attempt, now) === "ended") {
+      const exam = await Exam.findById(attempt.examId).lean();
+      if (exam) { const done = await finalise(attempt, exam, true); return res.json({ closed: true, submitReason: done && done.submitReason, serverNow: now.toISOString() }); }
+    }
+    if (attempt.status !== "in_progress") return res.json({ closed: true, submitReason: attempt.submitReason || null, serverNow: now.toISOString() });
+    await Attempt.updateOne({ _id: attempt._id, status: "in_progress" }, { $set: { lastSeenAt: now } });
+    res.json({
+      closed: false, serverNow: now.toISOString(),
+      deadline: attempt.deadline, closeAt: attempt.closeAt || attempt.deadline,
+      paused: Boolean(attempt.pausedAt), pausedAt: attempt.pausedAt || null,
+      command: attempt.adminCommand && attempt.adminCommand.type ? attempt.adminCommand.type : null,
     });
   } catch (err) { serverError(res, err); }
 };

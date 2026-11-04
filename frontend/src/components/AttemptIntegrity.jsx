@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useFetch, fmtDate } from "../useFetch.js";
 
-const REASON = { student: "Submitted", time_up: "Submitted (time up)", violation_limit: "Submitted automatically (warning limit reached)" };
+const REASON = { student: "Submitted", time_up: "Submitted (time up)", violation_limit: "Submitted automatically (warning limit reached)", admin_forced: "Submitted by an administrator", admin_terminated: "Ended by an administrator" };
 const TYPE = {
   exam_started: "Examination started", exam_resumed: "Resumed", submitted: "Submitted by the student",
   auto_submitted_time: "Submitted automatically (time up)", auto_submitted_violations: "Submitted automatically (warning limit)",
@@ -9,6 +9,8 @@ const TYPE = {
   fullscreen_enter: "Entered fullscreen", fullscreen_unsupported: "Fullscreen not supported by this browser", offline: "Internet connection lost",
   online: "Internet connection back", copy_blocked: "Tried to copy", paste_blocked: "Tried to paste", contextmenu_blocked: "Tried the right-click menu",
   select_blocked: "Tried to select text", print_blocked: "Tried to print", shortcut_blocked: "Tried a copy, select-all or print shortcut",
+  admin_paused: "Paused by an administrator", admin_resumed: "Resumed by an administrator", time_extended: "Time added by an administrator",
+  admin_force_requested: "Administrator asked the screen to submit", admin_force_submitted: "Submitted by an administrator", admin_terminated: "Ended by an administrator", closed_by_admin: "Attempt closed by an administrator",
   edge_swipe: "Swiped down from the top edge (possible notification panel)",
 };
 const secs = (ms) => (ms == null ? "" : ms >= 60000 ? `${Math.floor(ms / 60000)} min ${Math.round((ms % 60000) / 1000)} s` : `${Math.round(ms / 1000)} s`);

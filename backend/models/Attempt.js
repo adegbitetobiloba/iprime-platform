@@ -26,6 +26,15 @@ const attemptSchema = new mongoose.Schema(
     submitReason: { type: String, maxlength: 40 }, // "student", "time_up", "violation_limit", ...
     saveCount: { type: Number, default: 0 },       // how many answer saves the server accepted
     lastSavedAt: { type: Date },
+    // ExamControl: live administration. lastSeenAt is the last time the student's screen checked in (every ~20 s).
+    // While pausedAt is set the clock is frozen; resuming gives back exactly the time that was left.
+    lastSeenAt: { type: Date },
+    pausedAt: { type: Date, default: null },
+    pauseCount: { type: Number, default: 0 },
+    pausedTotalSeconds: { type: Number, default: 0 },
+    extraSeconds: { type: Number, default: 0 },    // minutes an administrator added, in seconds
+    adminCommand: { type: mongoose.Schema.Types.Mixed }, // e.g. { type: "submit", at, by, reason }: delivered to the student's screen at its next check-in
+    totalQuestions: { type: Number },              // how many questions this student was given
     seed: { type: String }, 
     questionIds: { type: [String], default: undefined },
     shuffleQuestions: { type: Boolean, default: false }, 

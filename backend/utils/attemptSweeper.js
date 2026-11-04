@@ -15,6 +15,7 @@ function makeSweeper({ Attempt, Exam, finalise, log = console }) {
     try {
       const due = await Attempt.find({
         status: "in_progress",
+        pausedAt: null, // a paused exam keeps its time; it is never closed by the sweeper
         _id: { $nin: [...bad] },
         $or: [{ closeAt: { $lte: now } }, { closeAt: { $exists: false }, deadline: { $lte: now } }],
       })

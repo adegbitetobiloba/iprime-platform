@@ -25,6 +25,7 @@ const deadlineMs = (a) => ms(a.deadline);
 const closeAtMs = (a) => ms(a.closeAt || a.deadline); // attempts created before this existed have no grace
 
 function phaseOf(attempt, now = Date.now()) {
+  if (attempt.pausedAt) return "open"; // an administrator paused the exam: the clock is stopped
   const t = ms(now);
   if (t < deadlineMs(attempt)) return "open";
   if (t < closeAtMs(attempt)) return "grace";
@@ -96,7 +97,9 @@ function makeSyncer({ Attempt, finalise }) {
       }
     }
     const fresh = await Attempt.findById(attempt._id).lean();
-    const done = await finalise(fresh, exam, t >= deadlineMs(attempt));
+    // If an administrator asked this student's screen to submit, record that as the reason.
+    const reason = fresh && fresh.adminCommand && fresh.adminCommand.type === "submit" ? "admin_forced" : undefined;
+    const done = await finalise(fresh, exam, t >= deadlineMs(attempt), reason);
     return { outcome: plan.phase === "ended" ? "grace_ended" : "closed", attempt: done, accepted: plan.accepted, rejected: plan.rejected };
   };
 }
