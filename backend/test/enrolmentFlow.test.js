@@ -3,7 +3,7 @@ const { test, beforeEach } = require("node:test");
 const assert = require("node:assert/strict");
 const Module = require("module");
 
-let docs, seq, audits, published;
+let docs, seq, audits, published, formOpen = true;
 const same = (a, b) => String(a) === String(b);
 const match = (d, q) => Object.entries(q).every(([k, v]) => {
   if (v && typeof v === "object" && "$in" in v) return v.$in.includes(d[k]);
@@ -41,6 +41,7 @@ const stubs = {
   "../models/User": { find: () => query([{ _id: "u1", firstName: "Sam", lastName: "S", studentId: "PET-1" }]), findById: () => query({ _id: "u1", firstName: "Sam", lastName: "S", email: "s@x.com" }) },
   "../utils/audit": { audit: async (req, e) => { audits.push(e.event); } },
   "../utils/paging": { parsePaging: () => ({ page: 1, limit: 20, skip: 0 }) },
+  "../utils/access": { canOpenEnrolmentForm: async () => formOpen, LOCKED: { error: "Your payment has not been confirmed yet.", code: "ENROLMENT_LOCKED" } },
 };
 const orig = Module._load;
 Module._load = function (request, parent, ...rest) {
@@ -54,7 +55,7 @@ const res = () => ({ statusCode: 200, body: null, status(n) { this.statusCode = 
 const call = async (fn, req) => { const r = res(); await fn(req, r); return r; };
 const me = (over = {}) => ({ id: "u1", role: "student", ...over });
 const staff = { id: "a1", role: "admin" };
-beforeEach(() => { docs = []; seq = 0; audits = []; published = ["p1"]; });
+beforeEach(() => { docs = []; seq = 0; audits = []; published = ["p1"]; formOpen = true; });
 
 const adult = { student: { dob: new Date("2000-01-01"), phone: "08012345678" }, studyMode: "online", session: "evening", subjectsRequested: ["Mathematics"] };
 const submitReq = (id, ack = { studentCommitment: true }) => ({ params: { id }, user: me(), body: { acknowledgements: ack } });
@@ -267,3 +268,27 @@ async function submitted_other() {
   const c = await call(student.create, { user: me({ id: "u7" }), body });
   await call(student.submit, { params: { id: c.body.enrolment.id }, user: me({ id: "u7" }), body: { acknowledgements: { studentCommitment: true } } });
 }
+
+// ---------- the payment gate ----------
+test("while the office has not unlocked the form, a student cannot start, save or submit an application", async () => {
+  const id = await draft();                 // started while it was open
+  formOpen = false;
+  const made = await call(student.create, { user: me({ id: "u5" }), body: { programmeId: "p1" } });
+  assert.equal(made.statusCode, 403); assert.equal(made.body.code, "ENROLMENT_LOCKED");
+  assert.equal(docs.filter((d) => d.userId === "u5").length, 0);
+  assert.equal((await call(student.save, { params: { id }, user: me(), body: { studyMode: "physical" } })).statusCode, 403);
+  assert.equal(docs[0].studyMode, "online");  // unchanged
+  const sub = await call(student.submit, submitReq(id));
+  assert.equal(sub.statusCode, 403); assert.equal(docs[0].status, "draft");
+});
+test("a locked student can still read their own applications", async () => {
+  const id = await draft();
+  formOpen = false;
+  assert.equal((await call(student.getOne, { params: { id }, user: me() })).statusCode, 200);
+  assert.equal((await call(student.mine, { user: me() })).body.enrolments.length, 1);
+});
+test("gender and department from the paper form are saved, and a bad gender value is not a field students can smuggle in", async () => {
+  const id = await draft({ department: "Science", student: { gender: "female", dob: new Date("2000-01-01"), phone: "08012345678" } });
+  assert.equal(docs[0].department, "Science");
+  assert.equal(docs[0].student.gender, "female");
+});

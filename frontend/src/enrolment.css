@@ -1,0 +1,53 @@
+/* Student enrolment pages. Namespaced .enr-* so it cannot change any other page. */
+.enr-wrap { max-width: 860px; margin: 0 auto; }
+.enr-steps { list-style: none; margin: 18px 0; padding: 0; display: grid; gap: 10px; }
+.enr-step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; padding: 12px 14px; border: 1px solid var(--c-line, #D5DDEC); border-radius: 14px; background: var(--c-surface, #fff); }
+.enr-step-n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--c-surface-2, #EDF2FB); color: var(--c-ink, #0B1F4B); }
+.enr-step.done .enr-step-n { background: var(--c-ok, #1F8A4C); color: #fff; }
+.enr-step.now { border-color: var(--c-blue, #1F5FE0); background: var(--c-tint, #E8F0FF); }
+.enr-step.now .enr-step-n { background: var(--c-gold, #F2B33D); color: var(--c-on-gold, #0B1F4B); }
+.enr-step h3 { margin: 0; font-size: 1rem; }
+.enr-step p { margin: 2px 0 0; color: var(--c-muted, #465273); font-size: .92rem; }
+.enr-card { border: 1px solid var(--c-line, #D5DDEC); border-radius: 16px; background: var(--c-surface, #fff); padding: 16px 18px; margin: 14px 0; }
+.enr-card h2 { margin: 0 0 6px; font-size: 1.1rem; }
+.enr-notice { white-space: pre-wrap; }
+.enr-locked { border-left: 5px solid var(--c-gold, #F2B33D); }
+.enr-progress { height: 8px; border-radius: 99px; background: var(--c-surface-2, #EDF2FB); overflow: hidden; margin: 8px 0 4px; }
+.enr-progress > span { display: block; height: 100%; background: var(--c-blue, #1F5FE0); border-radius: 99px; }
+.enr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px 18px; }
+.enr-grid .wide { grid-column: 1 / -1; }
+.enr-grid input, .enr-grid select, .enr-grid textarea { width: 100%; box-sizing: border-box; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--c-line-strong, #7D8BAF); font: inherit; background: var(--c-surface, #fff); color: var(--c-text, #1B2640); }
+.enr-grid input:focus-visible, .enr-grid select:focus-visible, .enr-grid textarea:focus-visible { outline: 3px solid var(--c-blue, #1F5FE0); outline-offset: 2px; }
+.enr-choice { border: 0; padding: 0; margin: 0; }
+.enr-choice legend { font-weight: 700; margin-bottom: 6px; padding: 0; }
+.enr-choice label { display: inline-flex; align-items: center; gap: 6px; margin-right: 16px; }
+.enr-choice input { width: auto; }
+.enr-subjects { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px 14px; border: 0; padding: 0; margin: 0; }
+.enr-subjects label { display: flex; gap: 8px; align-items: center; }
+.enr-subjects input { width: auto; }
+.enr-check { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }
+.enr-check li::before { content: "\2717  "; color: var(--c-danger, #B3261E); font-weight: 800; }
+.enr-check li.ok::before { content: "\2713  "; color: var(--c-ok, #1F8A4C); }
+.enr-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; margin-top: 18px; }
+.enr-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 800; background: var(--c-gold-soft, #FDF1D6); color: var(--c-ink, #0B1F4B); }
+.enr-badge.ok { background: #DDF3E5; color: #14532D; }
+.enr-office { opacity: .75; border-style: dashed; }
+
+/* Administrator operations pages (people records, check-in, enrolment notice) */
+.ops-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ops-table { width: 100%; border-collapse: collapse; font-size: .93rem; }
+.ops-table th, .ops-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--c-line, #D5DDEC); vertical-align: top; }
+.ops-table .void { opacity: .55; text-decoration: line-through; }
+.ops-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px 16px; margin-top: 10px; }
+.ops-form input, .ops-form select, .ops-form textarea { width: 100%; box-sizing: border-box; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--c-line-strong, #7D8BAF); font: inherit; background: var(--c-surface, #fff); color: var(--c-text, #1B2640); }
+.ops-form .wide { grid-column: 1 / -1; }
+.ops-danger { border: 1px solid var(--c-danger, #B3261E); border-radius: 14px; padding: 14px 16px; margin-top: 14px; }
+.ops-chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 800; background: var(--c-surface-2, #EDF2FB); color: var(--c-ink, #0B1F4B); margin-right: 6px; }
+.ops-chip.ok { background: #DDF3E5; color: #14532D; }
+.ops-chip.warn { background: var(--c-gold-soft, #FDF1D6); }
+.ops-chip.bad { background: #FBE3E1; color: #7A1410; }
+.ops-card { border: 1px solid var(--c-line, #D5DDEC); border-radius: 14px; background: var(--c-surface, #fff); padding: 14px 16px; margin: 12px 0; }
+.ops-student { display: grid; gap: 10px; }
+.ops-big { font-size: 1.25rem; font-weight: 800; color: var(--c-ink, #0B1F4B); }
+.ops-grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .ops-grid2 { grid-template-columns: minmax(0, 1fr); } }

@@ -17,6 +17,9 @@ const bankV = require("../validations/bankValidation");
 router.use(protect, requireRole("admin"));
 router.use("/enrolments", require("./adminEnrolmentRoutes"));
 router.use("/messages", require("./adminMessageRoutes"));
+router.use("/people", require("./adminPeopleRoutes"));
+router.use("/checkin", require("./adminCheckinRoutes"));
+router.use("/settings", require("./adminSettingsRoutes"));
 router.use("/integrity", require("./adminIntegrityRoutes")); // exam activity log and integrity report
 router.get("/overview", users.overview);
 router.get("/students", users.listStudents);
