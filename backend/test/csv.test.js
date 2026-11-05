@@ -45,3 +45,17 @@ test("unknown student is shown as a former student, empty cohort is header only"
   assert.ok(resultsCsv({ attempts: [at("a1", "gone", 50, "01")], users: [] }).includes("Former student"));
   assert.equal(resultsCsv({ attempts: [], users: [] }).trim().split("\r\n").length, 1);
 });
+
+const { exportAuditEntry, EXPORT_ENTITY } = require("../utils/cohortExport");
+
+test("export audit entry records who/what/how many, never a student", () => {
+  const e = exportAuditEntry({ exam: { _id: "e1", title: "Maths Mock", questions: [{ correctKey: "A" }] }, rowCount: 24, truncated: false });
+  assert.equal(e.entityType, EXPORT_ENTITY); assert.equal(e.entityId, "e1"); assert.equal(e.event, "analytics.results_exported");
+  assert.deepEqual(e.meta, { examTitle: "Maths Mock", format: "csv", rowCount: 24, truncated: false });
+  assert.ok(!JSON.stringify(e).includes("correctKey"));
+});
+
+test("export audit entry copes with odd input", () => {
+  const e = exportAuditEntry({ exam: null, rowCount: "x" });
+  assert.equal(e.entityId, "unknown"); assert.equal(e.meta.rowCount, 0); assert.equal(e.meta.examTitle, "Examination");
+});

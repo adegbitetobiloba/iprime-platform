@@ -18,6 +18,14 @@ const STRONG_AT = 70;
 const ATTENTION_BELOW = 50;
 const UNTAGGED = "Untagged";
 
+// Time actually spent: start to submit, minus any time an administrator had the clock paused (ExamControl records it in pausedTotalSeconds).
+// Without this a paused student would look slow. Never negative; null when start or submit time is missing.
+function activeSeconds(a) {
+  if (!a.startedAt || !a.submittedAt) return null;
+  const wall = Math.round((toMs(a.submittedAt) - toMs(a.startedAt)) / 1000);
+  return Math.max(0, wall - Math.max(0, Number(a.pausedTotalSeconds) || 0));
+}
+
 function topicBand(percentage, evidence) {
   if (evidence < MIN_EVIDENCE) return "not_enough_evidence";
   if (percentage >= STRONG_AT) return "strong";
@@ -48,7 +56,7 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
       incorrect: a.incorrect ?? 0,
       unanswered: a.unanswered ?? 0,
       autoSubmitted: Boolean(a.autoSubmitted),
-      timeUsedSeconds: a.startedAt && a.submittedAt ? Math.max(0, Math.round((toMs(a.submittedAt) - toMs(a.startedAt)) / 1000)) : null,
+      timeUsedSeconds: activeSeconds(a),
     };
   });
 
@@ -134,4 +142,4 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
   };
 }
 
-module.exports = { buildStudentAnalytics, topicBand, MIN_EVIDENCE, STRONG_AT, ATTENTION_BELOW, UNTAGGED };
+module.exports = { buildStudentAnalytics, activeSeconds, topicBand, MIN_EVIDENCE, STRONG_AT, ATTENTION_BELOW, UNTAGGED };

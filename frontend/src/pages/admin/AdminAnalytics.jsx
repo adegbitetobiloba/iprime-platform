@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFetch, fmtDate } from "../../useFetch.js";
+import RecentExports from "../../components/analytics/RecentExports.jsx";
 import "../../studentDashboard.css";
 import "../../adminAnalytics.css";
 
@@ -70,6 +71,8 @@ export default function AdminAnalytics() {
           ))}
         </ul>
       )}
+
+      <RecentExports />
     </div>
   );
 }
