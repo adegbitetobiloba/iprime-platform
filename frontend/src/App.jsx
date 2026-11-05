@@ -29,6 +29,8 @@ import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import AdminHome from "./pages/admin/AdminHome.jsx";
 import AdminExams from "./pages/admin/AdminExams.jsx";
 import AdminExamEdit from "./pages/admin/AdminExamEdit.jsx";
+import AdminAttempts from "./pages/admin/AdminAttempts.jsx";
+import AdminAttemptReview from "./pages/admin/AdminAttemptReview.jsx";
 import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
 import AdminStudents from "./pages/admin/AdminStudents.jsx";
 import AdminExamAnalytics from "./pages/admin/AdminExamAnalytics.jsx";
@@ -58,6 +60,8 @@ import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
 import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
 import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
 import AdminExamBuilder from "./pages/admin/AdminExamBuilder.jsx";
+import ShareLanding from "./pages/ShareLanding.jsx";
+import SebCheck from "./pages/SebCheck.jsx";
 import Toast from "./components/Toast.jsx";
 import WelcomeFlyer from "./components/WelcomeFlyer.jsx";
 import { useAuth } from "./auth.jsx";
@@ -144,6 +148,8 @@ export default function App() {
           <Route path="/news" element={<News />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/faq" element={<Faq />} />
+          <Route path="/x/:token" element={<ShareLanding />} />
+          <Route path="/seb-check" element={<SebCheck />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
@@ -176,6 +182,8 @@ export default function App() {
             <Route path="analytics/library-study" element={<AdminLibraryStudy />} />
             <Route path="exams/:id/analytics" element={<AdminExamAnalytics />} />
             <Route path="exams/new" element={<AdminExamBuilder />} />
+            <Route path="attempts" element={<AdminAttempts />} />
+            <Route path="attempts/:id" element={<AdminAttemptReview />} />
             <Route path="import" element={<AdminImport />} />
             <Route path="applications" element={<AdminApplications />} />
             <Route path="bank" element={<AdminBank />} />

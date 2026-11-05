@@ -157,6 +157,7 @@ exports.login = async (req, res) => {
 // GET /api/auth/me (protected): lets the frontend check a stored token is still valid
 exports.me = async (req, res) => {
   try {
+    if (req.user.guest) return res.json({ user: { id: req.user.id, role: "guest", firstName: req.user.name || "Guest", lastName: "", guest: true } }); // a share-link guest has no account row
     const user = await User.findById(req.user.id);
     if (!user) return res.status(401).json({ error: "Account no longer exists" });
     res.json({ user: publicUser(await ensureStudentId(await applyAdminAllowlist(user))) });

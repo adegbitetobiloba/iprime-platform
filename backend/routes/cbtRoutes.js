@@ -9,7 +9,11 @@ const cbt = require("../validations/cbtValidation");
 
 // Examinations are taken by students. Administrators may also take them, to test what students will see.
 // The role is checked against the database on every request, not trusted from the token alone.
-router.use(protect, requireRole("student", "admin"));
+const access = require("../middleware/examAccess");
+router.use(protect, access.studentOrGuest); // students and admins as before, plus guests holding a share-link session
+router.get("/exams", access.hideUnlisted);
+router.use("/exams/:id", access.examGate);
+router.use("/attempts/:id", access.attemptGate);
 
 // Per-student limit on answer saving (not per IP, so a shared school network is not penalised). 240 a minute is
 // far above honest use; the exam screen keeps unsent answers and retries, so hitting it only delays a save.

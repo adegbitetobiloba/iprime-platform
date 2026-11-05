@@ -20,7 +20,7 @@ const serverError = (res, err) => {
 const isOpen = (exam, at = new Date()) =>
   exam.status === "published" && (!exam.availableFrom || exam.availableFrom <= at) && (!exam.availableUntil || exam.availableUntil >= at);
 
-const totalMarks = (exam) => exam.questions.reduce((n, q) => n + (q.marks ?? 1), 0);
+const totalMarks = (exam) => pool.shape(exam).totalMarks;
 
 // The activity log (utils/attemptEvents.js): server-side entries for start, resume, submission and so on.
 const logger = makeLogger(AttemptEvent);

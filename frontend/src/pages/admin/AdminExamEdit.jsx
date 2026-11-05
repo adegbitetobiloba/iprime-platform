@@ -5,6 +5,7 @@ import { useAuth } from "../../auth.jsx";
 import { useFetch } from "../../useFetch.js";
 import { useSubmit } from "../../useSubmit.js";
 import ExamSettings from "../../components/ExamSettings.jsx";
+import ExamAccessPanel from "../../components/ExamAccessPanel.jsx";
 import AttemptIntegrity from "../../components/AttemptIntegrity.jsx";
 import LiveControl from "../../components/LiveControl.jsx";
 import Field from "../../components/Field.jsx";
@@ -212,6 +213,7 @@ export default function AdminExamEdit() {
       {published && <p className="alert alert-info" role="status">This examination is visible to students. Unpublish it to edit its questions.</p>}
 
       <ExamSettings exam={exam} locked={Boolean(locked)} onSaved={setExam} />
+      <ExamAccessPanel exam={exam} />
 
       <div className="panel">
         <h2 className="panel-title">Questions</h2>
