@@ -39,6 +39,7 @@ app.use("/api/admin/library", adminLibraryRoutes); // before /api/admin so the l
 app.use("/api/library", libraryRoutes);            // before /api (CBT router)
 app.use("/api/admin/analytics", adminAnalyticsRoutes); // before /api/admin so the longer path is matched first
 app.use("/api/admin", adminRoutes);
+app.use("/api/teacher/analytics", require("./routes/teacherAnalyticsRoutes")); // longer path first, before the teacher router
 app.use("/api/teacher", require("./routes/teacherRoutes")); // teacher area; MUST stay before the "/api" CBT router below, which only lets students and admins through
 app.use("/api/messages", require("./routes/messageRoutes"));
 app.use("/api/student/analytics", analyticsRoutes); // longer path first

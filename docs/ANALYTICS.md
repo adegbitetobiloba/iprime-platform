@@ -1,6 +1,6 @@
 # Performance analytics (workstream 2)
 
-Status: **Milestone 1 — trusted data + metric definitions + student API.** No cohort, tutor, parent or export features yet.
+Status: **Milestones 1–8.** Student analytics, cohort analytics, CSV export with an audit trail. Class, tutor and parent reports are not built yet (they wait for an Admin class/parent contract).
 
 ## Source of truth
 All metrics come from persisted `Attempt` records (`status: "submitted"`) joined to the `Exam` that was taken.
@@ -31,3 +31,9 @@ Response: `{ generatedAt, truncated, definitions, totals, history[], topics[], u
 - **Admin workstream:** no class / tutor / parent relationships or student↔subject enrolment exist, so cohort, tutor and parent views, and baseline-vs-matched cohort trends, are blocked on those contracts.
 - **Library workstream:** recommendations cannot link to resources until topic IDs are shared.
 - The student dashboard (branch `feature/student-dashboard`) is separate work; both read the same attempts and neither modifies them.
+
+## Results export and audit trail (M8)
+- `GET /api/admin/analytics/exams/:id/export.csv` (admin only) downloads cohort results as CSV (UTF-8 BOM, CRLF, formula-injection guard). It holds names and student ID only: no contact, guardian, medical or payment data, and no correct answers.
+- Every export writes an `AuditLog` entry (`entityType: analytics_export`, `event: analytics.results_exported`) holding who, which exam and how many rows. It contains no student data.
+- The entry is written **before** the file is sent. If it cannot be written the download is refused (generic 500). The entry and the file are not one database transaction.
+- `GET /api/admin/analytics/exports` (admin only) returns the latest 20 exports. The Analytics page shows them under "Recent downloads".

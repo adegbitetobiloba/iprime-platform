@@ -44,4 +44,15 @@ const COLUMNS = [
 
 const resultsCsv = (input) => toCsv(buildResultRows(input), COLUMNS);
 
-module.exports = { buildResultRows, resultsCsv, COLUMNS };
+// The audit entry for an export. Records WHO exported WHICH exam and HOW MANY rows, never any student's name or score.
+const EXPORT_ENTITY = "analytics_export";
+function exportAuditEntry({ exam, rowCount, truncated = false }) {
+  return {
+    entityType: EXPORT_ENTITY,
+    entityId: String(exam?._id ?? exam?.id ?? "unknown"),
+    event: "analytics.results_exported",
+    meta: { examTitle: exam?.title || "Examination", format: "csv", rowCount: Number(rowCount) || 0, truncated: Boolean(truncated) },
+  };
+}
+
+module.exports = { buildResultRows, resultsCsv, COLUMNS, exportAuditEntry, EXPORT_ENTITY };
