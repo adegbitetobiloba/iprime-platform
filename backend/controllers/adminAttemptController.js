@@ -4,11 +4,13 @@ const mongoose = require("mongoose");
 const Attempt = require("../models/Attempt");
 const Exam = require("../models/Exam");
 const User = require("../models/User");
+const Guest = require("../models/Guest");
 const { arrange, reviewView } = require("../utils/randomise");
 const { toPlain } = require("../utils/cbt");
 
 const escapeRx = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const serverError = (res, err) => { console.error(err); res.status(500).json({ error: "Something went wrong on our side. Please try again." }); };
+const guestOf = (g) => ({ id: String(g._id), name: `${g.name} (guest)`, studentId: "Guest", email: g.contact || null });
 const personOf = (u) => (u ? { id: String(u._id), name: [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || u.email || "Unknown", studentId: u.studentId || null, email: u.email || null } : { id: null, name: "Deleted account", studentId: null, email: null });
 
 // GET /api/admin/attempts?exam=&status=&q=&page=&limit=
@@ -29,17 +31,20 @@ exports.list = async (req, res) => {
       Attempt.countDocuments(filter),
       Attempt.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
     ]);
-    const [users, exams] = await Promise.all([
-      User.find({ _id: { $in: [...new Set(rows.map((r) => String(r.userId)))] } }).select("firstName lastName studentId email").lean(),
+    const ids = [...new Set(rows.map((r) => String(r.userId)))];
+    const [users, guests, exams] = await Promise.all([
+      User.find({ _id: { $in: ids } }).select("firstName lastName studentId email").lean(),
+      Guest.find({ _id: { $in: ids } }).lean(),
       Exam.find({ _id: { $in: [...new Set(rows.map((r) => String(r.examId)))] } }).select("title subject").lean(),
     ]);
+    const gById = new Map(guests.map((g) => [String(g._id), g]));
     const uById = new Map(users.map((u) => [String(u._id), u])), eById = new Map(exams.map((e) => [String(e._id), e]));
     res.json({
       total, page, pages: Math.max(1, Math.ceil(total / limit)), limit,
       attempts: rows.map((a) => {
         const ex = eById.get(String(a.examId));
         return {
-          id: String(a._id), student: personOf(uById.get(String(a.userId))),
+          id: String(a._id), student: uById.has(String(a.userId)) ? personOf(uById.get(String(a.userId))) : gById.has(String(a.userId)) ? guestOf(gById.get(String(a.userId))) : personOf(null),
           exam: { id: String(a.examId), title: ex ? ex.title : "Deleted examination", subject: ex ? ex.subject : "" },
           status: a.status, startedAt: a.startedAt, submittedAt: a.submittedAt || null, autoSubmitted: Boolean(a.autoSubmitted),
           answered: Object.keys(toPlain(a.answers) || {}).length, drawn: Array.isArray(a.questionIds) && a.questionIds.length > 0,
@@ -58,9 +63,10 @@ exports.detail = async (req, res) => {
     if (!mongoose.isValidObjectId(id)) return res.status(404).json({ error: "Attempt not found" });
     const attempt = await Attempt.findById(id).lean();
     if (!attempt) return res.status(404).json({ error: "Attempt not found" });
-    const [exam, user] = await Promise.all([
+    const [exam, user, guest] = await Promise.all([
       Exam.findById(attempt.examId).lean(),
       User.findById(attempt.userId).select("firstName lastName studentId email").lean(),
+      Guest.findById(attempt.userId).lean(),
     ]);
     if (!exam) return res.status(404).json({ error: "The examination for this attempt no longer exists." });
     const given = toPlain(attempt.answers) || {};
@@ -78,7 +84,7 @@ exports.detail = async (req, res) => {
         correct: attempt.correct ?? null, incorrect: attempt.incorrect ?? null, unanswered: attempt.unanswered ?? null,
         shuffledQuestions: Boolean(attempt.shuffleQuestions && attempt.seed), shuffledOptions: Boolean(attempt.shuffleOptions && attempt.seed),
       },
-      student: personOf(user),
+      student: user ? personOf(user) : guest ? guestOf(guest) : personOf(null),
       exam: { id: String(exam._id), title: exam.title, subject: exam.subject, poolSize: (exam.questions || []).length, questionsPerStudent: exam.questionsPerStudent || null },
       drawn: Array.isArray(attempt.questionIds) && attempt.questionIds.length > 0,
       questions,
