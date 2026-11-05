@@ -35,6 +35,7 @@ app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connectio
 
 app.use("/api/auth", authRoutes);
 app.use("/api/public", publicRoutes);
+app.use("/api/share", require("./routes/shareRoutes"));
 app.use("/api/admin/library", adminLibraryRoutes); // before /api/admin so the longer path matches first
 app.use("/api/library", libraryRoutes);            // before /api (CBT router)
 app.use("/api/admin/analytics", adminAnalyticsRoutes); // before /api/admin so the longer path is matched first

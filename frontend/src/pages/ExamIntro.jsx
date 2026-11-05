@@ -4,6 +4,7 @@ import { useAuth } from "../auth.jsx";
 import { useFetch, fmtDate } from "../useFetch.js";
 import { useSubmit } from "../useSubmit.js";
 import FormStatus from "../components/FormStatus.jsx";
+import ExamPasswordPrompt from "../components/ExamPasswordPrompt.jsx";
 
 export default function ExamIntro() {
   const { id } = useParams();
@@ -73,10 +74,11 @@ export default function ExamIntro() {
               {g.blockCopyPaste && <li>You cannot select, copy, print or long-press search the questions, and the questions are hidden whenever you leave the exam screen.</li>}
               <li>Losing your internet connection is not a warning. Your answers stay on your device and are sent when you reconnect.</li>
             </ul>
-            <p className="muted"><strong>On a phone, before you press Start:</strong> turn on Do Not Disturb so messages do not pop up. For the best protection, use Screen pinning (Android: search &ldquo;App pinning&rdquo; in Settings) or Guided Access (iPhone: Settings, Accessibility), which also stop notification swipes.</p>
+            <p className="muted"><strong>On a phone, before you press Start:</strong> turn on Do Not Disturb so messages do not pop up. For the best protection, use Screen pinning (Android: search the Settings app for it, or ask a teacher to show you.</p>
           </div>
         )}
 
+        <ExamPasswordPrompt examId={id} />
         <FormStatus error={start.error} slow={start.slow} />
         <div className="form-actions" style={{ marginTop: "var(--s5)" }}>
           {canStart ? (
