@@ -7,6 +7,7 @@ import Field from "../../components/Field.jsx";
 import DurationPicker from "../../components/DurationPicker.jsx";
 import { label as durationLabel, problem as durationProblem } from "../../lib/exam/duration.js";
 import { describe as describePool, MAX_PER_STUDENT } from "../../lib/exam/pool.js";
+import { checkPassword } from "../../lib/guestName.js";
 import "./builder.css";
 
 const STEPS = ["Basics", "Questions", "Settings", "Review"];
@@ -40,11 +41,12 @@ export default function AdminExamBuilder() {
   const [result, setResult] = useState(null);          // latest answer from /admin/bank/select
   const [picking, setPicking] = useState(false);
   const [pickError, setPickError] = useState("");
-  const [cfg, setCfg] = useState({ perStudent: "", drawSpread: true, drawBalance: true, drawMix: false, durationMinutes: 60, maxAttempts: "1", shuffleQuestions: false, shuffleOptions: false, showAnswersAfter: false, marksMode: "bank", marksAll: "1" });
+  const [cfg, setCfg] = useState({ password: "", perStudent: "", drawSpread: true, drawBalance: true, drawMix: false, durationMinutes: 60, maxAttempts: "1", shuffleQuestions: false, shuffleOptions: false, showAnswersAfter: false, marksMode: "bank", marksAll: "1" });
   const [saving, setSaving] = useState("");
   const [saveError, setSaveError] = useState("");
   const [created, setCreated] = useState(null);
   const [showAll, setShowAll] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [showPool, setShowPool] = useState(false); // with per-student draws the list is hidden until asked for
 
   const subjects = facets.data?.subjects || [];
@@ -96,7 +98,7 @@ export default function AdminExamBuilder() {
   const problems = {
     0: [!basics.title.trim() && "Give the examination a title.", !basics.subject.trim() && "Enter the subject."].filter(Boolean),
     1: [!result && "Pick the questions first.", result && result.selected < 1 && "No questions are selected."].filter(Boolean),
-    2: [durationProblem(cfg.durationMinutes), !(Number(cfg.maxAttempts) >= 1 && Number(cfg.maxAttempts) <= 20) && "Attempts must be between 1 and 20.", cfg.marksMode === "all" && !(Number(cfg.marksAll) >= 0.5 && Number(cfg.marksAll) <= 100) && "Marks per question must be between 0.5 and 100.", cfg.perStudent !== "" && !(Number.isInteger(Number(cfg.perStudent)) && Number(cfg.perStudent) >= 1 && Number(cfg.perStudent) <= MAX_PER_STUDENT) && "Questions per student must be a whole number from 1 to 500."].filter(Boolean),
+    2: [durationProblem(cfg.durationMinutes), !(Number(cfg.maxAttempts) >= 1 && Number(cfg.maxAttempts) <= 20) && "Attempts must be between 1 and 20.", cfg.marksMode === "all" && !(Number(cfg.marksAll) >= 0.5 && Number(cfg.marksAll) <= 100) && "Marks per question must be between 0.5 and 100.", cfg.password !== "" && !checkPassword(cfg.password).ok && checkPassword(cfg.password).error, cfg.perStudent !== "" && !(Number.isInteger(Number(cfg.perStudent)) && Number(cfg.perStudent) >= 1 && Number(cfg.perStudent) <= MAX_PER_STUDENT) && "Questions per student must be a whole number from 1 to 500."].filter(Boolean),
   };
   const go = (n) => { if (n > step) for (let i = step; i < n; i++) if (problems[i]?.length) { setStep(i); return; } setStep(n); };
   const canLeave = (i) => !problems[i] || problems[i].length === 0;
@@ -113,6 +115,10 @@ export default function AdminExamBuilder() {
         ...(cfg.perStudent !== "" ? { questionsPerStudent: Number(cfg.perStudent), drawSpread: cfg.drawSpread, drawBalance: cfg.drawBalance, drawMixDifficulty: cfg.drawMix } : {}),
       } });
       examId = d.exam._id;
+      if (cfg.password) { // the optional examination password: if it cannot be saved we stop BEFORE publishing
+        try { await api(`/admin/access/exams/${examId}/password`, { method: "PUT", token, body: { password: cfg.password } }); }
+        catch (e) { throw new Error(`The examination was created, but its password could not be saved (${e.message}). It has NOT been published. Open the draft and set the password there.`); }
+      }
       const ids = chosen.map((c) => c.id);
       let added = 0;
       for (let i = 0; i < ids.length; i += 200) {
@@ -344,6 +350,14 @@ export default function AdminExamBuilder() {
             </div>
             {cfg.marksMode === "all" && <Field label="Marks per question" id="b-marks" type="number" min="0.5" max="100" step="0.5" value={cfg.marksAll} onChange={(e) => setCfg((c) => ({ ...c, marksAll: e.target.value }))} />}
           </fieldset>
+          <fieldset className="xb-fieldset">
+            <legend>Examination password (optional)</legend>
+            <p className="muted xb-help">If you set one, everyone who sits this examination, through a link or from the list, must enter it before they can start. It is not a login password. Share it with your students separately. It cannot be shown again after you save.</p>
+            <div className="xb-browser-head" style={{ border: 0, padding: 0 }}>
+              <input id="b-pw" aria-label="Examination password" type={showPw ? "text" : "password"} autoComplete="new-password" value={cfg.password} onChange={(e) => setCfg((c) => ({ ...c, password: e.target.value }))} placeholder="Leave empty for no password" />
+              <button type="button" className="btn btn-quiet btn-sm" onClick={() => setShowPw((s) => !s)}>{showPw ? "Hide" : "Show"}</button>
+            </div>
+          </fieldset>
           <label className="flag-toggle"><input type="checkbox" checked={cfg.showAnswersAfter} onChange={(e) => setCfg((c) => ({ ...c, showAnswersAfter: e.target.checked }))} /> Let students review the correct answers after they submit</label>
         </section>
       )}
@@ -359,6 +373,7 @@ export default function AdminExamBuilder() {
             <div><dt>Total marks (per student)</dt><dd>{cfg.perStudent !== "" && Number(cfg.perStudent) < chosen.length ? Math.round((totalMarks / (chosen.length || 1)) * Number(cfg.perStudent) * 100) / 100 : totalMarks}</dd></div>
             <div><dt>Duration</dt><dd>{durationLabel(cfg.durationMinutes) || "—"}</dd></div>
             <div><dt>Attempts</dt><dd>{cfg.maxAttempts}</dd></div>
+            <div><dt>Examination password</dt><dd>{cfg.password ? "Required" : "None"}</dd></div>
             <div><dt>Question order</dt><dd>{cfg.shuffleQuestions ? "Different for each student" : "Same for everyone"}</dd></div>
             <div><dt>Option order</dt><dd>{cfg.shuffleOptions ? "Different for each student" : "As written"}</dd></div>
           </dl>
