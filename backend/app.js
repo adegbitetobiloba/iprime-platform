@@ -16,6 +16,7 @@ const publicRoutes = require("./routes/publicRoutes");
 const libraryRoutes = require("./routes/libraryRoutes");
 const adminLibraryRoutes = require("./routes/adminLibraryRoutes");
 const { startSweeper } = require("./utils/attemptSweeper");
+const { safeLogPath } = require("./utils/logRedact");
 
 const isProd = process.env.NODE_ENV === "production";
 const app = express();
