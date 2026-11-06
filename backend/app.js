@@ -29,7 +29,11 @@ const allowedOrigins = (process.env.CORS_ORIGINS || "").split(",").map((o) => o.
 app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : !isProd }));
 
 app.use(express.json({ limit: "300kb" })); // MUST come before the routes (large enough for pasted question lists)
-if (process.env.NODE_ENV !== "test") app.use(morgan("tiny"));
+if (process.env.NODE_ENV !== "test") {
+  morgan.token("safe-path", (req) => safeLogPath(req.originalUrl || req.url));
+  // Same fields as morgan's "tiny" format, but with no secrets in the URL, and the health check is not logged.
+  app.use(morgan(":method :safe-path :status :res[content-length] - :response-time ms", { skip: (req) => safeLogPath(req.originalUrl) === "/health" }));
+}
 
 app.get("/", (req, res) => res.send("iPrime API"));
 app.get("/health", (req, res) => res.json({ status: "ok", db: mongoose.connection.readyState === 1, commit: (process.env.RENDER_GIT_COMMIT || "").slice(0, 7) || undefined }));
