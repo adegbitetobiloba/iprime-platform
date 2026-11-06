@@ -1,0 +1,20 @@
+{
+  "cli": { "version": ">= 16.0.1", "appVersionSource": "remote" },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": { "ENV": "development", "API_BASE_URL": "https://REPLACE-WITH-STAGING-URL" }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": { "ENV": "staging", "API_BASE_URL": "https://REPLACE-WITH-STAGING-URL" }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": { "ENV": "production", "API_BASE_URL": "https://REPLACE-WITH-PRODUCTION-URL" }
+    }
+  }
+}
