@@ -14,7 +14,7 @@ import { PaletteArt } from "../components/HeroArt.jsx";
 import AuthedHome from "./home/AuthedHome.jsx";
 import { IMAGES } from "../siteImages.js";
 import { ACCOUNT_TYPES } from "../accountTypes.js";
-import { publishableAchievements } from "../achievements.js";
+import { useAchievers } from "../useAchievers.js";
 
 const CBT_POINTS = [
   { icon: "test", title: "Timed, realistic practice", text: "A visible countdown that keeps running even if you refresh the page." },
@@ -95,7 +95,8 @@ function PublicHero() {
 
 export default function Home() {
   const { token } = useAuth();
-  const achievements = publishableAchievements().slice(0, 3);
+  const { list: allAchievers } = useAchievers();
+  const achievements = allAchievers.slice(0, 3);
 
   return (
     <>

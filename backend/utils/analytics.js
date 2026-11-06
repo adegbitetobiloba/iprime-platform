@@ -7,6 +7,7 @@
 //    if the exam was edited after the attempt, that attempt is reported as "unverifiable" instead of guessed.
 //  - Correct answers are never returned. A student sees which questions they missed, not the key.
 const { scoreAttempt, toPlain } = require("./cbt");
+const { servedQuestions } = require("./randomise"); // the exam system's own rule for "the questions THIS attempt was given"
 
 const round1 = (n) => Math.round(n * 10) / 10;
 const idOf = (v) => (v == null ? "" : String(v));
@@ -17,6 +18,7 @@ const MIN_EVIDENCE = 5;
 const STRONG_AT = 70;
 const ATTENTION_BELOW = 50;
 const UNTAGGED = "Untagged";
+const UNSPECIFIED = "Subject not set";
 
 // Time actually spent: start to submit, minus any time an administrator had the clock paused (ExamControl records it in pausedTotalSeconds).
 // Without this a paused student would look slow. Never negative; null when start or submit time is missing.
@@ -61,6 +63,8 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
   });
 
   // ---- 2. question-level facts, only from attempts that re-grade to the stored result --------------------------
+  const subjects = new Map(); // subject -> { earned, available, questions, attemptIds:Set }
+  const perAttempt = new Map(); // attemptId -> Map(subject -> { earned, available })
   const topics = new Map();   // topic -> { earned, available, questions, attemptIds:Set }
   const missed = new Map();   // "examId:questionId" -> { ..., missedIn:[attemptId], seenIn:n }
   const verifiedAttemptIds = [];
@@ -69,7 +73,7 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
   for (const a of submitted) {
     const exam = examById.get(idOf(a.examId));
     const attemptId = idOf(a._id ?? a.id);
-    const questions = exam?.questions || [];
+    const questions = servedQuestions(exam, a); // a pooled attempt is graded on its own draw, not on the whole pool
     const regraded = questions.length ? scoreAttempt(questions, a.answers) : null;
     const same = regraded
       && regraded.score === a.score && regraded.totalMarks === a.totalMarks
@@ -78,6 +82,8 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
     verifiedAttemptIds.push(attemptId);
 
     const given = toPlain(a.answers);
+    const mine = new Map();
+    perAttempt.set(attemptId, mine);
     for (const q of questions) {
       const qid = idOf(q._id);
       const marks = q.marks ?? 1;
@@ -88,6 +94,14 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
       const t = topics.get(topic) || { topic, earned: 0, available: 0, questions: 0, attemptIds: new Set() };
       t.earned += isRight ? marks : 0; t.available += marks; t.questions += 1; t.attemptIds.add(attemptId);
       topics.set(topic, t);
+
+      const subject = (q.subject || exam.subject || "").trim() || UNSPECIFIED;
+      const sg = subjects.get(subject) || { subject, earned: 0, available: 0, questions: 0, attemptIds: new Set() };
+      sg.earned += isRight ? marks : 0; sg.available += marks; sg.questions += 1; sg.attemptIds.add(attemptId);
+      subjects.set(subject, sg);
+      const pa = mine.get(subject) || { earned: 0, available: 0 };
+      pa.earned += isRight ? marks : 0; pa.available += marks;
+      mine.set(subject, pa);
 
       const key = `${idOf(a.examId)}:${qid}`;
       const m = missed.get(key) || { examId: idOf(a.examId), examTitle: exam.title, subject: exam.subject, questionId: qid, text: q.text, topic: q.topic?.trim() || null, seenIn: 0, missedIn: [], unansweredIn: 0 };
@@ -104,6 +118,16 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
     })
     .sort((a, b) => a.percentage - b.percentage || a.topic.localeCompare(b.topic));
   const tagged = topicRows.filter((t) => t.topic !== UNTAGGED);
+
+  // Subject level: same rule as topics (a subject is only described once it has MIN_EVIDENCE questions of evidence).
+  const subjectRows = [...subjects.values()]
+    .map((g) => { const percentage = g.available ? round1((g.earned / g.available) * 100) : 0; return { subject: g.subject, percentage, questions: g.questions, attempts: g.attemptIds.size, band: topicBand(percentage, g.questions) }; })
+    .sort((a, b) => a.percentage - b.percentage || a.subject.localeCompare(b.subject));
+  // Per attempt: how each subject went inside that one attempt (only for attempts that re-graded cleanly, otherwise null).
+  for (const h of history) {
+    const m = perAttempt.get(h.attemptId);
+    h.subjectBreakdown = m ? [...m.entries()].map(([subject, v]) => ({ subject, earned: v.earned, available: v.available, percentage: v.available ? round1((v.earned / v.available) * 100) : 0 })).sort((a, b) => a.subject.localeCompare(b.subject)) : null;
+  }
 
   // A question is "recurring" when the student missed it (wrong or skipped) in at least two separate attempts.
   const recurringMisses = [...missed.values()]
@@ -134,6 +158,7 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
     totals: { submittedAttempts: history.length, verifiedForQuestionAnalysis: verifiedAttemptIds.length, unverifiable: unverifiable.length },
     history,
     topics: topicRows,
+    subjects: subjectRows,
     untaggedQuestions: topics.get(UNTAGGED)?.questions || 0,
     recurringMisses,
     retests,
@@ -142,4 +167,4 @@ function buildStudentAnalytics({ attempts = [], exams = [] }) {
   };
 }
 
-module.exports = { buildStudentAnalytics, activeSeconds, topicBand, MIN_EVIDENCE, STRONG_AT, ATTENTION_BELOW, UNTAGGED };
+module.exports = { buildStudentAnalytics, UNSPECIFIED, activeSeconds, topicBand, MIN_EVIDENCE, STRONG_AT, ATTENTION_BELOW, UNTAGGED };

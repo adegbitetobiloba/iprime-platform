@@ -4,10 +4,10 @@ import Reveal from "../components/Reveal.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import AchievementCard from "../components/AchievementCard.jsx";
 import SwipeCards from "../components/SwipeCards.jsx";
-import { publishableAchievements } from "../achievements.js";
+import { useAchievers } from "../useAchievers.js";
 
 const CHECKS = [
-  "The person's approved public name, spelled as they want it published",
+  "The student's name, if they want it published, spelled as they wish",
   "The examination, the year and the exact score",
   "The programme and study mode they attended with Prime Excelerate Tutelage",
   "Evidence of the result, such as an official result record",
@@ -15,7 +15,7 @@ const CHECKS = [
 ];
 
 export default function Achievements() {
-  const items = publishableAchievements();
+  const { list: items, loading, error } = useAchievers();
 
   return (
     <>
@@ -25,18 +25,22 @@ export default function Achievements() {
 
       <section className="section">
         <div className="container">
-          {items.length > 0 ? (
-            <SwipeCards label="Verified student achievements" gridFrom="md">
+          {loading && <div className="exam-card skeleton" aria-hidden="true" />}
+          {!loading && items.length > 0 && (
+            <SwipeCards label="Student achievements" gridFrom="md">
               {items.map((a) => (<AchievementCard key={a.id} item={a} />))}
             </SwipeCards>
-          ) : (
+          )}
+          {!loading && items.length === 0 && (
             <Reveal>
               <EmptyState
                 icon="check"
-                title="Verified achievements are being prepared"
+                title={error ? "Achievements could not be loaded" : "Verified achievements are being prepared"}
                 action={<Link to="/programmes" className="btn btn-secondary">See programmes</Link>}
               >
-                We only publish a result after it has been verified and the student has given permission. Until then, this page stays empty rather than show figures that have not been checked.
+                {error
+                  ? "Please check your connection and reload the page."
+                  : "We only publish a result after it has been verified and the student has given permission. Until then, this page stays empty rather than show figures that have not been checked."}
               </EmptyState>
             </Reveal>
           )}
@@ -49,7 +53,7 @@ export default function Achievements() {
             <h2>How we verify a result</h2>
             <p>Every achievement shown here is backed by a record that management has checked. Before a result is published we confirm:</p>
             <ul className="ws5-checks">
-              {CHECKS.map((c) => (<li key={c}><span className="icon-tile icon-tile-sm" aria-hidden="true">✓</span><span>{c}</span></li>))}
+              {CHECKS.map((c) => (<li key={c}><span className="icon-tile icon-tile-sm" aria-hidden="true">&#10003;</span><span>{c}</span></li>))}
             </ul>
           </Reveal>
           <Reveal delay={100} className="prose">

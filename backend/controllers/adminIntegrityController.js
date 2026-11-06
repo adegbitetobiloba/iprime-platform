@@ -5,6 +5,7 @@ const AttemptEvent = require("../models/AttemptEvent");
 const User = require("../models/User");
 const { normalizePolicy } = require("../utils/guard");
 const { summarise } = require("../utils/integritySummary");
+const { retentionDays } = require("../utils/retention");
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const serverError = (res, err) => {
@@ -52,7 +53,7 @@ exports.exam = async (req, res) => {
           counts: ev.counts,
         };
       });
-    res.json({ exam: { id: String(exam._id), title: exam.title, guard: normalizePolicy(exam.guard) }, summary: summarise(rows), attempts: rows });
+    res.json({ exam: { id: String(exam._id), title: exam.title, guard: normalizePolicy(exam.guard) }, summary: summarise(rows), retentionDays: retentionDays(), attempts: rows });
   } catch (err) { serverError(res, err); }
 };
 

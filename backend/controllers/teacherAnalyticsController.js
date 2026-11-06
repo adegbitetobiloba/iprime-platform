@@ -14,7 +14,7 @@ const approved = (s) => s && (!s.approval || s.approval === "approved");
 
 async function load(studentIds) {
   const attempts = studentIds.length ? await Attempt.find({ userId: { $in: studentIds }, status: "submitted" })
-    .select("userId examId status startedAt submittedAt autoSubmitted answers score totalMarks percentage correct incorrect unanswered pausedTotalSeconds")
+    .select("userId examId status startedAt submittedAt autoSubmitted answers questionIds score totalMarks percentage correct incorrect unanswered pausedTotalSeconds")
     .sort({ submittedAt: -1 }).limit(5000).lean() : [];
   const examIds = [...new Set(attempts.map((a) => String(a.examId)))];
   const exams = examIds.length ? await Exam.find({ _id: { $in: examIds } }).lean() : [];

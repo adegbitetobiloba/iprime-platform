@@ -41,6 +41,7 @@ export default function ExamSettings({ exam, locked, onSaved }) {
       questionsPerStudent: exam.questionsPerStudent ? String(exam.questionsPerStudent) : "", drawSpread: exam.drawSpread !== false, drawBalance: exam.drawBalance !== false, drawMixDifficulty: Boolean(exam.drawMixDifficulty),
       availableFrom: toLocal(exam.availableFrom), availableUntil: toLocal(exam.availableUntil),
       guard: guardFrom(exam.guard),
+      graceMinutes: exam.reconnectGraceMinutes == null ? "" : String(exam.reconnectGraceMinutes), // empty = the server default
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exam._id]);
@@ -54,7 +55,10 @@ export default function ExamSettings({ exam, locked, onSaved }) {
     const ma = Number(f.guard.minAwaySeconds);
     if (!Number.isFinite(ma) || ma < 0 || ma > 30) throw new Error("Ignore short absences must be from 0 to 30 seconds.");
     const guard = { ...f.guard, maxViolations: mv, minAwaySeconds: ma };
-    const body = { ...f, guard, questionsPerStudent: f.questionsPerStudent === "" ? null : Number(f.questionsPerStudent), durationMinutes: Number(f.durationMinutes), maxAttempts: Number(f.maxAttempts), availableFrom: toIso(f.availableFrom), availableUntil: toIso(f.availableUntil) };
+    const gm = f.graceMinutes === "" ? null : Number(f.graceMinutes);
+    if (gm !== null && !(Number.isInteger(gm) && gm >= 0 && gm <= 60)) throw new Error("Reconnection window must be a whole number of minutes from 0 to 60, or empty.");
+    const { graceMinutes, ...fields } = f; // eslint-disable-line no-unused-vars
+    const body = { ...fields, guard, reconnectGraceMinutes: gm, questionsPerStudent: f.questionsPerStudent === "" ? null : Number(f.questionsPerStudent), durationMinutes: Number(f.durationMinutes), maxAttempts: Number(f.maxAttempts), availableFrom: toIso(f.availableFrom), availableUntil: toIso(f.availableUntil) };
     const d = await api(`/admin/exams/${exam._id}`, { method: "PATCH", token, body });
     onSaved(d.exam);
     setSaved("Details saved.");
@@ -104,6 +108,11 @@ export default function ExamSettings({ exam, locked, onSaved }) {
         <label className="flag-toggle"><input type="checkbox" checked={f.shuffleOptions} onChange={flip("shuffleOptions")} /> Give each student their own answer-option order</label>
         <p className="muted xb-help">The order is fixed for each student when they start, so refreshing or resuming shows the same order. Answers are marked against the option itself, so shuffling can never change a score. Questions whose options refer to each other (for example, &ldquo;All of the above&rdquo;) always keep their option order.</p>
         {(f.shuffleQuestions !== Boolean(exam.shuffleQuestions) || f.shuffleOptions !== Boolean(exam.shuffleOptions)) && <p className="note">Students who have already started keep the order they began with.</p>}
+      </fieldset>
+
+      <fieldset className="xb-switches">
+        <legend>If a student's internet drops</legend>
+        <Field label="Reconnection window after time is up (minutes)" id="e-grace" type="number" min="0" max="60" value={f.graceMinutes} onChange={set("graceMinutes")} hint="Empty uses the server default (10). 0 switches it off. A student who was offline can still send the answers they gave before time ran out until this window ends." />
       </fieldset>
 
       <fieldset className="xb-switches">

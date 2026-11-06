@@ -21,6 +21,7 @@ const attemptEventSchema = new mongoose.Schema(
 
 attemptEventSchema.index({ attemptId: 1, at: 1 });
 attemptEventSchema.index({ examId: 1, type: 1 });
+attemptEventSchema.index({ at: 1 }); // lets the retention purge find old records without scanning the collection
 attemptEventSchema.index({ attemptId: 1, eid: 1 }, { unique: true, partialFilterExpression: { eid: { $type: "string" } } });
 
 module.exports = mongoose.model("AttemptEvent", attemptEventSchema);

@@ -57,7 +57,10 @@ const examSchema = new mongoose.Schema(
     drawBalance: { type: Boolean, default: true },        // spread each student's draw evenly across topics (or subjects)
     drawMixDifficulty: { type: Boolean, default: false }, // give each student the same easy/medium/hard mix (only for rated questions)
     shuffleOptions: { type: Boolean, default: false },   // each student gets their own option order (questions that refer to other options are never shuffled)
-    guard: { type: guardSchema },                         // ExamGuard security policy (see utils/guard.js)
+    guard: { type: guardSchema },
+    // How long after time is up an offline student may still send answers they gave before the deadline (0 = off).
+    // Empty means the server default (EXAM_RECONNECT_GRACE_MINUTES, 10). Copied onto each attempt when it starts.
+    reconnectGraceMinutes: { type: Number, min: 0, max: 60 },                         // ExamGuard security policy (see utils/guard.js)
     availableFrom: { type: Date },
     availableUntil: { type: Date },
     status: { type: String, enum: ["draft", "published"], default: "draft", index: true },

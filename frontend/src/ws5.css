@@ -358,3 +358,32 @@ html { scroll-padding-top: 4.5rem; }
 .site-footer .ws5-social-icons a { border-color: rgba(255, 255, 255, 0.4); background: transparent; color: #fff; }
 .site-footer .ws5-social-icons a:hover, .site-footer .ws5-social-icons a:focus-visible { background: var(--c-gold); border-color: var(--c-gold); color: #0B1F4B; }
 .ws5-swipe .programme-card { height: 100%; }
+
+/* ---------- v13: accessibility polish ---------- */
+/* A clear keyboard focus ring on every interactive part of the website. It uses the element's own text colour, so it always contrasts with its background. */
+.ws5-swipe-btn:focus-visible, .ws5-swipe-pip:focus-visible, .ws5-tab:focus-visible, .ws5-dd-btn:focus-visible, .ws5-dd-menu a:focus-visible,
+.ws5-social a:focus-visible, .ws5-anchor-link:focus-visible, .ws5-flyer-open:focus-visible, .ws5-flyer-dl:focus-visible, .ws5-top:focus-visible,
+.ws5-lightbox-close:focus-visible, .ws5-welcome-skip:focus-visible, .ws5-channel .btn:focus-visible, .ws5-hero a:focus-visible {
+  outline: 3px solid currentColor; outline-offset: 3px;
+}
+.ws5-tab.is-on:focus-visible, .ws5-anchor-link.is-on:focus-visible { outline-color: var(--c-ink, #0B1F4B); }
+.ws5-swipe-track:focus-visible { outline-width: 3px; }
+/* High-contrast / forced-colours modes: keep selected states visible without relying on background colour. */
+@media (forced-colors: active) {
+  .ws5-tab.is-on, .ws5-anchor-link.is-on { border: 2px solid Highlight; }
+  .ws5-swipe-pip.is-on::after { background: Highlight; }
+  .ws5-badge, .ws5-chip { border: 1px solid CanvasText; }
+}
+
+/* ---------- v14: achievement cards on the site theme, and the admin achievers section ---------- */
+.ws5-ach { border-top: 4px solid var(--c-gold); }
+.ws5-ach-media { position: relative; background: linear-gradient(180deg, #08183F 0%, #11316F 100%); }
+.ws5-ach-media img { object-position: center top; }
+.ws5-admin-section { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--c-line); }
+.ws5-check-row { display: flex; align-items: flex-start; gap: 0.6rem; font-weight: 600; cursor: pointer; }
+.ws5-check-row input { width: 1.25rem; height: 1.25rem; margin-top: 0.15rem; flex: none; }
+.ws5-fieldset { display: grid; gap: 0.75rem; margin: 1rem 0; padding: 1rem; border: 1px solid var(--c-line); border-radius: var(--r-ctl); }
+.ws5-fieldset legend { padding: 0 0.4rem; font-weight: 700; color: var(--c-ink); }
+.ws5-admin-who { display: flex; align-items: center; gap: 0.75rem; }
+.ws5-admin-thumb { flex: none; width: 40px; height: 50px; object-fit: cover; border-radius: 6px; background: var(--c-tint); }
+.ws5-admin-thumb-empty { display: inline-block; border: 1px dashed var(--c-line); }

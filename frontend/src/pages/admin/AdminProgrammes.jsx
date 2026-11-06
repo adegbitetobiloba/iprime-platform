@@ -5,6 +5,7 @@ import { useFetch } from "../../useFetch.js";
 import { useSubmit } from "../../useSubmit.js";
 import Field from "../../components/Field.jsx";
 import FormStatus from "../../components/FormStatus.jsx";
+import AchieversAdmin from "../../components/AchieversAdmin.jsx";
 
 const blank = { title: "", summary: "", description: "", audience: "", subjects: "", mode: "", schedule: "", status: "draft", order: "0" };
 const toForm = (p) => ({
@@ -114,6 +115,9 @@ export default function AdminProgrammes() {
           </table>
         </div>
       )}
+
+      {/* Student achievements shown on the website */}
+      <AchieversAdmin />
     </div>
   );
 }

@@ -12,6 +12,8 @@ const progV = require("../validations/programmeValidation");
 const bankC = require("../controllers/bankController");
 const attemptsC = require("../controllers/adminAttemptController");
 const bankV = require("../validations/bankValidation");
+const achieverC = require("../controllers/achieverController");
+const achieverV = require("../validations/achieverValidation");
 
 // Everything under /api/admin requires a signed-in account whose role is "admin" in the database.
 router.use(protect, requireRole("admin"));
@@ -60,5 +62,12 @@ router.get("/programmes", prog.adminList);
 router.post("/programmes", validate(progV.createProgramme), prog.create);
 router.patch("/programmes/:id", validate(progV.updateProgramme), prog.update);
 router.delete("/programmes/:id", prog.remove);
+
+// Student achievements shown on the website (managed from the Programmes page in the admin area)
+router.get("/achievers", achieverC.adminList);
+router.post("/achievers", validate(achieverV.createAchiever), achieverC.create);
+router.patch("/achievers/:id", validate(achieverV.updateAchiever), achieverC.update);
+router.post("/achievers/:id/archive", achieverC.archive);
+router.post("/achievers/:id/restore", achieverC.restore);
 
 module.exports = router;

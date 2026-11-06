@@ -19,6 +19,9 @@ const { makeSyncer } = require("../../utils/lateSync");
 const { makeSweeper } = require("../../utils/attemptSweeper");
 const { makeLogger, makeEventService } = require("../../utils/attemptEvents");
 const { makeControl } = require("../../utils/examControl");
+const pool = require("../../utils/pool");
+const { listPipeline } = require("../../utils/examList");
+const { purgeOldEvents } = require("../../utils/retention");
 
 const MIN = 60000;
 const oid = () => new mongoose.Types.ObjectId();
@@ -171,4 +174,46 @@ test("pause, resume and extend work with real date matching, and resume returns 
   assert.equal(new Date((await cur()).deadline).getTime(), later.getTime() + leftMs + 10 * MIN);
   assert.equal((await cur()).extraSeconds, 600);
   assert.equal(await AttemptEvent.countDocuments({ attemptId: a._id, type: { $in: ["admin_paused", "admin_resumed", "time_extended"] } }), 3);
+});
+
+test("question usage comes from one grouped query and matches the earlier way of counting", { skip }, async () => {
+  const exam = await makeExam();
+  const [q1, q2] = exam.questions.map((q) => String(q._id));
+  const me = oid(), other = oid();
+  await Attempt.create({ examId: exam._id, userId: me, status: "submitted", startedAt: new Date(), deadline: new Date(), questionIds: [q1, q2] });
+  await Attempt.create({ examId: exam._id, userId: other, status: "submitted", startedAt: new Date(), deadline: new Date(), questionIds: [q1] });
+  await Attempt.create({ examId: exam._id, userId: oid(), startedAt: new Date(), deadline: new Date(Date.now() + MIN) }); // no draw: ignored
+  const fast = await pool.loadUsage(Attempt, exam._id, String(me));
+  assert.deepEqual(fast.usage, { [q1]: 2, [q2]: 1 });
+  assert.deepEqual(fast.seenIds.sort(), [q1, q2].sort());
+  const slow = await pool.loadUsage({ find: (f) => Attempt.find(f) }, exam._id, String(me)); // the fallback path (no aggregate)
+  assert.deepEqual(slow.usage, fast.usage);
+  assert.deepEqual(slow.seenIds.sort(), fast.seenIds.sort());
+});
+
+test("the exam list query returns counts and marks without the questions, only for open published exams", { skip }, async () => {
+  await Exam.deleteMany({});
+  const open = await Exam.create({ title: "Open", subject: "S", durationMinutes: 10, status: "published", questions: [
+    { text: "a", options: [{ key: "A", text: "x" }, { key: "B", text: "y" }], correctKey: "A", marks: 2 },
+    { text: "b", options: [{ key: "A", text: "x" }, { key: "B", text: "y" }], correctKey: "A" },
+  ] });
+  await Exam.create({ title: "Draft", subject: "S", durationMinutes: 10, status: "draft", questions: [] });
+  await Exam.create({ title: "Closed", subject: "S", durationMinutes: 10, status: "published", availableUntil: new Date(Date.now() - 60000), questions: [] });
+  const rows = await Exam.aggregate(listPipeline(new Date()));
+  assert.equal(rows.length, 1);
+  assert.equal(String(rows[0]._id), String(open._id));
+  assert.equal(rows[0].poolSize, 2);
+  assert.equal(rows[0].marks, 3);              // 2 + the default of 1
+  assert.equal(rows[0].questions, undefined);  // the questions are not sent
+  assert.equal(pool.shapeFromTotals(rows[0], rows[0].poolSize, rows[0].marks).questionCount, 2);
+});
+
+test("the retention purge deletes only old activity records", { skip }, async () => {
+  const attemptId = oid(), base = { attemptId, examId: oid(), userId: oid(), type: "away", source: "server" };
+  await AttemptEvent.create({ ...base, at: new Date(Date.now() - 400 * 24 * 3600 * 1000) });
+  await AttemptEvent.create({ ...base, at: new Date(Date.now() - 10 * 24 * 3600 * 1000) });
+  const r = await purgeOldEvents(AttemptEvent, 365);
+  assert.equal(r.deleted, 1);
+  assert.equal(await AttemptEvent.countDocuments({ attemptId }), 1);
+  assert.equal((await purgeOldEvents(AttemptEvent, 0)).skipped, true);
 });

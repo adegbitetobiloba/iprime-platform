@@ -20,6 +20,16 @@ function graceSecondsFromEnv(env = process.env) {
   return Math.min(Math.round(m * 60), GRACE_MAX_SECONDS);
 }
 
+// A per-exam setting wins: exam.reconnectGraceMinutes (0 = off, 1 to 60). When it is not set, the server-wide default above applies.
+function graceSecondsFor(exam, env = process.env) {
+  const m = exam ? exam.reconnectGraceMinutes : undefined;
+  if (m === undefined || m === null || m === "") return graceSecondsFromEnv(env);
+  const n = Number(m);
+  if (!Number.isFinite(n)) return graceSecondsFromEnv(env);
+  if (n <= 0) return 0;
+  return Math.min(Math.round(n * 60), GRACE_MAX_SECONDS);
+}
+
 const ms = (d) => (d instanceof Date ? d.getTime() : new Date(d).getTime());
 const deadlineMs = (a) => ms(a.deadline);
 const closeAtMs = (a) => ms(a.closeAt || a.deadline); // attempts created before this existed have no grace
@@ -104,4 +114,4 @@ function makeSyncer({ Attempt, finalise }) {
   };
 }
 
-module.exports = { graceSecondsFromEnv, phaseOf, planSync, makeSyncer, closeAtMs, TOLERANCE_MS, GRACE_MAX_SECONDS };
+module.exports = { graceSecondsFromEnv, graceSecondsFor, phaseOf, planSync, makeSyncer, closeAtMs, TOLERANCE_MS, GRACE_MAX_SECONDS };

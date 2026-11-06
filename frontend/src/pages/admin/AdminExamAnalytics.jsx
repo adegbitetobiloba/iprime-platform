@@ -76,7 +76,7 @@ export default function AdminExamAnalytics() {
                 <ul className="sd-list">
                   {d.hardest.map((q) => (
                     <li key={q.questionId} className="sd-row">
-                      <div><strong>{q.text}</strong><span className="muted">{[q.topic, q.mostChosenWrong ? `most chose ${q.mostChosenWrong.key} (${q.mostChosenWrong.percent}%)` : null, q.skippedPercent ? `${q.skippedPercent}% skipped` : null].filter(Boolean).join(" · ")}</span></div>
+                      <div><strong>{q.text}</strong><span className="muted">{[q.topic, q.mostChosenWrong ? `most chose ${q.mostChosenWrong.key} (${q.mostChosenWrong.percent}%)` : null, q.skippedPercent ? `${q.skippedPercent}% skipped` : null, d.exam.questionsPerStudent ? `seen by ${q.answeredBy} students` : null].filter(Boolean).join(" · ")}</span></div>
                       <span className="badge badge-quiet">{q.percentCorrect}% correct</span>
                     </li>
                   ))}
@@ -84,6 +84,20 @@ export default function AdminExamAnalytics() {
               )}
               {d.questionBasis.unverifiable > 0 && d.hardest.length > 0 && <p className="muted sd-small">{d.questionBasis.unverifiable} student attempt{d.questionBasis.unverifiable === 1 ? " is" : "s are"} left out of question figures because the examination changed afterwards. Scores are unaffected.</p>}
             </section>
+
+            {(d.subjects || []).length > 1 && (
+              <section className="panel aa-block" aria-labelledby="aa-subjects">
+                <h2 className="panel-title" id="aa-subjects">Subjects</h2>
+                <ul className="sd-list">
+                  {d.subjects.map((t) => (
+                    <li key={t.subject} className="sd-subject">
+                      <div className="sd-subject-top"><strong>{t.subject}</strong><span>{t.percentage}%</span></div>
+                      <div className="sd-meter" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={t.percentage} aria-label={`${t.subject} average`}><span style={{ width: `${t.percentage}%` }} /></div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             <section className="panel aa-block" aria-labelledby="aa-topics">
               <h2 className="panel-title" id="aa-topics">Topics</h2>

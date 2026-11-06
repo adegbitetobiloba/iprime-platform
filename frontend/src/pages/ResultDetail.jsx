@@ -5,6 +5,16 @@ import SafeHtml from "../components/SafeHtml.jsx";
 // Where an explanation came from. Shown so students can tell the document's own solution from one an administrator wrote.
 const SOURCE_LABEL = { source: "From the source", admin_written: "Written by an administrator" };
 
+// Why an attempt was submitted for the student. Older attempts have no reason recorded; those that were submitted
+// automatically all ran out of time, so they keep the original wording.
+const WHY = {
+  time_up: "time ran out, so it was submitted automatically",
+  violation_limit: "you left the exam window more often than this examination allows, so it was submitted automatically",
+  admin_forced: "your examiner submitted it",
+  admin_terminated: "your examiner ended the examination",
+};
+const whyText = (r) => (WHY[r.submitReason] ? ` (${WHY[r.submitReason]})` : r.autoSubmitted ? " (time ran out, so it was submitted automatically)" : "");
+
 export default function ResultDetail() {
   const { id } = useParams();
   const { data, error, loading } = useFetch(`/attempts/${id}/result`);
@@ -25,7 +35,7 @@ export default function ResultDetail() {
       <div className="container narrow-wide">
         <p className="eyebrow">Result</p>
         <h1>{r.examTitle}</h1>
-        <p className="muted">{r.subject} · Submitted {fmtDate(r.submittedAt)}{r.autoSubmitted ? " (time ran out, so it was submitted automatically)" : ""}</p>
+        <p className="muted">{r.subject} · Submitted {fmtDate(r.submittedAt)}{whyText(r)}</p>
 
         <div className="score-banner">
           <p className="score-big">{r.percentage}%</p>
