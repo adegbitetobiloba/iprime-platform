@@ -1,0 +1,86 @@
+{
+  "status": "LIVE since v14 (owner confirmed consent and that the scores are real JAMB scores, 3 Nov 2026). This file now only documents the SOURCE images and the original flyer details. The website shows refined versions from frontend/public/images/achievers/.",
+  "source": "Flyer 'Prime Excelerate Tutelage, 2027 JAMB (UTME) tutorial classes, Our top-performing scholars', supplied by the owner on 2 Nov 2026 (flyer B). Faces were cut from the flyer exactly as printed; no editing or enhancement was applied. Native resolution is only about 170 pixels wide, so original photographs are needed for large display.",
+  "people": [
+    {
+      "id": "testdriller-355",
+      "files": {
+        "portrait": "01-testdriller-355-portrait.jpg",
+        "card": "01-testdriller-355-card.jpg"
+      },
+      "printedOnFlyer": {
+        "label": "2026 Testdriller Challenge Winner",
+        "number": 355
+      },
+      "note": "Owner confirmed on 3 Nov 2026 that 355 is a real JAMB (UTME) score. The flyer also calls this person the 2026 Testdriller Challenge winner. The website records it as a JAMB score.",
+      "name": null,
+      "examType": "UTME",
+      "year": 2026
+    },
+    {
+      "id": "jamb-342",
+      "files": {
+        "portrait": "02-jamb-342-portrait.jpg",
+        "card": "02-jamb-342-card.jpg"
+      },
+      "printedOnFlyer": {
+        "label": "JAMB Score",
+        "number": 342
+      },
+      "name": null,
+      "examType": "UTME",
+      "year": null
+    },
+    {
+      "id": "jamb-362",
+      "files": {
+        "portrait": "03-jamb-362-portrait.jpg",
+        "card": "03-jamb-362-card.jpg"
+      },
+      "printedOnFlyer": {
+        "label": "JAMB SCORE",
+        "number": 362,
+        "awardBoard": "2025 UTME Challenge Award, 4th position, challenge score 387, name written on the board: Bello Jesufolahan Elijah"
+      },
+      "note": "The other flyer (2027 UTME Tutorial Programme) lists 'Bello Jesufolahan 361' under 2025 UTME. 361 and 362 disagree: management must say which is correct and provide the result slip.",
+      "name": null,
+      "examType": "UTME",
+      "year": null
+    },
+    {
+      "id": "jamb-344",
+      "files": {
+        "portrait": "04-jamb-344-portrait.jpg",
+        "card": "04-jamb-344-card.jpg"
+      },
+      "printedOnFlyer": {
+        "label": "JAMB Score",
+        "number": 344
+      },
+      "name": null,
+      "examType": "UTME",
+      "year": null
+    },
+    {
+      "id": "ceo",
+      "files": {
+        "portrait": "05-ceo-portrait.jpg",
+        "card": "05-ceo-card.jpg"
+      },
+      "printedOnFlyer": {
+        "label": "CEO, Prime Excelerate"
+      },
+      "note": "Not a student achievement. Use for an approved leadership profile on the About page, once the CEO approves his photo and wording.",
+      "name": null
+    }
+  ],
+  "needs": [
+    "Approved public name, spelled as the person wants it published",
+    "Exact score, the examination and the year (the flyers disagree in places)",
+    "Evidence of the result (for example the official result slip)",
+    "Programme or mode attended with Prime Excelerate Tutelage",
+    "Written permission to publish name, score and photo (parent or guardian as well for anyone under 18)",
+    "A clean original photograph, preferably larger than the flyer crop"
+  ],
+  "alsoOnTheOtherFlyer": "For reference only, NOT matched to any face: 2025 UTME: Bello Jesufolahan 361, Akinmade Fisayomi 342. 2026 UTME: Lawal Okikiola 355, Popoola Oluwamurewafumi 339, Sosu-Olaitan Gideon 339. Management must say which name belongs to which person and score."
+}

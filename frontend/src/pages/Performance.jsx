@@ -77,6 +77,23 @@ export default function Performance() {
               </div>
             </Block>
 
+            {(d.subjects || []).length > 1 && (
+              <Block id="pf-subjects" title="Subjects" note={`Subjects are described once you have answered at least ${d.definitions.minEvidence} questions in them. Each score comes from the questions you were actually given.`}>
+                <ul className="sd-card pf-topics">
+                  {d.subjects.map((t) => {
+                    const b = BAND[t.band];
+                    return (
+                      <li key={t.subject} className="sd-subject">
+                        <div className="sd-subject-top"><strong>{t.subject}</strong><span className={`pf-band ${b.cls}`}>{b.label}</span></div>
+                        <div className="sd-meter" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={t.percentage} aria-label={`${t.subject} score`}><span style={{ width: `${t.percentage}%` }} /></div>
+                        <span className="muted sd-small">{t.percentage}% across {t.questions} question{t.questions === 1 ? "" : "s"} in {t.attempts} attempt{t.attempts === 1 ? "" : "s"}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Block>
+            )}
+
             <Block id="pf-topics" title="Topics" note={`A topic is only described once you have answered at least ${d.definitions.minEvidence} questions in it.`}>
               {topics.length === 0 ? (
                 <Empty>Your examinations do not have topics set yet, so there is no topic breakdown.{d.untaggedQuestions ? ` (${d.untaggedQuestions} questions had no topic.)` : ""}</Empty>

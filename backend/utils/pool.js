@@ -43,28 +43,51 @@ function drawQuestionIds(exam, { seed, seenIds = [], usage = {} } = {}) {
   return res.picked.map((q) => q.id);
 }
 
+// How often each question has been handed out in this exam, and which ones THIS student has already had.
+// On a real database this is ONE grouped query (a count per question, so at most pool-size rows come back) plus the
+// student's own few attempts. The earlier way pulled every attempt of the exam into memory on every start, which got
+// slower with every student who had started. Anything without aggregate() (a test stand-in) uses the earlier way.
+async function loadUsage(Attempt, examId, userId) {
+  const usage = {}, seenIds = [];
+  if (typeof Attempt.aggregate === "function") {
+    const rows = (await Attempt.aggregate([
+      { $match: { examId, questionIds: { $exists: true, $ne: [] } } },
+      { $unwind: "$questionIds" },
+      { $group: { _id: "$questionIds", n: { $sum: 1 } } },
+    ])) || [];
+    for (const r of rows) usage[r._id] = r.n;
+    const mine = (await Attempt.find({ examId, userId }).select("questionIds").lean()) || [];
+    for (const a of mine) for (const id of a.questionIds || []) seenIds.push(id);
+    return { usage, seenIds };
+  }
+  const all = (await Attempt.find({ examId }).select("userId questionIds").lean()) || [];
+  for (const a of all) for (const id of a.questionIds || []) { usage[id] = (usage[id] || 0) + 1; if (String(a.userId) === String(userId)) seenIds.push(id); }
+  return { usage, seenIds };
+}
+
 // Everything a new attempt needs to be created with. `Attempt` is the model (only used to look at earlier attempts).
 async function planAttempt(Attempt, exam, userId) {
   const seed = newSeed();
   const plan = { seed, shuffleQuestions: Boolean(exam.shuffleQuestions), shuffleOptions: Boolean(exam.shuffleOptions) };
   if (perStudent(exam)) {
-    const all = (await Attempt.find({ examId: exam._id }).select("userId questionIds").lean()) || [];
-    const usage = {}, seenIds = [];
-    for (const a of all) for (const id of a.questionIds || []) { usage[id] = (usage[id] || 0) + 1; if (String(a.userId) === String(userId)) seenIds.push(id); }
+    const { usage, seenIds } = await loadUsage(Attempt, exam._id, userId);
     const ids = drawQuestionIds(exam, { seed, seenIds, usage });
     if (ids) plan.questionIds = ids;
   }
   return plan;
 }
 
-// What a student is told before starting: how many questions and how many marks THEY will get.
+// What a student is told before starting: how many questions and how many marks THEY will get. shapeFromTotals does the
+// arithmetic from a pool size and the pool's total marks, so a list page can use it without loading every question.
+function shapeFromTotals(exam, poolSize, sum) {
+  const n = perStudent(exam);
+  const count = n ? Math.min(n, poolSize) : poolSize;
+  const totalMarks = n && n < poolSize ? Math.round((sum / (poolSize || 1)) * count * 100) / 100 : sum;
+  return { questionCount: count, totalMarks, poolSize, drawn: Boolean(n && n < poolSize) };
+}
 function shape(exam) {
   const all = (exam && exam.questions) || [];
-  const n = perStudent(exam);
-  const count = n ? Math.min(n, all.length) : all.length;
-  const sum = all.reduce((t, q) => t + (q.marks ?? 1), 0);
-  const totalMarks = n && n < all.length ? Math.round((sum / (all.length || 1)) * count * 100) / 100 : sum;
-  return { questionCount: count, totalMarks, poolSize: all.length, drawn: Boolean(n && n < all.length) };
+  return shapeFromTotals(exam, all.length, all.reduce((t, q) => t + (q.marks ?? 1), 0));
 }
 
-module.exports = { perStudent, expectedOverlap, drawQuestionIds, planAttempt, shape, servedQuestions };
+module.exports = { perStudent, expectedOverlap, drawQuestionIds, loadUsage, planAttempt, shape, shapeFromTotals, servedQuestions };

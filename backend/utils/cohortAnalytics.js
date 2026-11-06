@@ -8,6 +8,7 @@
 //  - Ties share a rank (competition ranking: 1, 2, 2, 4).
 //  - Fewer than MIN_COHORT students: results are flagged limitedEvidence and no support list is produced.
 const { scoreAttempt, toPlain } = require("./cbt");
+const { servedQuestions } = require("./randomise");
 
 const round1 = (n) => Math.round(n * 10) / 10;
 const idOf = (v) => (v == null ? "" : String(v));
@@ -16,6 +17,7 @@ const toMs = (v) => (v ? new Date(v).getTime() : NaN);
 const MIN_COHORT = 5;       // smallest group we describe in any way beyond raw counts
 const SUPPORT_BELOW = 40;   // percentage under which a learner is listed for a check-in
 const UNTAGGED = "Untagged";
+const UNSPECIFIED = "Subject not set";
 
 function quantile(sorted, q) {
   if (!sorted.length) return null;
@@ -62,48 +64,61 @@ function buildExamCohort({ exam, attempts = [] }) {
 
   const top = ranking.filter((r) => r.rank <= 10);
 
-  // question level, from verified first attempts only
+  // question level, from verified first attempts only. A pooled exam gives each student their own draw, so every
+  // attempt is graded on the questions it was given and each question is measured only over students who saw it.
   const verified = [];
   let unverifiable = 0;
   for (const a of firsts) {
-    const r = questions.length ? scoreAttempt(questions, a.answers) : null;
+    const served = servedQuestions(exam, a);
+    const r = served.length ? scoreAttempt(served, a.answers) : null;
     const same = r && r.score === a.score && r.totalMarks === a.totalMarks && r.correct === a.correct && r.incorrect === a.incorrect && r.unanswered === a.unanswered;
-    if (same) verified.push(a); else unverifiable += 1;
+    if (same) verified.push({ a, served }); else unverifiable += 1;
   }
 
-  const qRows = questions.map((q) => ({ q, id: idOf(q._id), right: 0, skipped: 0, wrong: {} }));
+  const rowById = new Map(questions.map((q) => [idOf(q._id), { q, id: idOf(q._id), seen: 0, right: 0, skipped: 0, wrong: {} }]));
   const topicAgg = new Map();
-  for (const a of verified) {
+  const subjectAgg = new Map();
+  for (const { a, served } of verified) {
     const given = toPlain(a.answers);
-    for (const row of qRows) {
+    for (const q of served) {
+      const row = rowById.get(idOf(q._id));
+      if (!row) continue;
       const choice = given[row.id];
-      const marks = row.q.marks ?? 1;
-      const isRight = Boolean(choice) && choice === row.q.correctKey;
+      const marks = q.marks ?? 1;
+      const isRight = Boolean(choice) && choice === q.correctKey;
+      row.seen += 1;
       if (isRight) row.right += 1; else if (!choice) row.skipped += 1; else row.wrong[choice] = (row.wrong[choice] || 0) + 1;
-      const topic = row.q.topic?.trim() || UNTAGGED;
-      const t = topicAgg.get(topic) || { topic, earned: 0, available: 0, students: new Set(), questions: new Set() };
-      t.earned += isRight ? marks : 0; t.available += marks; t.students.add(idOf(a.userId)); t.questions.add(row.id);
-      topicAgg.set(topic, t);
+      const add = (map, key) => {
+        const t = map.get(key) || { key, earned: 0, available: 0, students: new Set(), questions: new Set() };
+        t.earned += isRight ? marks : 0; t.available += marks; t.students.add(idOf(a.userId)); t.questions.add(row.id);
+        map.set(key, t);
+      };
+      add(topicAgg, q.topic?.trim() || UNTAGGED);
+      add(subjectAgg, (q.subject || exam?.subject || "").trim() || UNSPECIFIED);
     }
   }
   const n = verified.length;
-  const questionStats = n ? qRows.map((r) => {
-    const wrongEntries = Object.entries(r.wrong).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  // A question needs enough students who actually saw it. With a pool a question may be drawn by only a few students.
+  const minSeen = Math.min(MIN_COHORT, n);
+  const questionStats = [...rowById.values()].filter((r) => r.seen > 0 && r.seen >= minSeen).map((r) => {
+    const wrongEntries = Object.entries(r.wrong).sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]));
     return {
-      questionId: r.id, text: r.q.text, topic: r.q.topic?.trim() || null,
-      percentCorrect: round1((r.right / n) * 100), skippedPercent: round1((r.skipped / n) * 100),
-      mostChosenWrong: wrongEntries.length ? { key: wrongEntries[0][0], percent: round1((wrongEntries[0][1] / n) * 100) } : null,
+      questionId: r.id, text: r.q.text, topic: r.q.topic?.trim() || null, answeredBy: r.seen,
+      percentCorrect: round1((r.right / r.seen) * 100), skippedPercent: round1((r.skipped / r.seen) * 100),
+      mostChosenWrong: wrongEntries.length ? { key: wrongEntries[0][0], percent: round1((wrongEntries[0][1] / r.seen) * 100) } : null,
     };
-  }) : [];
+  });
   const hardest = [...questionStats].sort((a, b) => a.percentCorrect - b.percentCorrect || a.text.localeCompare(b.text)).slice(0, 10);
-  const topics = [...topicAgg.values()].filter((t) => t.topic !== UNTAGGED)
-    .map((t) => ({ topic: t.topic, percentage: t.available ? round1((t.earned / t.available) * 100) : 0, questions: t.questions.size, students: t.students.size }))
-    .sort((a, b) => a.percentage - b.percentage || a.topic.localeCompare(b.topic));
+  const summarise = (map, label, skip) => [...map.values()].filter((t) => t.key !== skip)
+    .map((t) => ({ [label]: t.key, percentage: t.available ? round1((t.earned / t.available) * 100) : 0, questions: t.questions.size, students: t.students.size }))
+    .sort((x, y) => x.percentage - y.percentage || String(x[label]).localeCompare(String(y[label])));
+  const topics = summarise(topicAgg, "topic", UNTAGGED);
+  const subjects = summarise(subjectAgg, "subject", null);
 
   const support = limitedEvidence ? [] : ranking.filter((r) => r.percentage < SUPPORT_BELOW).map(({ userId, attemptId, percentage }) => ({ userId, attemptId, percentage }));
 
   return {
-    exam: { id: idOf(exam?._id ?? exam?.id), title: exam?.title || "Examination", subject: exam?.subject || null, questionCount: questions.length },
+    exam: { id: idOf(exam?._id ?? exam?.id), title: exam?.title || "Examination", subject: exam?.subject || null, questionCount: questions.length, questionsPerStudent: exam?.questionsPerStudent || null },
     basis: "first submitted attempt per student",
     definitions: { minCohort: MIN_COHORT, supportBelow: SUPPORT_BELOW },
     limitedEvidence,
@@ -113,7 +128,7 @@ function buildExamCohort({ exam, attempts = [] }) {
     autoSubmitted: firsts.filter((a) => a.autoSubmitted).length,
     stats, distribution, top, support,
     questionBasis: { verifiedStudents: n, unverifiable },
-    hardest, topics,
+    hardest, topics, subjects,
   };
 }
 

@@ -21,6 +21,7 @@ const examFields = {
   drawSpread: Joi.boolean(),
   drawBalance: Joi.boolean(),
   drawMixDifficulty: Joi.boolean(),
+  reconnectGraceMinutes: Joi.number().integer().min(0).max(60).allow(null),
   guard: Joi.object({
     enabled: Joi.boolean(),
     monitorFocus: Joi.boolean(),

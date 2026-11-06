@@ -54,8 +54,21 @@ function startSweeper() {
   const finalise = makeFinaliser(Attempt, { onClosed: (a, info) => logger.log(a, "auto_submitted_time", { reason: info.reason, by: "sweeper" }) });
   const sweep = makeSweeper({ Attempt, Exam, finalise });
   const run = () => sweep().then((r) => { if (r && r.found) console.log(`[sweeper] ${JSON.stringify(r)}`); }).catch((e) => console.error("[sweeper]", e.message));
-  setTimeout(run, 5000).unref();
+  setTimeout(run, 5000).unref(); // right after the server wakes up, close anything that ran out of time while it slept
+  startRetention(AttemptEvent);
   return setInterval(run, secs * 1000).unref();
 }
 
-module.exports = { makeSweeper, startSweeper };
+// EXAM_EVENT_RETENTION_DAYS: how long exam activity records are kept (default 365; 0 = keep forever). Results are never deleted.
+function startRetention(AttemptEvent) {
+  const { retentionDays, purgeOldEvents } = require("./retention");
+  const days = retentionDays();
+  if (!days) return null;
+  const purge = () => purgeOldEvents(AttemptEvent, days)
+    .then((r) => { if (r.deleted) console.log(`[retention] removed ${r.deleted} activity records older than ${days} days`); })
+    .catch((e) => console.error("[retention]", e.message));
+  setTimeout(purge, 60 * 1000).unref();
+  return setInterval(purge, 24 * 60 * 60 * 1000).unref();
+}
+
+module.exports = { makeSweeper, startSweeper, startRetention };

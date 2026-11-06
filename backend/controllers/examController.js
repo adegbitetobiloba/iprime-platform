@@ -6,10 +6,11 @@ const { newSeed, arrange, studentView, reviewView } = require("../utils/randomis
 const pool = require("../utils/pool");
 const AttemptEvent = require("../models/AttemptEvent");
 const { makeFinaliser } = require("../utils/attemptLifecycle");
-const { graceSecondsFromEnv, phaseOf, makeSyncer } = require("../utils/lateSync");
+const { graceSecondsFor, phaseOf, makeSyncer } = require("../utils/lateSync");
 const { normalizePolicy } = require("../utils/guard");
 const { makeLogger, makeEventService } = require("../utils/attemptEvents");
 const { makeCache } = require("../utils/examCache");
+const { listRows } = require("../utils/examList");
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const serverError = (res, err) => {
@@ -97,7 +98,8 @@ async function ownAttempt(req) {
 exports.listExams = async (req, res) => {
   try {
     const now = new Date();
-    const exams = await Exam.find({ status: "published", $or: [{ availableUntil: null }, { availableUntil: { $gte: now } }] }).sort({ createdAt: -1 }).lean();
+    // Only what the list shows (see utils/examList.js): the questions themselves are not loaded for a list page.
+    const exams = await listRows(Exam, now);
     const mine = await Attempt.find({ userId: req.user.id, examId: { $in: exams.map((e) => e._id) } }).select("examId status").lean();
     res.json({
       exams: exams.map((e) => {
@@ -105,7 +107,7 @@ exports.listExams = async (req, res) => {
         const inProgress = theirs.find((a) => a.status === "in_progress");
         return {
           id: String(e._id), title: e.title, description: e.description, subject: e.subject, level: e.level, examType: e.examType,
-          durationMinutes: e.durationMinutes, questionCount: pool.shape(e).questionCount, totalMarks: totalMarks(e), maxAttempts: e.maxAttempts,
+          durationMinutes: e.durationMinutes, questionCount: pool.shapeFromTotals(e, e.poolSize, e.marks).questionCount, totalMarks: pool.shapeFromTotals(e, e.poolSize, e.marks).totalMarks, maxAttempts: e.maxAttempts,
           availableFrom: e.availableFrom, availableUntil: e.availableUntil,
           attemptsUsed: theirs.filter((a) => a.status === "submitted").length,
           inProgressAttemptId: inProgress ? String(inProgress._id) : null,
@@ -162,7 +164,7 @@ exports.startAttempt = async (req, res) => {
 
     const startedAt = new Date();
     const deadline = deadlineFor(startedAt, exam.durationMinutes);
-    const graceSeconds = graceSecondsFromEnv(); // copied onto the attempt, so changing it later never alters a running exam
+    const graceSeconds = graceSecondsFor(exam); // this exam's own setting, else the server default; copied onto the attempt, so changing it later never alters a running exam
     try {
       // The switches are copied onto the attempt now, so editing the exam later can never reshuffle a student mid-exam.
       const plan = await pool.planAttempt(Attempt, exam, req.user.id);

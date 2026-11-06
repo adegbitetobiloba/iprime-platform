@@ -18,7 +18,7 @@ exports.examCohort = async (req, res) => {
     if (!exam) return res.status(404).json({ error: "Examination not found." });
 
     const attempts = await Attempt.find({ examId, status: "submitted" })
-      .select("userId status startedAt submittedAt autoSubmitted answers score totalMarks percentage correct incorrect unanswered")
+      .select("userId status startedAt submittedAt autoSubmitted answers questionIds score totalMarks percentage correct incorrect unanswered")
       .sort({ submittedAt: 1 }).limit(5000).lean();
     const data = buildExamCohort({ exam, attempts });
 

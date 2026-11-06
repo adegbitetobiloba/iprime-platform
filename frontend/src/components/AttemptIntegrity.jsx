@@ -53,6 +53,9 @@ export default function AttemptIntegrity({ examId }) {
             : "ExamGuard is off for this examination."}
         </p>
       )}
+      {data && typeof data.retentionDays === "number" && (
+        <p className="muted">{data.retentionDays > 0 ? `Activity records are kept for ${data.retentionDays} days, then deleted. Results are never deleted.` : "Activity records are kept indefinitely. Results are never deleted."}</p>
+      )}
       {loading && <p className="muted">Loading...</p>}
       {error && <p className="alert alert-error" role="alert">{error}</p>}
       {!loading && !error && rows.length === 0 && <p className="note">No attempts yet.</p>}

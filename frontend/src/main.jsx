@@ -19,6 +19,7 @@ import "./messages.css";
 import "./import.css";
 import "./rich.css";
 import "./examReliability.css";
+import "./enrolment.css";
 import "./ws5.css";
 
 initTheme();
