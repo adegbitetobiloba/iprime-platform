@@ -3,6 +3,7 @@ const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const AttemptEvent = require("../models/AttemptEvent");
 const User = require("../models/User");
+const people = require("../utils/people");
 const { normalizePolicy } = require("../utils/guard");
 const { summarise } = require("../utils/integritySummary");
 const { retentionDays } = require("../utils/retention");
@@ -20,7 +21,7 @@ exports.exam = async (req, res) => {
     const exam = await Exam.findById(req.params.id).select("title guard").lean();
     if (!exam) return res.status(404).json({ error: "Examination not found" });
     const attempts = await Attempt.find({ examId: exam._id }).sort({ createdAt: -1 }).limit(500).lean();
-    const users = await User.find({ _id: { $in: attempts.map((a) => a.userId) } }).select("firstName lastName studentId").lean();
+    const users = await people.list(attempts.map((a) => a.userId));
     const byUser = new Map(users.map((u) => [String(u._id), u]));
 
     const sums = await AttemptEvent.aggregate([
@@ -65,7 +66,7 @@ exports.events = async (req, res) => {
     if (!attempt) return res.status(404).json({ error: "Attempt not found" });
     const events = await AttemptEvent.find({ attemptId: attempt._id }).sort({ at: 1 }).limit(1500).lean();
     res.json({
-      attempt: { id: String(attempt._id), status: attempt.status, startedAt: attempt.startedAt, deadline: attempt.deadline, submittedAt: attempt.submittedAt, submitReason: attempt.submitReason || null, violations: attempt.violations || 0, lateSynced: Boolean(attempt.lateSynced) },
+      attempt: { id: String(attempt._id), status: attempt.status, startedAt: attempt.startedAt, deadline: attempt.deadline, submittedAt: attempt.submittedAt, submitReason: attempt.submitReason || null },
       events: events.map((e) => ({ id: String(e._id), type: e.type, source: e.source, at: e.at, clientAt: e.clientAt, durationMs: e.durationMs, counted: Boolean(e.counted), meta: e.meta })),
     });
   } catch (err) { serverError(res, err); }
