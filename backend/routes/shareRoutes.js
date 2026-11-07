@@ -7,7 +7,7 @@ const access = require("../middleware/examAccess");
 const c = require("../controllers/shareController");
 
 const router = express.Router();
-const limiter = (windowMs, n, keyFn) => rateLimit({ windowMs, max: n, limit: n, standardHeaders: true, legacyHeaders: false, ...(keyFn ? { keyGenerator: keyFn } : {}), message: { error: "Too many requests. Please try again later." } });
+const limiter = (windowMs, n, keyFn) => rateLimit({ windowMs, max: n, limit: n, standardHeaders: true, legacyHeaders: false, ...(keyFn ? { keyGenerator: keyFn } : {}), message: { error: "Too many attempts. Please wait a few minutes and try again." } });
 const publicLimit = limiter(10 * 60 * 1000, 120);
 const enterLimit = limiter(10 * 60 * 1000, 20, (req) => `${ipKeyGenerator(req.ip)}:${req.params.token}`);       // guessing a password needs many tries
 const unlockLimit = limiter(10 * 60 * 1000, 10, (req) => `${req.user && req.user.id}:${req.params.id}`);
