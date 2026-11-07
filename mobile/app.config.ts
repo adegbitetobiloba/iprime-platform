@@ -8,14 +8,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'iPrime',
   slug: 'iprime',
   scheme: 'iprime',
-  plugins: [...(config.plugins ?? []), 'expo-secure-store'],
   version: '0.1.0',
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
-  // PLACEHOLDER package name: confirm with the owner BEFORE the first build.
-  // It becomes permanent once the app is published on Google Play.
-  android: { ...config.android, package: 'ng.iprime.app' },
-  ios: { ...config.ios, bundleIdentifier: 'ng.iprime.app' },
+  android: { ...config.android, package: 'com.primeexcelerate.iprime' },
+  ios: { ...config.ios, bundleIdentifier: 'com.primeexcelerate.iprime' },
+  plugins: [...(config.plugins ?? []).filter((p) => (Array.isArray(p) ? p[0] : p) !== 'expo-secure-store'), 'expo-secure-store'],
   extra: {
     ...config.extra,
     apiBaseUrl: process.env.API_BASE_URL,
