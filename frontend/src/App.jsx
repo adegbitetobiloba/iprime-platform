@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Component, Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
@@ -17,54 +17,91 @@ import Register from "./pages/Register.jsx";
 import Verify from "./pages/Verify.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
-import Performance from "./pages/Performance.jsx";
-import ProgressReport from "./pages/ProgressReport.jsx";
 import ExamCentre from "./pages/ExamCentre.jsx";
 import ExamIntro from "./pages/ExamIntro.jsx";
 import ExamRunner from "./pages/ExamRunner.jsx";
-import Results from "./pages/Results.jsx";
-import ResultDetail from "./pages/ResultDetail.jsx";
-import Enrolment from "./pages/Enrolment.jsx";
-import AdminLayout from "./pages/admin/AdminLayout.jsx";
-import AdminHome from "./pages/admin/AdminHome.jsx";
-import AdminExams from "./pages/admin/AdminExams.jsx";
-import AdminExamEdit from "./pages/admin/AdminExamEdit.jsx";
-import AdminAttempts from "./pages/admin/AdminAttempts.jsx";
-import AdminAttemptReview from "./pages/admin/AdminAttemptReview.jsx";
-import AdminProgrammes from "./pages/admin/AdminProgrammes.jsx";
-import AdminStudents from "./pages/admin/AdminStudents.jsx";
-import AdminExamAnalytics from "./pages/admin/AdminExamAnalytics.jsx";
-import AdminAnalytics from "./pages/admin/AdminAnalytics.jsx";
-import AdminLibraryStudy from "./pages/admin/AdminLibraryStudy.jsx";
-import AdminImport from "./pages/admin/AdminImport.jsx";
-import AdminBank from "./pages/admin/AdminBank.jsx";
-import AdminApplications from "./pages/admin/AdminApplications.jsx";
-import AdminPeople from "./pages/admin/AdminPeople.jsx";
-import AdminCheckin from "./pages/admin/AdminCheckin.jsx";
-import AdminEnrolmentSettings from "./pages/admin/AdminEnrolmentSettings.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
 import PendingApproval from "./pages/PendingApproval.jsx";
 import AdminDenied from "./pages/admin/AdminDenied.jsx";
-import Messages from "./pages/Messages.jsx";
-import AdminMessages from "./pages/admin/AdminMessages.jsx";
-import Library from "./pages/Library.jsx";
-import LibraryMaterials from "./pages/LibraryMaterials.jsx";
-import LibraryMaterial from "./pages/LibraryMaterial.jsx";
-import LibraryUtme from "./pages/LibraryUtme.jsx";
-import LibraryShelf from "./pages/LibraryShelf.jsx";
-import LibraryCourse from "./pages/LibraryCourse.jsx";
-import LibraryLesson from "./pages/LibraryLesson.jsx";
-import LibrarySaved from "./pages/LibrarySaved.jsx";
-import AdminLibrary from "./pages/admin/AdminLibrary.jsx";
-import AdminLibraryCourse from "./pages/admin/AdminLibraryCourse.jsx";
-import AdminLibraryAnalytics from "./pages/admin/AdminLibraryAnalytics.jsx";
-import AdminExamBuilder from "./pages/admin/AdminExamBuilder.jsx";
 import ShareLanding from "./pages/ShareLanding.jsx";
 import SebCheck from "./pages/SebCheck.jsx";
 import Toast from "./components/Toast.jsx";
 import WelcomeFlyer from "./components/WelcomeFlyer.jsx";
 import { useAuth } from "./auth.jsx";
+
+function lazyPage(load) {
+  return lazy(async () => {
+    try {
+      const page = await load();
+      try { sessionStorage.removeItem("iprime-chunk-reload"); } catch { /* storage unavailable */ }
+      return page;
+    } catch (err) {
+      // After a new release the old file names are gone: reload once to pick up the new version.
+      let first = false;
+      try {
+        first = !sessionStorage.getItem("iprime-chunk-reload");
+        if (first) sessionStorage.setItem("iprime-chunk-reload", "1");
+      } catch { /* ignore */ }
+      if (first) { window.location.reload(); return new Promise(() => {}); }
+      throw err;
+    }
+  });
+}
+
+class RouteBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidUpdate(prev) {
+    if (prev.resetKey !== this.props.resetKey && this.state.failed) this.setState({ failed: false });
+  }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <p className="page-note" role="alert">
+        This page could not load. Check your connection, then{" "}
+        <button type="button" onClick={() => window.location.reload()}>try again</button>.
+      </p>
+    );
+  }
+}
+
+const Performance = lazyPage(() => import("./pages/Performance.jsx"));
+const ProgressReport = lazyPage(() => import("./pages/ProgressReport.jsx"));
+const Results = lazyPage(() => import("./pages/Results.jsx"));
+const ResultDetail = lazyPage(() => import("./pages/ResultDetail.jsx"));
+const Enrolment = lazyPage(() => import("./pages/Enrolment.jsx"));
+const Messages = lazyPage(() => import("./pages/Messages.jsx"));
+const Library = lazyPage(() => import("./pages/Library.jsx"));
+const LibraryMaterials = lazyPage(() => import("./pages/LibraryMaterials.jsx"));
+const LibraryMaterial = lazyPage(() => import("./pages/LibraryMaterial.jsx"));
+const LibraryUtme = lazyPage(() => import("./pages/LibraryUtme.jsx"));
+const LibraryShelf = lazyPage(() => import("./pages/LibraryShelf.jsx"));
+const LibraryCourse = lazyPage(() => import("./pages/LibraryCourse.jsx"));
+const LibraryLesson = lazyPage(() => import("./pages/LibraryLesson.jsx"));
+const LibrarySaved = lazyPage(() => import("./pages/LibrarySaved.jsx"));
+const AdminLayout = lazyPage(() => import("./pages/admin/AdminLayout.jsx"));
+const AdminHome = lazyPage(() => import("./pages/admin/AdminHome.jsx"));
+const AdminExams = lazyPage(() => import("./pages/admin/AdminExams.jsx"));
+const AdminExamEdit = lazyPage(() => import("./pages/admin/AdminExamEdit.jsx"));
+const AdminAttempts = lazyPage(() => import("./pages/admin/AdminAttempts.jsx"));
+const AdminAttemptReview = lazyPage(() => import("./pages/admin/AdminAttemptReview.jsx"));
+const AdminProgrammes = lazyPage(() => import("./pages/admin/AdminProgrammes.jsx"));
+const AdminStudents = lazyPage(() => import("./pages/admin/AdminStudents.jsx"));
+const AdminExamAnalytics = lazyPage(() => import("./pages/admin/AdminExamAnalytics.jsx"));
+const AdminAnalytics = lazyPage(() => import("./pages/admin/AdminAnalytics.jsx"));
+const AdminLibraryStudy = lazyPage(() => import("./pages/admin/AdminLibraryStudy.jsx"));
+const AdminImport = lazyPage(() => import("./pages/admin/AdminImport.jsx"));
+const AdminBank = lazyPage(() => import("./pages/admin/AdminBank.jsx"));
+const AdminApplications = lazyPage(() => import("./pages/admin/AdminApplications.jsx"));
+const AdminPeople = lazyPage(() => import("./pages/admin/AdminPeople.jsx"));
+const AdminCheckin = lazyPage(() => import("./pages/admin/AdminCheckin.jsx"));
+const AdminEnrolmentSettings = lazyPage(() => import("./pages/admin/AdminEnrolmentSettings.jsx"));
+const AdminMessages = lazyPage(() => import("./pages/admin/AdminMessages.jsx"));
+const AdminLibrary = lazyPage(() => import("./pages/admin/AdminLibrary.jsx"));
+const AdminLibraryCourse = lazyPage(() => import("./pages/admin/AdminLibraryCourse.jsx"));
+const AdminLibraryAnalytics = lazyPage(() => import("./pages/admin/AdminLibraryAnalytics.jsx"));
+const AdminExamBuilder = lazyPage(() => import("./pages/admin/AdminExamBuilder.jsx"));
 
 function Protected({ children }) {
   const { token, loading } = useAuth();
@@ -137,7 +174,7 @@ export default function App() {
       <WelcomeFlyer />
       {!focusMode && <Header />}
       <main id="main">
-        <Routes>
+        <RouteBoundary resetKey={pathname}><Suspense fallback={<p className="page-note" role="status">Loading...</p>}><Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/programmes" element={<Programmes />} />
@@ -198,7 +235,7 @@ export default function App() {
             <Route path="library/analytics" element={<AdminLibraryAnalytics />} />
           </Route>
           <Route path="*" element={<NotFound />} />
-        </Routes>
+        </Routes></Suspense></RouteBoundary>
       </main>
       {!focusMode && <Footer />}
     </>
