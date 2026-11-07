@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const User = require("../models/User");
+const people = require("../utils/people");
 const { buildExamCohort } = require("../utils/cohortAnalytics");
 const { buildResultRows, COLUMNS, exportAuditEntry, EXPORT_ENTITY } = require("../utils/cohortExport");
 const { toCsv, safeFilename } = require("../utils/csv");
@@ -23,7 +24,7 @@ exports.examCohort = async (req, res) => {
     const data = buildExamCohort({ exam, attempts });
 
     const ids = [...new Set([...data.top, ...data.support].map((r) => r.userId))];
-    const users = ids.length ? await User.find({ _id: { $in: ids } }).select("firstName lastName studentId").lean() : [];
+    const users = ids.length ? await people.list(ids) : [];
     const byId = new Map(users.map((u) => [String(u._id), u]));
     const named = (r) => { const u = byId.get(r.userId); return { ...r, name: u ? [u.firstName, u.lastName].filter(Boolean).join(" ") : "Former student", studentId: u?.studentId || null }; };
 
@@ -49,7 +50,7 @@ exports.examCsv = async (req, res) => {
       .select("userId status submittedAt autoSubmitted score totalMarks percentage correct incorrect unanswered")
       .sort({ submittedAt: 1 }).limit(5000).lean();
     const ids = [...new Set(attempts.map((a) => String(a.userId)))];
-    const users = ids.length ? await User.find({ _id: { $in: ids } }).select("firstName lastName studentId").lean() : [];
+    const users = ids.length ? await people.list(ids) : [];
 
     const rows = buildResultRows({ attempts, users });
     // Record the export BEFORE sending anything. If the audit entry cannot be written the download is refused,
@@ -78,7 +79,7 @@ exports.recentExports = async (req, res) => {
     const people = ids.length ? await User.find({ _id: { $in: ids } }).select("firstName lastName").lean() : [];
     const byId = new Map(people.map((u) => [String(u._id), [u.firstName, u.lastName].filter(Boolean).join(" ")]));
     res.json({
-      exports: entries.map((e) => ({ id: String(e._id), at: e.at, examId: e.entityId, examTitle: e.meta?.examTitle || "Examination", rows: e.meta?.rowCount ?? 0, by: byId.get(String(e.actorId)) || "Former staff member", role: e.actorRole || null })),
+      exports: entries.map((e) => ({ id: String(e._id), at: e.at, examId: e.entityId, examTitle: e.meta?.examTitle || "Examination", rows: e.meta?.rowCount ?? 0, by: byId.get(String(e.actorId)) || "Administrator" })),
     });
   } catch (err) {
     console.error(err);

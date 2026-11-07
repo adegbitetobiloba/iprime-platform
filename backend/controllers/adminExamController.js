@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const User = require("../models/User");
+const people = require("../utils/people");
 const { parseQuestionText } = require("../utils/cbt");
 
 const isId = (v) => mongoose.isValidObjectId(v);
@@ -167,7 +168,7 @@ exports.attempts = async (req, res) => {
     const exam = await find(req, res);
     if (!exam) return;
     const attempts = await Attempt.find({ examId: exam._id }).sort({ createdAt: -1 }).limit(500).lean();
-    const users = await User.find({ _id: { $in: attempts.map((a) => a.userId) } }).select("firstName lastName studentId email").lean();
+    const users = await people.list(attempts.map((a) => a.userId));
     const byId = new Map(users.map((u) => [String(u._id), u]));
     res.json({
       attempts: attempts.map((a) => {

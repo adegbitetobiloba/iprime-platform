@@ -3,6 +3,7 @@ const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const AttemptEvent = require("../models/AttemptEvent");
 const User = require("../models/User");
+const people = require("../utils/people");
 const { makeFinaliser } = require("../utils/attemptLifecycle");
 const { makeLogger } = require("../utils/attemptEvents");
 const { makeControl, connectionOf, remainingSeconds, ACTIVE_SECONDS, QUIET_SECONDS } = require("../utils/examControl");
@@ -40,7 +41,7 @@ async function load(req, res) {
 // One row per running attempt, with what an invigilator needs: connection, progress, time left, warnings.
 async function liveRows(filter, now = new Date()) {
   const attempts = await Attempt.find({ status: "in_progress", ...filter }).sort({ startedAt: 1 }).limit(500).lean();
-  const users = await User.find({ _id: { $in: attempts.map((a) => a.userId) } }).select("firstName lastName studentId").lean();
+  const users = await people.list(attempts.map((a) => a.userId));
   const byUser = new Map(users.map((u) => [String(u._id), u]));
   const exams = await Exam.aggregate([
     { $match: { _id: { $in: [...new Set(attempts.map((a) => String(a.examId)))].map((x) => new mongoose.Types.ObjectId(x)) } } },
