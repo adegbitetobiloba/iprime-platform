@@ -1,0 +1,39 @@
+/* Examiner panel: password, visibility, Safe Exam Browser, share links. Stacked fields, roomy cards, light and dark. */
+.ax { --ax-line: color-mix(in srgb, currentColor 16%, transparent); --ax-soft: color-mix(in srgb, currentColor 6%, transparent); --ax-gold: #e8b923; --ax-navy: #16337a; --ax-ok: #166534; --ax-bad: #b3261e; margin-top: 1.25rem; }
+.ax-head { margin: 0 0 .3rem; }
+.ax-intro { margin: 0 0 1rem; opacity: .8; }
+.ax-card { border: 1px solid var(--ax-line); border-radius: 16px; padding: 1.1rem 1.15rem 1.2rem; margin: 0 0 1rem; background: color-mix(in srgb, currentColor 2%, transparent); }
+.ax-card h3 { margin: 0 0 .25rem; font-size: 1.08rem; }
+.ax-card > p.ax-lead { margin: 0 0 .9rem; font-size: .93rem; opacity: .78; line-height: 1.5; }
+.ax-status { display: inline-flex; align-items: center; gap: .45rem; margin: 0 0 .9rem; padding: .3rem .7rem; border-radius: 999px; font-size: .86rem; font-weight: 700; background: var(--ax-soft); }
+.ax-status::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: #9aa5be; }
+.ax-status.is-on::before { background: var(--ax-ok); }
+.ax-field { display: grid; gap: .35rem; margin: 0 0 .9rem; }
+.ax-field > label { font-weight: 700; font-size: .92rem; }
+.ax-field input[type="text"], .ax-field input[type="password"], .ax-field input[type="number"], .ax-field input[type="datetime-local"], .ax-field select, .ax-field textarea { width: 100%; box-sizing: border-box; min-height: 46px; padding: .55rem .8rem; border: 1.5px solid var(--ax-line); border-radius: 10px; background: transparent; color: inherit; font: inherit; }
+.ax-field textarea { min-height: 96px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; line-height: 1.5; }
+.ax-field input:focus-visible, .ax-field select:focus-visible, .ax-field textarea:focus-visible { outline: 3px solid color-mix(in srgb, var(--ax-gold) 70%, transparent); outline-offset: 1px; }
+.ax-hint { margin: 0; font-size: .82rem; opacity: .7; }
+.ax-row { display: flex; gap: .6rem; align-items: stretch; }
+.ax-row input { flex: 1 1 auto; min-width: 0; }
+.ax-row .btn { flex: none; }
+.ax-grid { display: grid; gap: 0 1rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .ax-grid { grid-template-columns: 1fr 1fr; } }
+.ax-toggle { display: grid; grid-template-columns: 1.5rem 1fr; gap: .7rem; align-items: start; padding: .8rem .9rem; border: 1.5px solid var(--ax-line); border-radius: 12px; cursor: pointer; margin: 0 0 .8rem; line-height: 1.45; }
+.ax-toggle input { width: 1.3rem; height: 1.3rem; margin-top: .1rem; accent-color: var(--ax-navy); }
+.ax-toggle.is-on { border-color: var(--ax-navy); background: color-mix(in srgb, var(--ax-navy) 8%, transparent); }
+.ax-toggle small { display: block; opacity: .72; margin-top: .15rem; }
+.ax-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .3rem; }
+.ax-note { margin: .9rem 0 0; padding: .7rem .9rem; border-radius: 10px; background: var(--ax-soft); font-size: .9rem; }
+
+.ax-links { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .8rem; }
+.ax-link { border: 1px solid var(--ax-line); border-radius: 14px; padding: .95rem 1rem; }
+.ax-link-top { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; justify-content: space-between; margin-bottom: .55rem; }
+.ax-link-name { font-weight: 800; }
+.ax-chip { display: inline-block; padding: .2rem .6rem; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--ax-soft); }
+.ax-chip.is-ok { background: color-mix(in srgb, var(--ax-ok) 16%, transparent); color: var(--ax-ok); }
+.ax-url { display: block; padding: .6rem .75rem; border-radius: 10px; background: var(--ax-soft); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; overflow-wrap: anywhere; user-select: all; }
+.ax-meta { display: flex; flex-wrap: wrap; gap: .3rem 1rem; margin: .6rem 0; font-size: .84rem; opacity: .78; }
+.ax-people { margin: .8rem 0 0; padding: .7rem .9rem; border-radius: 10px; background: var(--ax-soft); list-style: none; display: grid; gap: .4rem; font-size: .9rem; }
+@media (prefers-color-scheme: dark) { .ax { --ax-navy: #9db7ff; --ax-ok: #7fdc9e; } }
+:root[data-theme="dark"] .ax { --ax-navy: #9db7ff; --ax-ok: #7fdc9e; }
