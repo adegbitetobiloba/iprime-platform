@@ -17,11 +17,17 @@ router.get("/analytics", analytics.analytics);
 
 router.post("/subjects/seed", mat.seedSubjects);
 router.get("/materials", mat.listMaterials);
+// Fixed paths first: if they came after "/materials/:id", that route would take them and answer "Not found".
+router.get("/materials/ids", mat.materialIds);
+router.post("/materials/bulk", validate(v.bulk), mat.bulkMaterials);
+router.post("/materials/seed-syllabi", mat.seedSyllabi);
+router.get("/materials/import-prime-integral", mat.primeIntegralSummary);
+router.post("/materials/import-prime-integral", mat.importPrimeIntegral);
 router.post("/materials", validate(v.material), mat.createMaterial);
+router.get("/materials/:id", mat.getMaterial);
 router.patch("/materials/:id", validate(v.materialUpdate), mat.updateMaterial);
 router.post("/materials/:id/status", validate(v.status), mat.setMaterialStatus);
 router.put("/materials/:id/pdf", express.raw({ type: "application/pdf", limit: "20mb" }), mat.uploadMaterialPdf);
-router.post("/materials/seed-syllabi", mat.seedSyllabi);
 router.put("/materials/:id/images/order", validate(v.reorder), mat.reorderImages);
 router.put("/materials/:id/images", express.raw({ type: ["image/jpeg", "image/png", "image/webp"], limit: "8mb" }), mat.addImage);
 router.delete("/materials/:id/images/:fileId", mat.removeImage);

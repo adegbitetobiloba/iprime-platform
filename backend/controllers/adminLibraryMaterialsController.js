@@ -9,6 +9,7 @@ const { canTransition, slugify } = require("../utils/library");
 const { checkPdfBuffer, safeFileName } = require("../utils/libraryPdf");
 const { checkImageBuffer, MAX_IMAGES } = require("../utils/libraryImage");
 const syllabi = require("../data/utmeSyllabi");
+const { planBulk, listFilter } = require("../utils/libraryBulk");
 
 const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
 const clean = (b) => ({ ...b, subject: b.subject || undefined });
@@ -30,12 +31,57 @@ exports.seedSubjects = async (req, res) => {
   res.json({ added, total: all.length });
 };
 
+// Filtered, paged list for the admin screen. Long text is never loaded here.
 exports.listMaterials = async (req, res) => {
-  const q = {};
-  if (["draft", "published", "archived"].includes(req.query.status)) q.status = req.query.status;
-  if (req.query.kind) q.kind = String(req.query.kind);
-  const materials = await Material.find(q).populate("subject", "name slug").sort({ updatedAt: -1 }).limit(300).lean();
-  res.json({ materials });
+  const filter = listFilter(req.query);
+  const limit = Math.min(100, Math.max(10, Number(req.query.limit) || 50));
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const [materials, total, counts] = await Promise.all([
+    Material.find(filter).select("-body").populate("subject", "name slug").sort({ updatedAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+    Material.countDocuments(filter),
+    Material.aggregate([{ $group: { _id: "$status", n: { $sum: 1 } } }]),
+  ]);
+  res.json({ materials, total, page, pages: Math.max(1, Math.ceil(total / limit)), counts: Object.fromEntries(counts.map((c) => [c._id, c.n])) });
+};
+
+// Every id matching the current filters (up to 1000), so "select all matching" works across pages.
+exports.materialIds = async (req, res) => {
+  const rows = await Material.find(listFilter(req.query)).select("_id").limit(1000).lean();
+  res.json({ ids: rows.map((r) => String(r._id)) });
+};
+
+// Bulk actions. Each item is checked with the same rules as the single-item buttons; what cannot be done is reported, not forced.
+exports.bulkMaterials = async (req, res) => {
+  const { action, ids, subject, tag } = req.body;
+  const found = await Material.find({ _id: { $in: ids } }).select("title status source url file images importedFrom").lean();
+  const withBody = new Set((await Material.find({ _id: { $in: ids }, source: "text", body: { $exists: true, $ne: "" } }).select("_id").lean()).map((m) => String(m._id)));
+  const mats = found.map((m) => ({ ...m, hasBody: withBody.has(String(m._id)) }));
+  const { ok, skipped } = planBulk(action, mats);
+  const by = req.user.id;
+  let changed = 0;
+  if (ok.length) {
+    const target = { _id: { $in: ok } };
+    if (action === "publish") changed = (await Material.updateMany(target, { $set: { status: "published", updatedBy: by } })).modifiedCount;
+    else if (action === "unpublish" || action === "restore") changed = (await Material.updateMany(target, { $set: { status: "draft", updatedBy: by } })).modifiedCount;
+    else if (action === "archive") changed = (await Material.updateMany(target, { $set: { status: "archived", updatedBy: by } })).modifiedCount;
+    else if (action === "set-subject") {
+      if (subject && !(await Subject.exists({ _id: subject, status: "active" }))) return bad(res, "Choose an active subject.");
+      changed = (await Material.updateMany(target, subject ? { $set: { subject, updatedBy: by } } : { $unset: { subject: 1 }, $set: { updatedBy: by } })).modifiedCount;
+    } else if (action === "add-tag") {
+      if (!tag) return bad(res, "Type the tag to add.");
+      changed = (await Material.updateMany(target, { $addToSet: { examTags: tag }, $set: { updatedBy: by } })).modifiedCount;
+    } else if (action === "remove-tag") {
+      if (!tag) return bad(res, "Type the tag to remove.");
+      changed = (await Material.updateMany(target, { $pull: { examTags: tag }, $set: { updatedBy: by } })).modifiedCount;
+    } else if (action === "clear-reports") changed = (await Material.updateMany(target, { $set: { brokenReports: 0 } })).modifiedCount;
+    else if (action === "delete") {
+      // Remove the stored files too, then the records.
+      const docs = await Material.find(target).select("file images").lean();
+      for (const d of docs) { if (d.file) await store.removeFile(d.file); for (const im of d.images || []) await store.removeFile(im.file); }
+      changed = (await Material.deleteMany({ ...target, status: "draft" })).deletedCount;
+    }
+  }
+  res.json({ action, changed, skipped: skipped.slice(0, 20), skippedCount: skipped.length });
 };
 
 exports.createMaterial = async (req, res) => {
@@ -162,4 +208,37 @@ exports.seedSyllabi = async (req, res) => {
     added++;
   }
   res.json({ added, total: syllabi.length });
+};
+
+// ---- import from the Prime Integral app (and its sister apps) ----
+// Everything is created as a DRAFT with an admin-only marker. Nothing is visible to students until an admin publishes it.
+// Safe to repeat: an item whose title already exists for this source is skipped.
+const PI_GROUPS = ["communities", "books", "classes", "videos", "quizzes", "notes"];
+exports.primeIntegralSummary = (req, res) => {
+  const d = require("../data/primeIntegral.json");
+  res.json({ groups: PI_GROUPS.map((g) => ({ id: g, count: d[g].length })) });
+};
+
+exports.importPrimeIntegral = async (req, res) => {
+  const d = require("../data/primeIntegral.json");
+  const groups = Array.isArray(req.body.groups) && req.body.groups.length ? req.body.groups.filter((g) => PI_GROUPS.includes(g)) : PI_GROUPS;
+  const subjects = Object.fromEntries((await Subject.find().select("name").lean()).map((s) => [s.name.toLowerCase(), s._id]));
+  const have = new Set((await Material.find({ importedFrom: "prime-integral" }).select("title").lean()).map((m) => m.title));
+  const docs = [];
+  const add = (x) => { if (!have.has(x.title)) { have.add(x.title); docs.push({ ...x, examTags: ["JAMB"], status: "draft", importedFrom: "prime-integral", createdBy: req.user.id, updatedBy: req.user.id }); } };
+  const subj = (n) => (n && subjects[String(n).toLowerCase()]) || undefined;
+  if (groups.includes("communities")) d.communities.forEach((c) => add({ title: c.title, kind: "community", source: "link", url: c.url }));
+  if (groups.includes("books")) d.books.forEach((b) => add({ title: b.title, kind: "textbook", source: "link", url: b.url, description: b.description || undefined, subject: subj(b.subject) }));
+  if (groups.includes("classes")) d.classes.forEach((c) => add({ title: `${c.subject} class: ${c.title}`, kind: "notes", source: "link", url: c.url, subject: subj(c.subject) }));
+  if (groups.includes("videos")) d.videos.forEach((v) => add({ title: `${v.subject ? `${v.subject}: ` : ""}${v.title}`, kind: "video", source: "link", url: v.url, subject: subj(v.subject) }));
+  if (groups.includes("quizzes")) d.quizzes.forEach((q) => add({ title: `Practice quiz: ${q.title}`, kind: "practice", source: "link", url: q.url }));
+  if (groups.includes("notes")) d.notes.forEach((n) => add({ title: n.title, kind: n.kind, source: "text", body: n.body, subject: subj(n.subject) }));
+  if (docs.length) await Material.insertMany(docs);
+  res.json({ added: docs.length, groups });
+};
+
+exports.getMaterial = async (req, res) => {
+  const m = await Material.findById(req.params.id).populate("subject", "name slug").lean();
+  if (!m) return bad(res, "Not found", 404);
+  res.json({ material: m });
 };

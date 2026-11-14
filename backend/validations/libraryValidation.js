@@ -88,7 +88,7 @@ module.exports = {
   note: Joi.object({ text: Joi.string().trim().max(5000).allow("").required() }),
   material: Joi.object({
     title: Joi.string().trim().min(3).max(150).required(),
-    kind: Joi.string().valid("syllabus", "textbook", "past-questions", "notes", "other").required(),
+    kind: Joi.string().valid("syllabus", "textbook", "past-questions", "notes", "keypoints", "mnemonics", "practice", "video", "community", "other").required(),
     description: Joi.string().trim().max(1500).allow(""),
     author: Joi.string().trim().max(120).allow(""),
     subject: id.allow(null, ""),
@@ -101,7 +101,7 @@ module.exports = {
   }),
   materialUpdate: Joi.object({
     title: Joi.string().trim().min(3).max(150),
-    kind: Joi.string().valid("syllabus", "textbook", "past-questions", "notes", "other"),
+    kind: Joi.string().valid("syllabus", "textbook", "past-questions", "notes", "keypoints", "mnemonics", "practice", "video", "community", "other"),
     description: Joi.string().trim().max(1500).allow(""),
     author: Joi.string().trim().max(120).allow(""),
     subject: id.allow(null, ""),
@@ -112,6 +112,12 @@ module.exports = {
     featured: Joi.boolean(),
   }).min(1),
   materialProgress: Joi.object({ page: Joi.number().integer().min(1).max(5000), pageCount: Joi.number().integer().min(1).max(5000), percent: Joi.number().min(0).max(100) }).or("page", "percent"),
+  bulk: Joi.object({
+    action: Joi.string().valid("publish", "unpublish", "archive", "restore", "delete", "set-subject", "add-tag", "remove-tag", "clear-reports").required(),
+    ids: Joi.array().items(id).min(1).max(500).unique().required(),
+    subject: id.allow(null, ""),
+    tag: Joi.string().trim().min(1).max(30),
+  }),
   shelf: Joi.object({ shelf: Joi.string().valid("want", "reading", "done", "none").required() }),
   countdown: Joi.object({
     label: Joi.string().trim().min(2).max(60).required(),

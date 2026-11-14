@@ -79,7 +79,7 @@ export function CourseOutline({ modules, currentId }) {
   );
 }
 
-export const KIND_LABEL = { syllabus: "Syllabus", textbook: "Textbook", "past-questions": "Past questions", notes: "Notes", other: "Other" };
+export const KIND_LABEL = { syllabus: "Syllabus", textbook: "Textbook", "past-questions": "Past questions", notes: "Notes", keypoints: "Key points", mnemonics: "Mnemonics", practice: "Practice quiz", video: "Video", community: "Class or group", other: "Other" };
 export const SHELF_LABEL = { want: "Want to read", reading: "Reading", done: "Finished" };
 
 export function MaterialCard({ m }) {

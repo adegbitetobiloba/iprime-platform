@@ -12,6 +12,7 @@ const viewSchema = new mongoose.Schema(
     percent: { type: Number, default: 0 }, // furthest point read, 0 to 100
     shelf: { type: String, enum: ["want", "reading", "done"] }, // private reading shelf (like Open Library's reading log)
     finishedAt: { type: Date }, // set once, so reaching the end moves it to Finished only the first time
+    reportedBroken: { type: Boolean, default: false }, // this student already reported the link as broken
   },
   { timestamps: true }
 );

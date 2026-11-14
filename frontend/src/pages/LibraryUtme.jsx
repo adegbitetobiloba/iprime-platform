@@ -5,12 +5,13 @@ import Countdown from "../library/Countdown.jsx";
 import { CourseCard, MaterialCard } from "../library/parts.jsx";
 import "../library/library.css";
 
-function Shelf({ title, hint, items, empty, more }) {
+function Shelf({ title, hint, items, empty, more, total, kind }) {
   return (
     <section className="lib-section">
       <div className="lib-head"><h2>{title}</h2>{more}</div>
       {hint && <p className="muted" style={{ marginTop: -8 }}>{hint}</p>}
       {items.length === 0 ? <p className="note">{empty}</p> : <ul className="lib-grid">{items}</ul>}
+      {kind && total > items.length && <p style={{ marginTop: 10 }}><Link className="link-btn" to={`/library/materials?kind=${kind}&tag=JAMB`}>See all {total}</Link></p>}
     </section>
   );
 }
@@ -36,7 +37,7 @@ export default function LibraryUtme() {
           <>
             {d.countdown ? <Countdown countdown={d.countdown} plan={d.plan} /> : <p className="note">The exam countdown will appear here once the date is set.</p>}
 
-            <Shelf title="Syllabus" hint="What JAMB expects you to know in each subject." empty="The UTME syllabus will be added soon."
+            <Shelf title="Syllabus" hint="What JAMB expects you to know in each subject." empty="The UTME syllabus will be added soon." kind="syllabus" total={d.counts.syllabus}
               items={d.syllabus.map((m) => <MaterialCard key={m.id} m={m} />)} />
 
             <section className="lib-section">
@@ -45,10 +46,18 @@ export default function LibraryUtme() {
                 : <ul className="lib-grid">{d.courses.map((r) => <CourseCard key={r.course.id} course={r.course} progress={r.progress.completed > 0 ? r.progress : undefined} />)}</ul>}
             </section>
 
-            <Shelf title="Textbooks" hint="Recommended reading. Some open on other websites." empty="Recommended textbooks will be added soon."
+            <Shelf title="Textbooks" hint="Recommended reading. Some open on other websites." empty="Recommended textbooks will be added soon." kind="textbook" total={d.counts.textbook}
               items={d.textbooks.map((m) => <MaterialCard key={m.id} m={m} />)} />
 
+            <Shelf title="Key points" hint="Short summaries for quick revision." empty="Key points will be added soon." kind="keypoints" total={d.counts.keypoints} items={d.keypoints.map((m) => <MaterialCard key={m.id} m={m} />)} />
+
             <Shelf title="Past questions" empty="Past-question papers will be added soon." items={d.pastQuestions.map((m) => <MaterialCard key={m.id} m={m} />)} />
+
+            <Shelf title="Practice quizzes" hint="Topic quizzes that open on their own site." empty="Practice quizzes will be added soon." kind="practice" total={d.counts.practice} items={d.practice.map((m) => <MaterialCard key={m.id} m={m} />)} />
+
+            <Shelf title="Videos" empty="Videos will be added soon." kind="video" total={d.counts.video} items={d.videos.map((m) => <MaterialCard key={m.id} m={m} />)} />
+
+            <Shelf title="Classes and groups" hint="Join your subject class on WhatsApp or Telegram. Telegram links work after you have joined the channel." empty="Class and group links will be added soon." kind="community" total={d.counts.community} items={d.community.map((m) => <MaterialCard key={m.id} m={m} />)} />
 
             <section className="lib-section">
               <div className="lib-head"><h2>Practise with timed exams</h2><Link to="/exams" className="link-btn">All examinations</Link></div>

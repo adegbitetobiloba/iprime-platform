@@ -143,3 +143,35 @@ test("reading percent", () => {
   assert.equal(P.readingPercent({ percent: 150 }), 100);
   assert.equal(P.readingPercent({}), null);
 });
+
+const B = require("../utils/libraryBulk");
+test("bulk publish respects status and readiness", () => {
+  const items = [
+    { _id: "1", title: "Ready link", status: "draft", source: "link", url: "https://x.example" },
+    { _id: "2", title: "No link", status: "draft", source: "link" },
+    { _id: "3", title: "Text with body", status: "draft", source: "text", hasBody: true },
+    { _id: "4", title: "Empty text", status: "draft", source: "text", hasBody: false },
+    { _id: "5", title: "Archived", status: "archived", source: "link", url: "https://x.example" },
+    { _id: "6", title: "Live", status: "published", source: "link", url: "https://x.example" },
+    { _id: "7", title: "Images none", status: "draft", source: "image", images: [] },
+  ];
+  const r = B.planBulk("publish", items);
+  assert.deepEqual(r.ok, ["1", "3"]);
+  assert.equal(r.skipped.length, 5);
+  assert.match(r.skipped.find((s) => s.id === "5").reason, /restore/i);
+  assert.match(r.skipped.find((s) => s.id === "7").reason, /image/i);
+});
+test("bulk delete only removes drafts; other actions follow the status rules", () => {
+  const items = [{ _id: "a", title: "A", status: "draft" }, { _id: "b", title: "B", status: "published" }, { _id: "c", title: "C", status: "archived" }];
+  assert.deepEqual(B.planBulk("delete", items).ok, ["a"]);
+  assert.deepEqual(B.planBulk("unpublish", items).ok, ["b"]);
+  assert.deepEqual(B.planBulk("restore", items).ok, ["c"]);
+  assert.deepEqual(B.planBulk("archive", items).ok, ["a", "b"]);
+});
+test("list filter only uses known fields", () => {
+  const f = B.listFilter({ status: "draft", kind: "textbook", source: "link", imported: "1", reported: "1", q: "phys", evil: "{$ne:1}", subject: "not-an-id" });
+  assert.equal(f.status, "draft"); assert.equal(f.kind, "textbook"); assert.equal(f.source, "link");
+  assert.ok(f.importedFrom && f.brokenReports && f.title instanceof RegExp);
+  assert.equal(f.subject, undefined); assert.equal(f.evil, undefined);
+  assert.equal(B.listFilter({ q: "a" }).title, undefined);
+});

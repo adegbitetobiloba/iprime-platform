@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const { STATUSES } = require("../utils/library");
 
-const KINDS = ["syllabus", "textbook", "past-questions", "notes", "other"];
+const KINDS = ["syllabus", "textbook", "past-questions", "notes", "keypoints", "mnemonics", "practice", "video", "community", "other"];
 
 // A standalone study resource (syllabus, textbook, past-questions paper, notes), not tied to one course.
-// It is either a web link (instant, hosted elsewhere) or a PDF held privately in iPrime.
+// It is a web link (instant, hosted elsewhere), a PDF held privately in iPrime, written text, or private images.
 const materialSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, maxlength: 150 },
@@ -22,6 +22,8 @@ const materialSchema = new mongoose.Schema(
     // Private images for source "image" (syllabus photos, scanned notes). Array order is the reading order.
     images: [{ file: { type: mongoose.Schema.Types.ObjectId, ref: "LibraryFile" }, name: { type: String, maxlength: 150 } }],
     sourceNote: { type: String, trim: true, maxlength: 300 }, // shown to students, e.g. "Source: JAMB UTME syllabus."
+    importedFrom: { type: String, maxlength: 60, index: true }, // admin-only marker, e.g. "prime-integral"; never sent to students
+    brokenReports: { type: Number, default: 0 }, // how many students said the link does not work (admin-only)
     status: { type: String, enum: STATUSES, default: "draft", index: true },
     featured: { type: Boolean, default: false },
     // Teacher submissions: a teacher can only create drafts. They ask for review here; an administrator publishes (or returns it with a note).
