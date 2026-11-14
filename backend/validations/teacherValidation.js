@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const lib = require("./libraryValidation");
+const cbt = require("./cbtValidation");
 
 const id = Joi.string().hex().length(24);
 const email = Joi.string().trim().lowercase().email().max(254);
@@ -35,5 +36,15 @@ module.exports = {
   material: lib.material.fork(["featured"], (s) => s.forbidden()),
   materialUpdate: lib.materialUpdate.fork(["featured"], (s) => s.forbidden()),
   reorder: lib.reorder,
+  // Subject groups (administrators)
+  group: Joi.object({ subject: Joi.string().trim().min(2).max(60).required(), programmeId: id.allow(null, "") }),
+  submissionDecision: Joi.object({ action: Joi.string().valid("publish", "return").required(), note: Joi.string().trim().max(300).allow("") }),
+  // Courses: teachers cannot feature a course or set a lesson's status (administrators publish).
+  course: lib.course.fork(["featured"], (s) => s.forbidden()),
+  courseUpdate: lib.courseUpdate.fork(["featured"], (s) => s.forbidden()),
+  module: lib.module, moduleUpdate: lib.moduleUpdate,
+  lesson: lib.lesson, lessonUpdate: lib.lessonUpdate.fork(["status"], (s) => s.forbidden()),
+  // Examinations use the same rules as the administrators' builder.
+  createExam: cbt.createExam, updateExam: cbt.updateExam, question: cbt.question, importQuestions: cbt.importQuestions,
   libraryDecision: Joi.object({ action: Joi.string().valid("publish", "return").required(), note: Joi.string().trim().max(300).allow("") }),
 };

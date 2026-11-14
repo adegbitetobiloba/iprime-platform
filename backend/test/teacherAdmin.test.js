@@ -111,8 +111,8 @@ test("a teacher sees only their own active, approved students, and only minimal 
   assert.deepEqual(r.body.students.map((s) => s.firstName), ["Amy"]);
   assert.equal(r.body.students[0].email, undefined);
   assert.equal(r.body.students[0].phone, undefined);
-  assert.equal(await students.activeAssignment(t1._id, b._id), null);
-  assert.ok(await students.activeAssignment(t1._id, a._id));
+  assert.equal(await students.access(t1._id, b._id), null);
+  assert.ok(await students.access(t1._id, a._id));
 });
 
 // ---------- library ----------

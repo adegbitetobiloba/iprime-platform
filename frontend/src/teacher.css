@@ -1,0 +1,39 @@
+/* Teacher area. Every class is prefixed "tch-" so it cannot clash with other workstreams' styles (ws5-*, adm-*). Colours come from tokens.css. */
+.tch-hero { background: var(--c-surface, #fff); border: 1px solid var(--c-border, #e3e8f0); border-radius: 14px; padding: 1.4rem; margin-bottom: 1.25rem; }
+.tch-hero h1 { margin: 0 0 .4rem; font-size: 1.5rem; line-height: 1.25; }
+.tch-steps { display: grid; gap: .6rem; margin: 1rem 0 0; padding: 0; list-style: none; counter-reset: tch; }
+.tch-steps li { counter-increment: tch; display: flex; gap: .7rem; align-items: flex-start; font-size: .95rem; }
+.tch-steps li::before { content: counter(tch); flex: none; width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: .85rem; background: var(--c-navy, #0b2a5b); color: #fff; }
+.tch-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin: 0 0 1.25rem; }
+.tch-stat { background: var(--c-surface, #fff); border: 1px solid var(--c-border, #e3e8f0); border-radius: 12px; padding: .9rem 1rem; text-decoration: none; color: inherit; display: block; }
+a.tch-stat:hover { border-color: var(--c-navy, #0b2a5b); }
+.tch-stat b { display: block; font-size: 1.6rem; line-height: 1.1; }
+.tch-stat span { font-size: .85rem; color: var(--c-muted, #5b6577); }
+.tch-pill { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .78rem; font-weight: 600; white-space: nowrap; background: var(--c-border, #e3e8f0); color: var(--c-text, #1a2233); }
+.tch-pill.tch-ok { background: #d9f2e1; color: #11592b; }
+.tch-pill.tch-warn { background: #fdf0c4; color: #6b4e00; }
+.tch-pill.tch-bad { background: #fbdcdc; color: #8a1c1c; }
+.tch-pill.tch-info { background: #dbe8fb; color: #12407a; }
+.tch-list { display: grid; gap: .6rem; margin: 0; padding: 0; list-style: none; }
+.tch-row { background: var(--c-surface, #fff); border: 1px solid var(--c-border, #e3e8f0); border-radius: 12px; padding: .8rem 1rem; display: flex; gap: .75rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.tch-row > div:first-child { min-width: 0; flex: 1 1 220px; }
+.tch-row strong { display: block; overflow-wrap: anywhere; }
+.tch-row small { color: var(--c-muted, #5b6577); }
+.tch-actions { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.tch-tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin: 0 0 1rem; }
+.tch-tab { border: 1px solid var(--c-border, #e3e8f0); background: var(--c-surface, #fff); color: inherit; padding: .45rem .9rem; border-radius: 999px; cursor: pointer; font: inherit; min-height: 40px; }
+.tch-tab[aria-pressed="true"], .tch-tab.on { background: var(--c-navy, #0b2a5b); color: #fff; border-color: var(--c-navy, #0b2a5b); }
+.tch-empty { text-align: center; padding: 1.6rem 1rem; color: var(--c-muted, #5b6577); border: 1px dashed var(--c-border, #e3e8f0); border-radius: 12px; }
+.tch-mod { border: 1px solid var(--c-border, #e3e8f0); border-radius: 12px; padding: .9rem 1rem; margin: 0 0 .9rem; background: var(--c-surface, #fff); }
+.tch-mod h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
+.tch-lesson { border-top: 1px solid var(--c-border, #e3e8f0); padding: .6rem 0; }
+.tch-note { background: #fff8e1; border: 1px solid #f0d98a; border-radius: 10px; padding: .6rem .8rem; font-size: .92rem; margin: .5rem 0; color: #4a3a00; }
+.tch-spark { width: 100%; height: 70px; display: block; }
+.tch-bar { height: 8px; border-radius: 4px; background: var(--c-border, #e3e8f0); overflow: hidden; min-width: 70px; }
+.tch-bar > i { display: block; height: 100%; background: var(--c-navy, #0b2a5b); }
+.tch-cols { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .tch-cols { grid-template-columns: 1fr 1fr; } }
+.tch-check { display: flex; gap: .5rem; align-items: flex-start; }
+.tch-textarea { width: 100%; min-height: 9rem; font: inherit; }
+.tch-blocked { max-width: 34rem; margin: 3rem auto; padding: 0 1rem; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .tch-bar > i { transition: none; } }

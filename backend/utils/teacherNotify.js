@@ -40,3 +40,10 @@ const notifyTeacherMaterial = (user, title, outcome, note) => safely("teacher ma
 ));
 
 module.exports = { notifyAdminsNewTeacher, notifyTeacherApproved, notifyTeacherRejected, notifyTeacherSuspended, notifyTeacherMaterial };
+
+// A teacher's course or examination was published or sent back.
+const notifyTeacherSubmission = (user, title, kind, outcome, note) => safely("teacher submission", () => sendMessage(
+  user.email, outcome === "published" ? `Your ${kind} is published` : `Your ${kind} needs changes`,
+  `<p>Hello ${esc(user.firstName)},</p><p>${outcome === "published" ? `"${esc(title)}" has been published on iPrime.` : `"${esc(title)}" was returned to you for changes.${note ? ` Note from the administrator: ${esc(note)}` : ""}`}</p>${link(kind === "exam" ? "/teacher/exams" : "/teacher/courses", "Open your teacher area")}`
+));
+module.exports.notifyTeacherSubmission = notifyTeacherSubmission;

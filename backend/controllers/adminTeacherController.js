@@ -2,9 +2,15 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const TeacherAssignment = require("../models/TeacherAssignment");
 const Material = require("../models/LibraryMaterial");
+const TeacherGroup = require("../models/TeacherGroup");
+const TeacherSubmission = require("../models/TeacherSubmission");
+const Enrolment = require("../models/Enrolment");
+const { groupFilter } = require("../utils/teacherAccess");
+const adminLib = require("./adminLibraryController");
+const adminExams = require("./adminExamController");
 const publicUser = require("../utils/publicUser");
 const { audit } = require("../utils/audit");
-const { notifyTeacherApproved, notifyTeacherRejected, notifyTeacherSuspended, notifyTeacherMaterial } = require("../utils/teacherNotify");
+const { notifyTeacherApproved, notifyTeacherRejected, notifyTeacherSuspended, notifyTeacherMaterial, notifyTeacherSubmission } = require("../utils/teacherNotify");
 
 const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -158,4 +164,109 @@ exports.libraryDecision = async (req, res) => {
   await audit(req, { entityType: "libraryMaterial", entityId: m._id, event: `teacher.material.${req.body.action}`, meta: { teacherId: String(m.createdBy), note: note || undefined } });
   if (teacher) await notifyTeacherMaterial(teacher, m.title, req.body.action === "publish" ? "published" : "returned", note);
   res.json({ material: { id: m._id, status: m.status } });
+};
+
+// ---- Subject groups: "this teacher looks after every approved student registered for <subject>" ----
+exports.subjectOptions = async (req, res) => {
+  const all = await Enrolment.distinct("subjectsRegistered", { status: "approved" });
+  const seen = new Map();
+  for (const x of all) { const k = String(x || "").trim(); if (k && !seen.has(k.toLowerCase())) seen.set(k.toLowerCase(), k); }
+  res.json({ subjects: [...seen.values()].sort((a, b) => a.localeCompare(b)) });
+};
+
+// How many approved enrolments a rule would cover, so an administrator sees the effect BEFORE creating it.
+exports.groupPreview = async (req, res) => {
+  const subject = String(req.query.subject || "").trim();
+  if (subject.length < 2) return bad(res, "Choose a subject.");
+  const programmeId = mongoose.isValidObjectId(req.query.programmeId) ? req.query.programmeId : undefined;
+  res.json({ students: await Enrolment.countDocuments(groupFilter({ subject, programmeId })) });
+};
+
+exports.listGroups = async (req, res) => {
+  const t = await getTeacher(req.params.id);
+  if (!t) return bad(res, "Teacher not found", 404);
+  const groups = await TeacherGroup.find({ teacherId: t._id, status: "active" });
+  const rows = [];
+  for (const g of groups) rows.push({ id: g._id, subject: g.subject, programmeId: g.programmeId || null, students: await Enrolment.countDocuments(groupFilter(g)) });
+  res.json({ groups: rows });
+};
+
+exports.addGroup = async (req, res) => {
+  const t = await getTeacher(req.params.id);
+  if (!t) return bad(res, "Teacher not found", 404);
+  if (t.approval !== "approved") return bad(res, "Approve the teacher before giving them a subject group.", 409);
+  const subject = String(req.body.subject || "").trim();
+  const programmeId = req.body.programmeId || undefined;
+  const subjectKey = subject.toLowerCase();
+  const programmeKey = programmeId ? String(programmeId) : "";
+  let g = await TeacherGroup.findOne({ teacherId: t._id, subjectKey, programmeKey });
+  if (g && g.status === "active") return bad(res, "This teacher already has that subject group.", 409);
+  try {
+    if (g) { Object.assign(g, { status: "active", subject, createdBy: req.user.id, endedAt: undefined, endedBy: undefined }); await g.save(); }
+    else g = await TeacherGroup.create({ teacherId: t._id, subject, subjectKey, programmeId, programmeKey, status: "active", createdBy: req.user.id });
+  } catch (err) {
+    if (err && err.code === 11000) return bad(res, "This teacher already has that subject group.", 409);
+    throw err;
+  }
+  await audit(req, { entityType: "teacher", entityId: t._id, event: "teacher.group.add", meta: { subject, programmeId: programmeId ? String(programmeId) : undefined } });
+  res.status(201).json({ group: { id: g._id, subject, students: await Enrolment.countDocuments(groupFilter(g)) } });
+};
+
+exports.removeGroup = async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.groupId)) return bad(res, "Group not found", 404);
+  const t = await getTeacher(req.params.id);
+  if (!t) return bad(res, "Teacher not found", 404);
+  const g = await TeacherGroup.findOne({ _id: req.params.groupId, teacherId: t._id, status: "active" });
+  if (!g) return bad(res, "Group not found", 404);
+  g.status = "ended"; g.endedAt = new Date(); g.endedBy = req.user.id;
+  await g.save();
+  await audit(req, { entityType: "teacher", entityId: t._id, event: "teacher.group.remove", meta: { subject: g.subject } });
+  res.json({ ok: true });
+};
+
+// ---- Courses and examinations teachers have asked to publish ----
+exports.submissions = async (req, res) => {
+  const status = ["pending", "returned", "published", "withdrawn"].includes(req.query.status) ? req.query.status : "pending";
+  const items = await TeacherSubmission.find({ status }).populate("teacherId", "firstName lastName").sort({ requestedAt: 1 }).limit(200);
+  res.json({ submissions: items.map((s) => ({ id: s._id, kind: s.kind, refId: s.refId, title: s.title, status: s.status, note: s.note, requestedAt: s.requestedAt, teacher: s.teacherId && s.teacherId.firstName ? { id: s.teacherId._id, name: `${s.teacherId.firstName} ${s.teacherId.lastName || ""}`.trim() } : null })) });
+};
+
+// Runs an existing admin controller (so publishing uses EXACTLY the same checks as the normal admin screens) and captures its answer.
+async function runController(fn, req, params, body) {
+  const out = { statusCode: 200, body: null };
+  const res = { status(c) { out.statusCode = c; return this; }, json(b) { out.body = b; return this; }, set() { return this; }, send(b) { out.body = b; return this; } };
+  await fn({ user: req.user, params, body, query: {}, headers: req.headers || {} }, res);
+  return out;
+}
+
+exports.submissionDecision = async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) return bad(res, "Submission not found", 404);
+  const sub = await TeacherSubmission.findOne({ _id: req.params.id, status: "pending" });
+  if (!sub) return bad(res, "That submission is not waiting for review.", 404);
+  const note = (req.body.note || "").trim();
+  if (req.body.action === "return" && !note) return bad(res, "Please tell the teacher what to change.");
+
+  if (req.body.action === "publish") {
+    const out = sub.kind === "course"
+      ? await runController(adminLib.setCourseStatus, req, { id: String(sub.refId) }, { status: "published" })
+      : await runController(adminExams.publish, req, { id: String(sub.refId) }, {});
+    if (out.statusCode >= 400) return res.status(out.statusCode).json(out.body || { error: "Could not publish." }); // e.g. "This course is not ready to publish."
+  }
+  sub.status = req.body.action === "publish" ? "published" : "returned";
+  sub.resolvedAt = new Date(); sub.resolvedBy = req.user.id; sub.note = note || undefined;
+  await sub.save();
+  await audit(req, { entityType: sub.kind, entityId: sub.refId, event: `teacher.${sub.kind}.${req.body.action}`, meta: { teacherId: String(sub.teacherId), note: note || undefined } });
+  const teacher = await User.findById(sub.teacherId);
+  if (teacher) await notifyTeacherSubmission(teacher, sub.title, sub.kind, req.body.action === "publish" ? "published" : "returned", note);
+  res.json({ submission: { id: sub._id, status: sub.status } });
+};
+
+// Small numbers for the admin menu badge: what is waiting for an administrator.
+exports.summary = async (req, res) => {
+  const [pendingTeachers, pendingSubmissions, materialsWaiting] = await Promise.all([
+    User.countDocuments({ role: "teacher", approval: "pending", isVerified: true }),
+    TeacherSubmission.countDocuments({ status: "pending" }),
+    Material.countDocuments({ status: "draft", "review.requestedAt": { $exists: true } }),
+  ]);
+  res.json({ pendingTeachers, pendingSubmissions, materialsWaiting, waiting: pendingTeachers + pendingSubmissions + materialsWaiting });
 };

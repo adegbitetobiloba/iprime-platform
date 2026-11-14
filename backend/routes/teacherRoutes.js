@@ -8,9 +8,11 @@ const { validate } = require("../validations/authValidation");
 const v = require("../validations/teacherValidation");
 const auth = require("../controllers/teacherAuthController");
 const students = require("../controllers/teacherStudentController");
+const overview = require("../controllers/teacherOverviewController");
 
 // Mounted at /api/teacher. It MUST be mounted before app.use("/api", cbtRoutes), because that router
 // lets only students and administrators through every /api path that reaches it.
+// (/api/teacher/analytics is mounted separately in app.js, ahead of this router.)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, limit: Number(process.env.AUTH_RATE_LIMIT) || 30, standardHeaders: true, legacyHeaders: false,
   message: { error: "Too many attempts. Please try again in a few minutes." },
@@ -30,7 +32,10 @@ router.post("/auth/login", strictLimiter, validate(v.login), auth.login);
 router.use(protect, requireTeacher);
 router.get("/me", auth.me);
 router.patch("/profile", limiter, validate(v.profile), auth.updateProfile);
+router.get("/overview", overview.get);
 router.get("/students", students.list);
 router.use("/library", require("./teacherLibraryRoutes"));
+router.use("/courses", require("./teacherCourseRoutes"));
+router.use("/exams", require("./teacherExamRoutes"));
 
 module.exports = router;
