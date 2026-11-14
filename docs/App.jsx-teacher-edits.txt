@@ -1,0 +1,27 @@
+If you have uploaded a newer App.jsx than the one in this zip (for example v12b), do NOT overwrite it with mine.
+Make these 5 small edits to YOUR App.jsx on GitHub instead (pencil icon > edit > commit to the branch).
+
+1. First line. Change
+     import { useEffect } from "react";
+   to
+     import { lazy, Suspense, useEffect } from "react";
+
+2. Directly after the last import line (the one that says: import { useAuth } from "./auth.jsx";) add:
+     // The teacher area and the admin Teachers page are loaded only when opened, so students on slow phones never download them.
+     const TeacherArea = lazy(() => import("./pages/teacher/TeacherArea.jsx"));
+     const AdminTeachers = lazy(() => import("./pages/admin/AdminTeachers.jsx"));
+     const Wait = ({ children }) => <Suspense fallback={<p className="page-note" role="status">Loading...</p>}>{children}</Suspense>;
+
+3. In function DashboardHome, add this line as the first line inside it, after "const { user } = useAuth();":
+     if (user?.role === "teacher") return <Navigate to="/teacher/dashboard" replace />;
+
+4. In PageEffects, change the line that starts with "const base =" so it also knows the teacher area:
+     const base = pathname.startsWith("/admin") ? "Administration | iPrime" : pathname.startsWith("/teacher") ? "Teacher area | iPrime" : pathname.startsWith("/attempts/") ? "Examination | iPrime" : null;
+
+5. In the <Routes>, add these two lines:
+   a) just before the line   <Route path="/admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
+        <Route path="/teacher/*" element={<Wait><TeacherArea /></Wait>} />
+   b) inside the admin routes, for example after the line   <Route path="students" element={<AdminStudents />} />
+        <Route path="teachers" element={<Wait><AdminTeachers /></Wait>} />
+
+AdminLayout.jsx has 3 small edits too (see the top of that file in this zip): one "Teachers" menu item, one summary fetch, one count.

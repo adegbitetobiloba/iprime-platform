@@ -40,3 +40,31 @@ test("teacher library routes: no publish/status/feature endpoint, and every writ
   assert.ok(writes.length >= 4);
   for (const l of writes) assert.match(l, /c\.owned\(/, l);
 });
+
+test("teacher courses and exams are mounted behind the teacher gate", () => {
+  const src = read("routes/teacherRoutes.js");
+  const gate = src.indexOf("router.use(protect, requireTeacher)");
+  for (const m of ['"/overview"', '"/library"', '"/courses"', '"/exams"']) assert.ok(src.indexOf(m) > gate, m);
+});
+
+test("teacher exam routes have no publish, unpublish, live-control, attempts or bank endpoint", () => {
+  const code = read("routes/teacherExamRoutes.js").split("\n").filter((l) => l.startsWith("router.")).join("\n");
+  assert.doesNotMatch(code, /publish|unpublish|live|attempts|bank|access/);
+  const writes = code.split("\n").filter((l) => /^router\.(patch|put|delete|post)\(/.test(l) && !/^router\.post\("\/", /.test(l));
+  assert.ok(writes.length >= 6);
+  for (const l of writes) assert.match(l, /c\.owned\(/, l);
+});
+
+test("every teacher course write (except creating a new course) passes the ownership guard", () => {
+  const code = read("routes/teacherCourseRoutes.js").split("\n").filter((l) => l.startsWith("router.")).join("\n");
+  assert.doesNotMatch(code, /status|publish|featured/);
+  const writes = code.split("\n").filter((l) => /^router\.(patch|put|delete|post)\(/.test(l) && !/^router\.post\("\/", /.test(l));
+  assert.ok(writes.length >= 10);
+  for (const l of writes) assert.match(l, /g\(\{/, l);
+});
+
+test("admin teacher routes: fixed paths come before /:id, so they are never read as a teacher id", () => {
+  const r = read("routes/adminTeacherRoutes.js");
+  const id = r.indexOf('router.get("/:id"');
+  for (const p of ['"/summary"', '"/options/subjects"', '"/options/count"', '"/library/review"', '"/submissions"']) assert.ok(r.indexOf(p) > 0 && r.indexOf(p) < id, p);
+});

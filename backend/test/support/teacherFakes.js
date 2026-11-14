@@ -11,7 +11,7 @@ function matches(doc, q) {
   return Object.entries(q).every(([k, v]) => {
     if (k === "$or") return v.some((sub) => matches(doc, sub));
     const dv = get(doc, k);
-    if (v instanceof RegExp) return v.test(String(dv));
+    if (v instanceof RegExp) return Array.isArray(dv) ? dv.some((x) => v.test(String(x))) : v.test(String(dv));
     if (v && typeof v === "object" && !(v instanceof Date)) {
       if ("$in" in v) return v.$in.map(String).includes(String(dv));
       if ("$exists" in v) return (dv !== undefined) === v.$exists;
@@ -34,6 +34,8 @@ function makeModel(rows = []) {
   Doc.findOne = (q = {}) => mk(rows.find((d) => matches(d, q)) || null);
   Doc.findById = (id) => mk(rows.find((d) => String(d._id) === String(id)) || null);
   Doc.create = async (d) => { const x = new Doc(d); rows.push(x); return x; };
+  Doc.exists = async (q = {}) => (rows.some((d) => matches(d, q)) ? { _id: "x" } : null);
+  Doc.distinct = async (field, q = {}) => [...new Set(rows.filter((d) => matches(d, q)).flatMap((d) => [].concat(get(d, field) ?? [])))];
   Doc.countDocuments = async (q = {}) => rows.filter((d) => matches(d, q)).length;
   Doc.aggregate = async () => [];
   Doc.findByIdAndUpdate = (id, upd) => {
@@ -67,9 +69,9 @@ function install(stubs) {
 
 const calls = () => { const c = []; const fn = async (...a) => { c.push(a); }; fn.calls = c; return fn; };
 
-const baseStubs = ({ User, TeacherAssignment, Material } = {}) => {
+const baseStubs = ({ User, TeacherAssignment, Material, extra = {} } = {}) => {
   const notify = {};
-  for (const n of ["notifyAdminsNewTeacher", "notifyTeacherApproved", "notifyTeacherRejected", "notifyTeacherSuspended", "notifyTeacherMaterial"]) notify[n] = calls();
+  for (const n of ["notifyAdminsNewTeacher", "notifyTeacherApproved", "notifyTeacherRejected", "notifyTeacherSuspended", "notifyTeacherMaterial", "notifyTeacherSubmission"]) notify[n] = calls();
   const auditFn = calls();
   const otp = { issueOtp: calls(), consumeOtp: async (e, c) => c === "123456", msSinceLastOtp: async () => null, COOLDOWN_MS: 60000 };
   return {
@@ -77,12 +79,17 @@ const baseStubs = ({ User, TeacherAssignment, Material } = {}) => {
     stubs: {
       "models/User": User, "models/TeacherAssignment": TeacherAssignment, "models/LibraryMaterial": Material,
       "models/Subject": makeModel([]),
+      "models/Enrolment": extra.Enrolment || makeModel([]), "models/TeacherGroup": extra.TeacherGroup || makeModel([]),
+      "models/TeacherSubmission": extra.TeacherSubmission || makeModel([]), "models/Course": extra.Course || makeModel([]),
+      "models/CourseModule": extra.CourseModule || makeModel([]), "models/Lesson": extra.Lesson || makeModel([]),
+      "models/Exam": extra.Exam || makeModel([]), "models/Attempt": extra.Attempt || makeModel([]),
       bcryptjs: { hashSync: (p) => `hash:${p}`, hash: async (p) => `hash:${p}`, compare: async (p, h) => h === `hash:${p}` },
       "utils/otpService": otp, "utils/teacherNotify": notify,
       "utils/audit": { audit: auditFn },
       "utils/session": { issueSession: (u) => `token-for-${u._id}` },
       "utils/publicUser": (u) => { const { password, ...rest } = u.toObject(); return rest; },
       "utils/libraryStore": { servePdf: () => {} },
+      adminLibraryController: {}, adminExamController: {}, "utils/library": { publishProblems: () => [] }, // heavy admin controllers: replaced per test where used
       mongoose: { isValidObjectId: (s) => /^[0-9a-f]{24}$/.test(String(s)) },
     },
   };

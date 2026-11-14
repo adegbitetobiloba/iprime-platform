@@ -7,7 +7,7 @@ import "../../messages.css";
 // The sidebar groups the admin area by job. Only pages that exist are listed: no placeholder links.
 const NAV = [
   { heading: null, items: [{ to: "/admin", label: "Overview", end: true }] },
-  { heading: "Admissions", items: [{ to: "/admin/applications", label: "Applications", badge: "applications" }, { to: "/admin/students", label: "Students and accounts" }, { to: "/admin/people", label: "People and records" }, { to: "/admin/checkin", label: "Check-in" }, { to: "/admin/enrolment-settings", label: "Enrolment notice" }] },
+  { heading: "Admissions", items: [{ to: "/admin/applications", label: "Applications", badge: "applications" }, { to: "/admin/students", label: "Students and accounts" }, { to: "/admin/teachers", label: "Teachers", badge: "teachers" }, { to: "/admin/people", label: "People and records" }, { to: "/admin/checkin", label: "Check-in" }, { to: "/admin/enrolment-settings", label: "Enrolment notice" }] },
   { heading: "Academics", items: [{ to: "/admin/exams", label: "Examinations" }, { to: "/admin/bank", label: "Question bank" }, { to: "/admin/import", label: "Import questions" }, { to: "/admin/analytics", label: "Analytics" }, { to: "/admin/programmes", label: "Programmes" }, { to: "/admin/library", label: "Library" }] },
   { heading: "Communication", items: [{ to: "/admin/messages", label: "Messages", badge: "messages" }] },
 ];
@@ -18,8 +18,9 @@ export default function AdminLayout() {
   // Real counts of what is waiting. If an endpoint is unavailable the badge is simply not shown.
   const apps = useFetch("/admin/enrolments/summary");
   const msgs = useFetch("/admin/messages/summary");
-  const counts = { applications: apps.data?.counts?.submitted || 0, messages: msgs.data?.unreadConversations || 0 };
-  useEffect(() => { setOpen(false); apps.reload(); msgs.reload(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [pathname]);
+  const teach = useFetch("/admin/teachers/summary");
+  const counts = { applications: apps.data?.counts?.submitted || 0, messages: msgs.data?.unreadConversations || 0, teachers: teach.data?.waiting || 0 };
+  useEffect(() => { setOpen(false); apps.reload(); msgs.reload(); teach.reload(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [pathname]);
 
   return (
     <div className="adm">

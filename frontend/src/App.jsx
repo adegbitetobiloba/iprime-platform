@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
@@ -66,6 +66,11 @@ import Toast from "./components/Toast.jsx";
 import WelcomeFlyer from "./components/WelcomeFlyer.jsx";
 import { useAuth } from "./auth.jsx";
 
+// The teacher area and the admin Teachers page are loaded only when opened, so students on slow phones never download them.
+const TeacherArea = lazy(() => import("./pages/teacher/TeacherArea.jsx"));
+const AdminTeachers = lazy(() => import("./pages/admin/AdminTeachers.jsx"));
+const Wait = ({ children }) => <Suspense fallback={<p className="page-note" role="status">Loading...</p>}>{children}</Suspense>;
+
 function Protected({ children }) {
   const { token, loading } = useAuth();
   const { pathname } = useLocation();
@@ -83,10 +88,11 @@ function AdminOnly({ children }) {
   return children;
 }
 
-// Students (and administrators previewing the student view) get the learning dashboard; every other role keeps the
-// existing account page. The server still checks the role on every API call.
+// Students (and administrators previewing the student view) get the learning dashboard; teachers go to the teacher area;
+// every other role keeps the existing account page. The server still checks the role on every API call.
 function DashboardHome() {
   const { user } = useAuth();
+  if (user?.role === "teacher") return <Navigate to="/teacher/dashboard" replace />;
   return user?.role === "student" || user?.role === "admin" ? <StudentDashboard /> : <Dashboard />;
 }
 
@@ -119,7 +125,7 @@ function PageEffects() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
-    const base = pathname.startsWith("/admin") ? "Administration | iPrime" : pathname.startsWith("/attempts/") ? "Examination | iPrime" : null;
+    const base = pathname.startsWith("/admin") ? "Administration | iPrime" : pathname.startsWith("/teacher") ? "Teacher area | iPrime" : pathname.startsWith("/attempts/") ? "Examination | iPrime" : null;
     document.title = base || TITLES[pathname] || "iPrime | Prime Excelerate Tutelage";
   }, [pathname]);
   return null;
@@ -174,6 +180,7 @@ export default function App() {
           <Route path="/library/saved" element={<Protected><LibrarySaved /></Protected>} />
           <Route path="/library/courses/:slug" element={<Protected><LibraryCourse /></Protected>} />
           <Route path="/library/lessons/:id" element={<Protected><LibraryLesson /></Protected>} />
+          <Route path="/teacher/*" element={<Wait><TeacherArea /></Wait>} />
           <Route path="/admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
             <Route index element={<AdminHome />} />
             <Route path="exams" element={<AdminExams />} />
@@ -189,6 +196,7 @@ export default function App() {
             <Route path="bank" element={<AdminBank />} />
             <Route path="programmes" element={<AdminProgrammes />} />
             <Route path="students" element={<AdminStudents />} />
+            <Route path="teachers" element={<Wait><AdminTeachers /></Wait>} />
             <Route path="people" element={<AdminPeople />} />
             <Route path="checkin" element={<AdminCheckin />} />
             <Route path="enrolment-settings" element={<AdminEnrolmentSettings />} />
