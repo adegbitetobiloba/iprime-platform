@@ -39,6 +39,7 @@ router.get("/materials/:id/pdf", pdfLimiter, m.stream);
 router.get("/materials/:id/images/:fileId", pdfLimiter, m.streamImage);
 router.get("/materials/:id", m.get);
 router.put("/materials/:id/shelf", validate(v.shelf), m.setShelf);
+router.post("/materials/:id/report-broken", progressLimiter, m.reportBroken);
 router.put("/materials/:id/progress", progressLimiter, validate(v.materialProgress), m.progress);
 
 router.get("/bookmarks", c.listBookmarks);

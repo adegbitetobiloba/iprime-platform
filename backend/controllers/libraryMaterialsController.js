@@ -13,7 +13,7 @@ const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const isAdmin = (req) => req.user.role === "admin";
 const UTME_TAGS = [/^jamb$/i, /^utme$/i];
-const KINDS = ["syllabus", "textbook", "past-questions", "notes", "other"];
+const KINDS = ["syllabus", "textbook", "past-questions", "notes", "keypoints", "mnemonics", "practice", "video", "community", "other"];
 
 const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return undefined; } };
 // What the browser receives. Never the body in lists, never a PDF's file id.
@@ -118,6 +118,16 @@ exports.shelf = async (req, res) => {
   });
 };
 
+// A student tells us a link does not work. Counted once per student; only admins see the number.
+exports.reportBroken = async (req, res) => {
+  if (isAdmin(req)) return res.json({ ok: true, preview: true });
+  const mat = await Material.findOne({ _id: req.params.id, status: "published", source: "link" }).select("_id");
+  if (!mat) return bad(res, "Material not found", 404);
+  const r = await View.updateOne({ user: req.user.id, material: mat._id, reportedBroken: { $ne: true } }, { $set: { reportedBroken: true } });
+  if (r.modifiedCount === 1) await Material.updateOne({ _id: mat._id }, { $inc: { brokenReports: 1 } });
+  res.json({ ok: true });
+};
+
 exports.stream = async (req, res) => {
   const m = await visible(req, res);
   if (!m) return;
@@ -147,11 +157,15 @@ exports.hub = async (req, res) => {
   const courseRows = cards.map((c) => ({ course: c, progress: stats[String(c.id)] }));
   const remaining = courseRows.reduce((n, r) => n + Math.max(0, r.progress.total - r.progress.completed), 0);
   const days = countdown ? daysLeft(countdown.targetDate) : null;
-  const by = (k) => mats.filter((m) => m.kind === k).map((m) => card(m, views[String(m._id)]));
+  // Each shelf shows a handful; `counts` lets the page link to the full list.
+  const SHELF = 12;
+  const by = (k) => mats.filter((m) => m.kind === k).slice(0, SHELF).map((m) => card(m, views[String(m._id)]));
+  const counts = Object.fromEntries(KINDS.map((k) => [k, mats.filter((m) => m.kind === k).length]));
   res.json({
     countdown,
     plan: countdown && courseRows.length ? studyPlan(days, remaining) : null,
     syllabus: by("syllabus"), textbooks: by("textbook"), pastQuestions: by("past-questions"), notes: by("notes"),
+    keypoints: by("keypoints"), practice: by("practice"), videos: by("video"), community: by("community"), counts,
     courses: courseRows,
   });
 };

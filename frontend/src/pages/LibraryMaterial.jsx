@@ -18,6 +18,8 @@ export default function LibraryMaterial() {
   const [shelf, setShelf] = useState("");
   const [shelfMsg, setShelfMsg] = useState("");
   const [find, setFind] = useState("");
+  const [reported, setReported] = useState(false);
+  const reportBroken = async () => { try { await api(`/library/materials/${id}/report-broken`, { method: "POST", token }); setReported(true); } catch { /* the link still works for others; nothing to show */ } };
   const contentRef = useRef(null);
 
   useEffect(() => { if (m) { setShelf(m.shelf || ""); setShelfMsg(""); document.title = `${m.title} | iPrime`; } }, [m]);
@@ -86,7 +88,9 @@ export default function LibraryMaterial() {
             {m.source === "link" && (
               <div className="lib-panel" style={{ marginTop: 16 }}>
                 <p style={{ marginTop: 0 }}>This material is hosted on <strong>{m.host}</strong>. It opens in a new tab, so it may use your own data.</p>
+                {m.host && m.host.includes("t.me") && <p className="note">Telegram links work only after you have joined the iPrime Telegram channel. Look for the "Class or group" items in the UTME hub to join first.</p>}
                 <a className="btn btn-primary" href={m.url} target="_blank" rel="noopener noreferrer">Open on {m.host}</a>
+                {!preview && (reported ? <p className="muted" role="status" style={{ marginBottom: 0 }}>Thank you. We will check this link.</p> : <p style={{ marginBottom: 0 }}><button type="button" className="link-btn" onClick={reportBroken}>This link does not work</button></p>)}
               </div>
             )}
 
