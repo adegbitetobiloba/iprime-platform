@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const compression = require("compression");
+const zlib = require("zlib");
 const mongoose = require("mongoose");
 
 const connectDB = require("./config/db");
@@ -23,6 +25,8 @@ const app = express();
 
 app.set("trust proxy", 1); // behind Render's proxy: needed for correct client IPs (rate limiting)
 app.use(helmet());
+// Shrinks big responses (opening an exam, viewing a result) for slow phones. Moderate settings keep CPU use low on the free plan.
+app.use(compression({ threshold: 1024, level: 4, brotli: { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 4 } } }));
 
 // CORS_ORIGINS is a comma-separated allow-list. In production it is mandatory (see start()).
 const allowedOrigins = (process.env.CORS_ORIGINS || "").split(",").map((o) => o.trim()).filter(Boolean);
