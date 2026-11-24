@@ -5,6 +5,7 @@ import { useAuth } from "../auth.jsx";
 import { useFetch, fmtDate } from "../useFetch.js";
 import { checkPassword } from "../lib/guestName.js";
 import "../pages/access.css";
+import "../pages/exam-tools.css";
 
 const STATE_TEXT = { open: "Active", revoked: "Withdrawn", expired: "Expired", full: "Full", unavailable: "Exam not published" };
 const MODE_TEXT = { both: "Anyone, or signed-in students", guest: "Anyone with a name", account: "Signed-in students only" };
@@ -50,6 +51,21 @@ export default function ExamAccessPanel({ exam }) {
           <button type="button" className="btn btn-primary btn-sm" onClick={() => { const c = checkPassword(pw); if (!c.ok) return setErr(c.error); run(async () => { await api(`${url}/password`, { method: "PUT", token, body: { password: pw } }); setPw(""); }, "Password saved. Anyone who has not entered it yet will be asked for it."); }}>{a.password.set ? "Change password" : "Save password"}</button>
           {a.password.set && <button type="button" className="btn btn-secondary btn-sm" onClick={() => { if (window.confirm("Remove the password? Anyone with access will no longer be asked for it.")) run(() => api(`${url}/password`, { method: "DELETE", token }), "Password removed."); }}>Remove password</button>}
         </div>
+      </div>
+
+      <div className="ax-card">
+        <h3>Top-10 scoreboard</h3>
+        <p className="ax-lead">Show students (and anyone with the share link) the top 10 for this examination, even before they sit it. Each person's first attempt counts, and ties share a rank.</p>
+        <label className={`ax-toggle${a.leaderboard.enabled ? " is-on" : ""}`}>
+          <input type="checkbox" checked={a.leaderboard.enabled} onChange={(e) => run(() => api(`${url}/leaderboard`, { method: "PUT", token, body: { enabled: e.target.checked, names: a.leaderboard.names } }), e.target.checked ? "Scoreboard is now visible." : "Scoreboard is hidden.")} />
+          <span><strong>Show the scoreboard</strong><small>You can switch it off at any time.</small></span>
+        </label>
+        {a.leaderboard.enabled && (
+          <div className="ax-field"><label htmlFor="lb-names">How names appear</label>
+            <select id="lb-names" value={a.leaderboard.names} onChange={(e) => run(() => api(`${url}/leaderboard`, { method: "PUT", token, body: { enabled: true, names: e.target.value } }), "Saved.")}>
+              <option value="short">First name and initial (Ada O.)</option><option value="full">Full names (Ada Obi)</option><option value="none">No names (Student)</option>
+            </select></div>
+        )}
       </div>
 
       <div className="ax-card">

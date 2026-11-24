@@ -206,3 +206,18 @@ test("controller: questions added to an exam keep their subject and difficulty s
   assert.ok(exam.questions.every((q) => q.subject === "Physics"));
   assert.ok(exam.questions.some((q) => q.difficulty === "easy") && exam.questions.some((q) => q.difficulty === "hard"));
 });
+
+test("controller: \"use all\" takes every matching question with no count and no 500 limit", async () => {
+  await seedBank();
+  const r = await call(c.select, { body: body({ subject: "Physics", all: true }) });
+  assert.equal(r.statusCode, 200); assert.equal(r.body.selected, 60); assert.equal(r.body.shortfall, 0);
+  assert.equal((await call(c.select, { body: body({ subject: "Physics", topics: ["Waves"], all: true }) })).body.selected, 20);
+});
+
+test("controller: questions can be found again by the external ids they were uploaded with; unusable or unknown ids are counted as missing", async () => {
+  await seedBank();
+  const r = await call(c.byExternal, { body: { externalIds: ["PHY-0001", "PHY-0002", "PHY-0001", "NOPE-1", "PHY-0061"] } });
+  assert.deepEqual(r.body.questions.map((q) => q.externalId).sort(), ["PHY-0001", "PHY-0002"]);
+  assert.deepEqual([r.body.found, r.body.missing], [2, 2]);
+  assert.ok(!JSON.stringify(r.body).includes("correctKey"));
+});

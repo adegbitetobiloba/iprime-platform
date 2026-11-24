@@ -5,6 +5,6 @@ const access = require("../middleware/examAccess");
 
 module.exports = makeAdminAccessService({
   ExamAccess: require("../models/ExamAccess"), ExamShare: require("../models/ExamShare"), ShareGrant: require("../models/ShareGrant"),
-  Guest: require("../models/Guest"), Exam: require("../models/Exam"), User: require("../models/User"),
+  Guest: require("../models/Guest"), Exam: require("../models/Exam"), User: require("../models/User"), Attempt: require("../models/Attempt"),
   audit, invalidate: access.invalidate,
 });

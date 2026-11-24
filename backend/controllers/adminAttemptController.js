@@ -5,7 +5,8 @@ const Attempt = require("../models/Attempt");
 const Exam = require("../models/Exam");
 const User = require("../models/User");
 const Guest = require("../models/Guest");
-const { arrange, reviewView } = require("../utils/randomise");
+const { arrange, reviewView, servedQuestions } = require("../utils/randomise");
+const { breakdownBySubject } = require("../utils/results");
 const { toPlain } = require("../utils/cbt");
 
 const escapeRx = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -87,6 +88,7 @@ exports.detail = async (req, res) => {
       student: user ? personOf(user) : guest ? guestOf(guest) : personOf(null),
       exam: { id: String(exam._id), title: exam.title, subject: exam.subject, poolSize: (exam.questions || []).length, questionsPerStudent: exam.questionsPerStudent || null },
       drawn: Array.isArray(attempt.questionIds) && attempt.questionIds.length > 0,
+      breakdown: breakdownBySubject(servedQuestions(exam, attempt), given, exam.subject),
       questions,
     });
   } catch (err) { serverError(res, err); }

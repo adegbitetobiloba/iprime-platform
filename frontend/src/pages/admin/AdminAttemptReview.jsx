@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useFetch, fmtDate } from "../../useFetch.js";
 import SafeHtml from "../../components/SafeHtml.jsx";
 import "./builder.css";
+import "../exam-tools.css";
 
 const mins = (s) => { const m = Math.floor(s / 60), r = s % 60; return m ? `${m} min${r ? ` ${r} s` : ""}` : `${r} s`; };
 const FILTERS = [["all", "All"], ["wrong", "Wrong"], ["right", "Right"], ["blank", "Unanswered"], ["flagged", "Flagged"]];
@@ -36,6 +37,14 @@ export default function AdminAttemptReview() {
         <div><dt>Started</dt><dd>{fmtDate(a.startedAt)}</dd></div>
         <div><dt>Time used</dt><dd>{mins(a.timeUsedSeconds)}</dd></div>
       </dl>
+      {data.breakdown && data.breakdown.subjects.length > 1 && (
+        <section className="et rb" aria-label="Result by subject">
+          <table className="rb-table">
+            <thead><tr><th scope="col">Subject</th><th scope="col">Score / total</th><th scope="col">Percentage</th><th scope="col">Right / wrong / blank</th></tr></thead>
+            <tbody>{data.breakdown.subjects.map((x) => <tr key={x.subject}><th scope="row">{x.subject}</th><td>{x.score}/{x.total}</td><td>{x.percentage}%</td><td>{x.correct} / {x.incorrect} / {x.unanswered}</td></tr>)}</tbody>
+          </table>
+        </section>
+      )}
       {data.drawn && <p className="note">This student's own draw: <strong>{data.questions.length}</strong> questions picked for them from a pool of {e.poolSize}. Other students were given different questions.</p>}
       {(a.shuffledQuestions || a.shuffledOptions) && <p className="muted xb-help">Shown exactly as the student saw it: {a.shuffledQuestions ? "their own question order" : ""}{a.shuffledQuestions && a.shuffledOptions ? " and " : ""}{a.shuffledOptions ? "their own option order, so the letters here are the letters they saw" : ""}.</p>}
 

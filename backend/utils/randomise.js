@@ -70,7 +70,13 @@ function arrange(questions, settings = {}) {
   const { seed, shuffleQuestions, shuffleOptions } = settings;
   const on = Boolean(seed);
   let order = servedQuestions({ questions }, settings).slice(); // only this attempt's own questions
-  if (on && shuffleQuestions) order = shuffled(order, rngFrom(`${seed}:questions`));
+  if (on && shuffleQuestions) {
+    // A paper with several subjects keeps each subject together (like a JAMB paper); questions are shuffled WITHIN a subject.
+    const subj = (q) => String(q.subject || "");
+    const names = [...new Set(order.map(subj))];
+    if (names.length > 1) order = names.flatMap((n) => shuffled(order.filter((q) => subj(q) === n), rngFrom(`${seed}:questions:${n}`)));
+    else order = shuffled(order, rngFrom(`${seed}:questions`));
+  }
   return order.map((q) => {
     let opts = (q.options || []).slice();
     let moved = false;
@@ -87,6 +93,7 @@ const studentView = (entry) => ({
   options: entry.options.map((o) => ({ key: o.key, label: o.label, text: o.text, ...(o.html ? { html: o.html } : {}) })),
   marks: entry.q.marks ?? 1,
   ...(entry.q.topic ? { topic: entry.q.topic } : {}),
+  ...(entry.q.subject ? { subject: entry.q.subject } : {}),
 });
 
 // What the student sees at review (only when the exam allows it): the SAME order and letters they saw during the exam.
@@ -97,7 +104,7 @@ const reviewView = (entry, given) => {
   return {
     id: String(q._id), text: q.text, textHtml: q.textHtml || undefined,
     options: entry.options.map((o) => ({ key: o.key, label: o.label, text: o.text, html: o.html || undefined })),
-    marks: q.marks ?? 1, yourChoice: mine, yourLabel: mine ? labelOf(mine) : null,
+    marks: q.marks ?? 1, ...(q.subject ? { subject: q.subject } : {}), yourChoice: mine, yourLabel: mine ? labelOf(mine) : null,
     correctKey: q.correctKey, correctLabel: labelOf(q.correctKey),
     explanation: q.explanation || "", explanationHtml: q.explanationHtml || undefined,
     explanationSource: q.explanation ? (q.explanationSource || "source") : null,

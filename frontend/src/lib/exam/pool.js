@@ -1,5 +1,5 @@
 // Plain-language facts about a question pool, for the exam builder. Mirrors backend/utils/pool.js (same maths).
-export const MAX_PER_STUDENT = 500;
+export const MAX_PER_STUDENT = 20000;
 
 // On average, how many questions two students' papers share if questions were drawn independently: N*N/pool.
 export const expectedOverlap = (n, pool) => (pool > 0 ? (Math.min(n, pool) ** 2) / pool : 0);

@@ -65,7 +65,8 @@ module.exports = {
     subjects: Joi.array().items(Joi.string().trim().max(80)).max(30).default([]),
     balanceBy: Joi.string().valid("topic", "subject").default("topic"),
     topics: Joi.array().items(Joi.string().trim().max(120)).max(50).default([]),
-    count: Joi.number().integer().min(1).max(500).required(),
+    count: Joi.number().integer().min(1).max(20000),
+    all: Joi.boolean().default(false), // use every matching question (the pool), whatever its size
     manualIds: Joi.array().items(objectId).max(500).default([]),
     excludeIds: Joi.array().items(objectId).max(1000).default([]),
     verifiedOnly: Joi.boolean().default(false),
@@ -74,7 +75,9 @@ module.exports = {
       mode: Joi.string().valid("any", "mix").default("any"),
       mix: Joi.object({ easy: Joi.number().min(0).max(100), medium: Joi.number().min(0).max(100), hard: Joi.number().min(0).max(100) }),
     }),
-  }),
+  }).or("count", "all"),
+  // Looks up bank questions by their external ids: used after an examiner uploads questions while building an exam.
+  byExternal: Joi.object({ externalIds: Joi.array().items(Joi.string().trim().max(120)).min(1).max(5000).required() }),
   verify: Joi.object({ verified: Joi.boolean().required() }),
   addToExam: Joi.object({ examId: objectId.required(), ids: Joi.array().items(objectId).min(1).max(200).required(), marks: Joi.number().min(0.5).max(100) }),
 };

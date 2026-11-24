@@ -17,6 +17,8 @@ const examAccessSchema = new mongoose.Schema(
       browserExamKeys: { type: [String], default: [] }, // 64-character hex keys from Safe Exam Browser (matched against the request hash)
       configKeys: { type: [String], default: [] },      // 64-character hex Config Keys (matched against the config-key hash)
     },
+    // The top-10 scoreboard for this exam. Off unless the examiner turns it on. names: how people appear.
+    leaderboard: { enabled: { type: Boolean, default: false }, names: { type: String, enum: ["full", "short", "none"], default: "short" } },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

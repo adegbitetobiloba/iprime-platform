@@ -16,4 +16,4 @@ test("a number bigger than the pool is explained, not an error", () => {
 test("a normal draw explains how many students get completely different papers", () => {
   const d = describe(40, 300); assert.ok(d.ok); assert.match(d.text, /first 7 students/); assert.match(d.text, /pool of 300/);
 });
-test("too many per student is refused", () => { assert.equal(describe(501, 900).ok, false); });
+test("too many per student is refused only at the safety ceiling (there is no 500 limit)", () => { assert.equal(describe(501, 900).ok, true); assert.equal(describe(20001, 30000).ok, false); });
