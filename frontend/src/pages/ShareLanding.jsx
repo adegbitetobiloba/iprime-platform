@@ -5,6 +5,7 @@ import { useAuth } from "../auth.jsx";
 import { checkName } from "../lib/guestName.js";
 import { label as durationLabel } from "../lib/exam/duration.js";
 import "./share.css";
+import Leaderboard from "../components/Leaderboard.jsx";
 
 const shortTime = (m) => { const h = Math.floor(m / 60), r = m % 60; return h && r ? `${h}h ${r}m` : h ? `${h}h` : `${r}m`; };
 
@@ -166,6 +167,7 @@ export default function ShareLanding() {
               </ul>
             </section>
             {full && !resumeGuest && <p className="sl-alert sl-alert-warn" role="status" style={{ marginTop: "1rem" }}>{info.message} If you already started, enter the same email or phone number you used before.</p>}
+            <Leaderboard linkToken={linkToken} />
             {exam.description && <section className="sl-card" style={{ marginTop: "1rem" }}><h2>About this examination</h2><p className="sl-instr">{exam.description}</p></section>}
             {exam.instructions && <section className="sl-card" style={{ marginTop: "1rem" }}><h2>Instructions</h2><p className="sl-instr">{exam.instructions}</p></section>}
           </aside>

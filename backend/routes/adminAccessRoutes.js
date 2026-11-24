@@ -8,6 +8,8 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 router.get("/exams/:id", wrap(c.get));
 router.put("/exams/:id", wrap(c.putAccess));
 router.put("/exams/:id/password", wrap(c.putPassword));
+router.put("/exams/:id/leaderboard", wrap(c.putLeaderboard));
+router.put("/exams/:id/draw", wrap(c.putDraw));
 router.delete("/exams/:id/password", wrap(c.deletePassword));
 router.post("/exams/:id/shares", wrap(c.createShare));
 router.delete("/shares/:shareId", wrap(c.revokeShare));

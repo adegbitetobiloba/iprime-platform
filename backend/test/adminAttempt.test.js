@@ -6,7 +6,7 @@ const R = require("../utils/randomise");
 const pool = require("../utils/pool");
 
 const hex = (n) => String(n).padStart(24, "0");
-let attempts, exams, users;
+let attempts, exams, users, guests = [];
 const rxOf = (v) => (v instanceof RegExp ? v : null);
 const userMatches = (u, f) => !f.$or || f.$or.some((c) => Object.entries(c).some(([k, v]) => rxOf(v) && rxOf(v).test(u[k] || "")));
 const q = (rows) => { let r = rows.slice(); const api = { sort: () => api, select: () => api, skip: (n) => { r = r.slice(n); return api; }, limit: (n) => { r = r.slice(0, n); return api; }, lean: async () => r }; return api; };
@@ -18,12 +18,13 @@ const FakeAttempt = {
 };
 const matchA = (a, f) => (!f.examId || String(a.examId) === String(f.examId)) && (!f.status || a.status === f.status) && (!f.userId || hasId(f.userId.$in, a.userId));
 const FakeUser = { find: (f) => q(users.filter((u) => (f._id ? hasId(f._id.$in, u._id) : userMatches(u, f)))), findById: (id) => ({ select: () => ({ lean: async () => users.find((u) => String(u._id) === String(id)) || null }) }) };
+const FakeGuest = { find: (f) => q(guests.filter((g) => hasId(f._id.$in, g._id))), findById: (id) => ({ lean: async () => guests.find((g) => String(g._id) === String(id)) || null }) };
 const FakeExam = { find: (f) => q(exams.filter((e) => hasId(f._id.$in, e._id))), findById: (id) => ({ lean: async () => exams.find((e) => String(e._id) === String(id)) || null }) };
 const orig = Module._load;
 Module._load = function (req, parent, ...rest) {
   if (parent && /controllers[\\/]adminAttemptController\.js$/.test(parent.filename)) {
     if (req === "mongoose") return { isValidObjectId: (v) => /^[0-9a-f]{24}$/i.test(String(v)) };
-    if (req === "../models/Attempt") return FakeAttempt; if (req === "../models/Exam") return FakeExam; if (req === "../models/User") return FakeUser;
+    if (req === "../models/Guest") return FakeGuest; if (req === "../models/Attempt") return FakeAttempt; if (req === "../models/Exam") return FakeExam; if (req === "../models/User") return FakeUser;
   }
   return orig.call(this, req, parent, ...rest);
 };
@@ -33,6 +34,7 @@ const call = async (fn, req) => { const r = res(); await fn({ params: {}, query:
 
 const POOL = Array.from({ length: 30 }, (_, i) => ({ _id: hex(100 + i), text: `Question ${i + 1}`, textHtml: i === 0 ? "<p>Question <u>1</u></p>" : undefined, topic: i % 2 ? "Waves" : "Mechanics", marks: 1, correctKey: "B", explanation: "Because B.", options: ["A", "B", "C", "D"].map((k) => ({ key: k, text: `q${i}-${k}` })) }));
 beforeEach(() => {
+  guests = [];
   users = [{ _id: hex(1), firstName: "Ada", lastName: "Obi", studentId: "PX-001", email: "ada@x.ng" }, { _id: hex(2), firstName: "Tunde", lastName: "Bello", studentId: "PX-002", email: "tunde@x.ng" }];
   exams = [{ _id: hex(900), title: "Physics Mock", subject: "Physics", questions: POOL, questionsPerStudent: 5 }, { _id: hex(901), title: "Other", subject: "Chem", questions: [] }];
   const ids = (n, seed) => pool.drawQuestionIds(exams[0], { seed });
@@ -121,4 +123,14 @@ test("detail: a deleted student account still shows the attempt", async () => {
   users = [];
   const r = await call(ctl.detail, { params: { id: hex(500) } });
   assert.equal(r.statusCode, 200); assert.equal(r.body.student.name, "Deleted account");
+});
+
+test("a share-link guest shows by the name they typed, marked (guest), in the list and in the detail", async () => {
+  guests = [{ _id: hex(61), name: "Ada Obi", contact: "ada@x.ng" }];
+  attempts.push({ _id: hex(510), examId: hex(900), userId: hex(61), status: "submitted", startedAt: new Date(), submittedAt: new Date(), answers: {}, flagged: [], score: 0, totalMarks: 0, percentage: 0, questionCount: 0 });
+  const list = await call(ctl.list, {});
+  assert.equal(list.body.attempts.find((a) => a.id === hex(510)).student.name, "Ada Obi (guest)");
+  const d = await call(ctl.detail, { params: { id: hex(510) } });
+  assert.deepEqual([d.body.student.name, d.body.student.studentId], ["Ada Obi (guest)", "Guest"]);
+  assert.ok(Array.isArray(d.body.breakdown.subjects), "the examiner also gets the per-subject breakdown");
 });

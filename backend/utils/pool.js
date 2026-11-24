@@ -14,8 +14,12 @@
 const { selectQuestions } = require("./selection");
 const { newSeed, servedQuestions } = require("./randomise");
 
-const MAX_PER_STUDENT = 500;
+const MAX_PER_STUDENT = 20000; // a safety ceiling only
+// Per-subject quotas set by the examiner, e.g. [{ subject: "English", count: 60 }, { subject: "Physics", count: 40 }].
+const sectionsOf = (exam) => (Array.isArray(exam && exam.sections) ? exam.sections.map((s) => ({ subject: String(s.subject || "").trim(), count: Math.floor(Number(s.count)) })).filter((s) => s.subject && Number.isFinite(s.count) && s.count >= 1) : []);
 const perStudent = (exam) => {
+  const sec = sectionsOf(exam);
+  if (sec.length) return Math.min(MAX_PER_STUDENT, sec.reduce((n, s) => n + s.count, 0));
   const n = Math.floor(Number(exam && exam.questionsPerStudent));
   return Number.isFinite(n) && n >= 1 ? Math.min(n, MAX_PER_STUDENT) : null;
 };
@@ -29,40 +33,28 @@ const expectedOverlap = (n, pool) => (pool > 0 ? (Math.min(n, pool) * Math.min(n
 // they go last, so a retake gets fresh questions whenever the pool allows it.
 const SEEN_PENALTY = 1e6;
 function drawQuestionIds(exam, { seed, seenIds = [], usage = {} } = {}) {
-  const pool = (exam.questions || []).map((q) => ({ id: String(q._id), topic: q.topic || "", subject: q.subject || "", difficulty: q.difficulty || null }));
+  const pool = (exam.questions || []).map((q) => ({ id: String(q._id), topic: q.topic || "", subject: q.subject || exam.subject || "", difficulty: q.difficulty || null }));
   const n = perStudent(exam);
-  if (!n || n >= pool.length) return null; // everyone gets everything
-  const subjects = new Set(pool.map((p) => p.subject).filter(Boolean));
+  if (!n) return null;
   const cost = {};
   for (const p of pool) cost[p.id] = (exam.drawSpread === false ? 0 : usage[p.id] || 0);
   for (const id of seenIds.map(String)) if (id in cost) cost[id] += SEEN_PENALTY;
-  const res = selectQuestions(pool, {
-    count: n, seed, balanceTopics: exam.drawBalance !== false, balanceBy: subjects.size > 1 ? "subject" : "topic",
-    difficulty: exam.drawMixDifficulty ? { mode: "mix" } : { mode: "any" }, cost,
-  });
-  return res.picked.map((q) => q.id);
-}
+  const common = { balanceTopics: exam.drawBalance !== false, balanceBy: "topic", difficulty: exam.drawMixDifficulty ? { mode: "mix" } : { mode: "any" }, cost };
 
-// How often each question has been handed out in this exam, and which ones THIS student has already had.
-// On a real database this is ONE grouped query (a count per question, so at most pool-size rows come back) plus the
-// student's own few attempts. The earlier way pulled every attempt of the exam into memory on every start, which got
-// slower with every student who had started. Anything without aggregate() (a test stand-in) uses the earlier way.
-async function loadUsage(Attempt, examId, userId) {
-  const usage = {}, seenIds = [];
-  if (typeof Attempt.aggregate === "function") {
-    const rows = (await Attempt.aggregate([
-      { $match: { examId, questionIds: { $exists: true, $ne: [] } } },
-      { $unwind: "$questionIds" },
-      { $group: { _id: "$questionIds", n: { $sum: 1 } } },
-    ])) || [];
-    for (const r of rows) usage[r._id] = r.n;
-    const mine = (await Attempt.find({ examId, userId }).select("questionIds").lean()) || [];
-    for (const a of mine) for (const id of a.questionIds || []) seenIds.push(id);
-    return { usage, seenIds };
+  const sections = sectionsOf(exam);
+  if (sections.length) {
+    // One draw per subject, in the examiner's order, so every student gets exactly the quota for each subject.
+    const ids = [];
+    sections.forEach((sec, i) => {
+      const inSubject = pool.filter((p) => p.subject.toLowerCase() === sec.subject.toLowerCase());
+      ids.push(...selectQuestions(inSubject, { ...common, count: Math.min(sec.count, inSubject.length), seed: `${seed}:section:${i}` }).picked.map((q) => q.id));
+    });
+    return ids.length ? ids : null;
   }
-  const all = (await Attempt.find({ examId }).select("userId questionIds").lean()) || [];
-  for (const a of all) for (const id of a.questionIds || []) { usage[id] = (usage[id] || 0) + 1; if (String(a.userId) === String(userId)) seenIds.push(id); }
-  return { usage, seenIds };
+  if (n >= pool.length) return null; // everyone gets everything
+  const subjects = new Set(pool.map((p) => p.subject).filter(Boolean));
+  const res = selectQuestions(pool, { ...common, count: n, seed, balanceBy: subjects.size > 1 ? "subject" : "topic" });
+  return res.picked.map((q) => q.id);
 }
 
 // Everything a new attempt needs to be created with. `Attempt` is the model (only used to look at earlier attempts).
@@ -70,24 +62,25 @@ async function planAttempt(Attempt, exam, userId) {
   const seed = newSeed();
   const plan = { seed, shuffleQuestions: Boolean(exam.shuffleQuestions), shuffleOptions: Boolean(exam.shuffleOptions) };
   if (perStudent(exam)) {
-    const { usage, seenIds } = await loadUsage(Attempt, exam._id, userId);
+    const all = (await Attempt.find({ examId: exam._id }).select("userId questionIds").lean()) || [];
+    const usage = {}, seenIds = [];
+    for (const a of all) for (const id of a.questionIds || []) { usage[id] = (usage[id] || 0) + 1; if (String(a.userId) === String(userId)) seenIds.push(id); }
     const ids = drawQuestionIds(exam, { seed, seenIds, usage });
     if (ids) plan.questionIds = ids;
   }
   return plan;
 }
 
-// What a student is told before starting: how many questions and how many marks THEY will get. shapeFromTotals does the
-// arithmetic from a pool size and the pool's total marks, so a list page can use it without loading every question.
-function shapeFromTotals(exam, poolSize, sum) {
-  const n = perStudent(exam);
-  const count = n ? Math.min(n, poolSize) : poolSize;
-  const totalMarks = n && n < poolSize ? Math.round((sum / (poolSize || 1)) * count * 100) / 100 : sum;
-  return { questionCount: count, totalMarks, poolSize, drawn: Boolean(n && n < poolSize) };
-}
+// What a student is told before starting: how many questions and how many marks THEY will get.
 function shape(exam) {
   const all = (exam && exam.questions) || [];
-  return shapeFromTotals(exam, all.length, all.reduce((t, q) => t + (q.marks ?? 1), 0));
+  const sec = sectionsOf(exam);
+  const n = perStudent(exam);
+  // With sections, a subject with fewer questions than its quota simply gives all it has.
+  const count = sec.length ? sec.reduce((t, s) => t + Math.min(s.count, all.filter((q) => String(q.subject || exam.subject || "").toLowerCase() === s.subject.toLowerCase()).length), 0) : n ? Math.min(n, all.length) : all.length;
+  const sum = all.reduce((t, q) => t + (q.marks ?? 1), 0);
+  const totalMarks = (sec.length || (n && n < all.length)) ? Math.round((sum / (all.length || 1)) * count * 100) / 100 : sum;
+  return { questionCount: count, totalMarks, poolSize: all.length, drawn: Boolean(sec.length || (n && n < all.length)) };
 }
 
-module.exports = { perStudent, expectedOverlap, drawQuestionIds, loadUsage, planAttempt, shape, shapeFromTotals, servedQuestions };
+module.exports = { sectionsOf, perStudent, expectedOverlap, drawQuestionIds, planAttempt, shape, servedQuestions };

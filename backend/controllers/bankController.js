@@ -250,7 +250,7 @@ exports.addToExam = async (req, res) => {
 // Only questions that are active AND complete (usable) can ever be chosen; "verifiedOnly" narrows that further.
 exports.select = async (req, res) => {
   try {
-    const { subject, subjects = [], topics, count, manualIds, excludeIds, verifiedOnly, balanceTopics, balanceBy, difficulty } = req.body;
+    const { subject, subjects = [], topics, count: askedCount, all, manualIds, excludeIds, verifiedOnly, balanceTopics, balanceBy, difficulty } = req.body;
     const wanted = [...new Set([...(subject ? [subject] : []), ...subjects])]; // one subject, or a group of question banks
     const eligible = { status: "active", usable: true };
     if (verifiedOnly) eligible["verification.status"] = "verified";
@@ -265,6 +265,7 @@ exports.select = async (req, res) => {
     for (const m of manualRows) byId.set(String(m._id), m);
     const pool = [...byId.values()].map((r) => ({ id: String(r._id), topic: r.topic || "", subject: r.subject || "", difficulty: bank.difficultyOf(r), row: r }));
 
+    const count = all ? Math.max(1, pool.filter((p) => !excludeIds.map(String).includes(p.id)).length) : askedCount; // "all": the pool is everything that matches
     const out = selectQuestions(pool, { count, topics, manualIds, excludeIds, balanceTopics, balanceBy, difficulty });
     const manualSet = new Set(manualIds.map(String));
     const view = out.picked.map(({ id, row }) => ({
@@ -288,6 +289,17 @@ exports.select = async (req, res) => {
       available: { total: scope.length, byTopic: Object.entries(topicCounts).map(([name, n]) => ({ name, count: n })).sort((a, b) => a.name.localeCompare(b.name)), byDifficulty: lvl, verified, unverified: scope.length - verified },
       warnings: { unverified: view.filter((q) => !q.verified).length, neighbourDependent: view.filter((q) => q.neighbour).length, fixedOptions: view.filter((q) => q.fixedOptions).length },
     });
+  } catch (err) { serverError(res, err); }
+};
+
+// POST /api/admin/bank/by-external : the bank questions for a list of external ids (what an examiner just uploaded).
+// Returns only active, complete (usable) questions; `missing` says how many ids were not found or not usable.
+exports.byExternal = async (req, res) => {
+  try {
+    const ids = [...new Set(req.body.externalIds)];
+    const rows = await BankQuestion.find({ externalId: { $in: ids }, status: "active", usable: true }).select("externalId subject topic difficulty extra text options marks verification").lean();
+    const questions = rows.map((r) => ({ id: String(r._id), externalId: r.externalId, subject: r.subject || "", topic: r.topic || "", difficulty: bank.difficultyOf(r), text: (r.text || "").slice(0, 200), marks: r.marks ?? 1, optionCount: (r.options || []).length, verified: !!(r.verification && r.verification.status === "verified") }));
+    res.json({ questions, found: questions.length, missing: ids.length - questions.length });
   } catch (err) { serverError(res, err); }
 };
 
