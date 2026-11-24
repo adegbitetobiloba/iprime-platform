@@ -52,7 +52,8 @@ const examSchema = new mongoose.Schema(
     showAnswersAfter: { type: Boolean, default: false }, // may students review correct answers after submitting?
     shuffleQuestions: { type: Boolean, default: false }, // each student gets their own question order
     // Question pool: when set, the exam's questions are a pool and each student is given their own draw of this many.
-    questionsPerStudent: { type: Number, min: 1, max: 500 },
+    questionsPerStudent: { type: Number, min: 1 },
+    sections: { type: [new mongoose.Schema({ subject: { type: String, trim: true, maxlength: 80 }, count: { type: Number, min: 1 } }, { _id: false })], default: [] }, // per-subject quotas for each student
     drawSpread: { type: Boolean, default: true },         // hand out the least-used questions first, so students get completely different papers while the pool lasts
     drawBalance: { type: Boolean, default: true },        // spread each student's draw evenly across topics (or subjects)
     drawMixDifficulty: { type: Boolean, default: false }, // give each student the same easy/medium/hard mix (only for rated questions)
