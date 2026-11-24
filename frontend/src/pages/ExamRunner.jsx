@@ -380,6 +380,7 @@ export default function ExamRunner() {
         <section className={`q-card${protect ? " protect-text" : ""}`} ref={cardRef} aria-labelledby="q-title">
           <p className="q-meta">
             <span id="q-title">Question {idx + 1} of {total}</span>
+            {q.subject && <span style={{ fontWeight: 700 }}>{q.subject}</span>}
             <span>{q.marks} {q.marks === 1 ? "mark" : "marks"}</span>
           </p>
           <SafeHtml className="q-text" html={q.textHtml} text={q.text} />
