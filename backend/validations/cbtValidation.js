@@ -17,7 +17,7 @@ const examFields = {
   showAnswersAfter: Joi.boolean(),
   shuffleQuestions: Joi.boolean(),
   shuffleOptions: Joi.boolean(),
-  questionsPerStudent: Joi.number().integer().min(1).max(500).allow(null),
+  questionsPerStudent: Joi.number().integer().min(1).max(20000).allow(null),
   drawSpread: Joi.boolean(),
   drawBalance: Joi.boolean(),
   drawMixDifficulty: Joi.boolean(),
