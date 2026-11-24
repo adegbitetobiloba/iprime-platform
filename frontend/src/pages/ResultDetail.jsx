@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useFetch, fmtDate } from "../useFetch.js";
 import SafeHtml from "../components/SafeHtml.jsx";
+import SubjectBreakdown from "../components/SubjectBreakdown.jsx";
 
 // Where an explanation came from. Shown so students can tell the document's own solution from one an administrator wrote.
 const SOURCE_LABEL = { source: "From the source", admin_written: "Written by an administrator" };
@@ -49,6 +50,7 @@ export default function ResultDetail() {
           <div><dt>Questions</dt><dd>{r.questionCount}</dd></div>
         </dl>
 
+        <SubjectBreakdown attemptId={id} />
         {data.review ? (
           <div className="review">
             <h2>Review your answers</h2>
