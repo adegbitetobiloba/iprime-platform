@@ -5,6 +5,7 @@ import { useFetch, fmtDate } from "../useFetch.js";
 import { useSubmit } from "../useSubmit.js";
 import FormStatus from "../components/FormStatus.jsx";
 import ExamPasswordPrompt from "../components/ExamPasswordPrompt.jsx";
+import Leaderboard from "../components/Leaderboard.jsx";
 
 export default function ExamIntro() {
   const { id } = useParams();
@@ -78,6 +79,7 @@ export default function ExamIntro() {
           </div>
         )}
 
+        <Leaderboard examId={id} />
         <ExamPasswordPrompt examId={id} />
         <FormStatus error={start.error} slow={start.slow} />
         <div className="form-actions" style={{ marginTop: "var(--s5)" }}>
