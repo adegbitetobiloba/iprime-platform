@@ -47,6 +47,7 @@ router.get("/exams/:id/attempts", c.attempts);
 router.post("/bank/import", validate(bankV.importBatch), bankC.importBatch);
 router.get("/bank/facets", bankC.facets);
 router.post("/bank/select", validate(bankV.select), bankC.select);
+router.post("/bank/by-external", validate(bankV.byExternal), bankC.byExternal);
 router.get("/attempts", attemptsC.list);
 router.get("/attempts/:id", attemptsC.detail);
 router.post("/bank/add-to-exam", validate(bankV.addToExam), bankC.addToExam);
