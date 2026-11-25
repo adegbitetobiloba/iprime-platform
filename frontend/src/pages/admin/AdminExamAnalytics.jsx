@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../../useFetch.js";
 import ExportBar from "../../components/analytics/ExportBar.jsx";
 import IntegritySummary from "../../components/IntegritySummary.jsx";
+import ResultsTable from "../../components/analytics/ResultsTable.jsx";
 import "../../studentDashboard.css";
 import "../../adminAnalytics.css";
 
@@ -34,6 +35,7 @@ export default function AdminExamAnalytics() {
         <div className="aa-nav">
           <Link to="/admin/analytics" className="btn btn-secondary btn-sm">All analytics</Link>
           <Link to={`/admin/exams/${id}`} className="btn btn-secondary btn-sm">Back to examination</Link>
+          <Link to={`/admin/attempts?exam=${id}`} className="btn btn-secondary btn-sm">Student attempts</Link>
         </div>
       </div>
       <ExportBar examId={id} disabled={!d || d.participants === 0} />
@@ -58,6 +60,7 @@ export default function AdminExamAnalytics() {
           </ul>
 
           <IntegritySummary examId={id} />
+          <ResultsTable examId={id} />
 
           <section className="panel aa-block" aria-labelledby="aa-dist">
             <h2 className="panel-title" id="aa-dist">Score distribution</h2>
