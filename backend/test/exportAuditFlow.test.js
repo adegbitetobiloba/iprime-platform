@@ -9,10 +9,11 @@ function loadController({ auditImpl }) {
   const fake = {
     mongoose: { isValidObjectId: (v) => /^[a-f0-9]{24}$/i.test(String(v)) },
     "../models/Exam": { findById: () => ({ select: () => ({ lean: async () => ({ _id: "e1", title: "Mock 3", subject: "Maths" }) }) }) },
-    "../models/Attempt": { find: () => ({ select() { return this; }, sort() { return this; }, limit() { return this; }, lean: async () => [{ _id: "a1", userId: "u1", status: "submitted", submittedAt: new Date(), percentage: 60, score: 6, totalMarks: 10, correct: 6, incorrect: 4, unanswered: 0 }] }) },
-    "../models/User": { find: () => ({ select: () => ({ lean: async () => [{ _id: "u1", firstName: "Ada", lastName: "Obi", studentId: "P1" }] }) }) },
+    "../models/Attempt": { find: () => ({ select() { return this; }, sort() { return this; }, limit() { return this; }, lean: async () => [{ _id: "a1", userId: "64b7f0f0f0f0f0f0f0f0f0a1", status: "submitted", submittedAt: new Date(), percentage: 60, score: 6, totalMarks: 10, correct: 6, incorrect: 4, unanswered: 0 }] }) },
+    "../models/User": { find: () => ({ select: () => ({ lean: async () => [{ _id: "64b7f0f0f0f0f0f0f0f0f0a1", firstName: "Ada", lastName: "Obi", studentId: "P1" }] }) }) },
     "../models/AuditLog": {},
     "../utils/audit": { audit: async (req, entry) => { calls.push(["audit", entry]); return auditImpl(entry); } },
+    "../models/Guest": { find: () => ({ lean: async () => [] }) },
   };
   const orig = Module._load;
   Module._load = function (request, parent, ...rest) {
