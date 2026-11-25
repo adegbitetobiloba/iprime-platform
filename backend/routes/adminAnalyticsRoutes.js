@@ -10,6 +10,7 @@ router.use(protect, requireRole("admin"));
 router.get("/library-study", study.libraryStudy);
 router.get("/exports", c.recentExports);
 router.get("/exams/:examId", c.examCohort);
+router.get("/exams/:examId/students", c.examStudents);
 router.get("/exams/:examId/export.csv", c.examCsv);
 
 module.exports = router;
