@@ -7,6 +7,12 @@ const { buildResultRows, COLUMNS, exportAuditEntry, EXPORT_ENTITY } = require(".
 const { toCsv, safeFilename } = require("../utils/csv");
 const { audit } = require("../utils/audit");
 const AuditLog = require("../models/AuditLog");
+const Guest = require("../models/Guest");
+const people = require("../utils/people");
+const { rankFirstAttempts } = require("../utils/cohortAnalytics");
+const { servedQuestions } = require("../utils/randomise");
+const { breakdownBySubject } = require("../utils/results");
+const { toPlain } = require("../utils/cbt");
 
 // GET /api/admin/analytics/exams/:examId  (administrators only; see the router)
 // Names are limited to first name, last name and student ID. No contact, guardian, medical or payment fields are read.
@@ -23,7 +29,7 @@ exports.examCohort = async (req, res) => {
     const data = buildExamCohort({ exam, attempts });
 
     const ids = [...new Set([...data.top, ...data.support].map((r) => r.userId))];
-    const users = ids.length ? await User.find({ _id: { $in: ids } }).select("firstName lastName studentId").lean() : [];
+    const users = ids.length ? await people.list(ids, { User, Guest }) : [];
     const byId = new Map(users.map((u) => [String(u._id), u]));
     const named = (r) => { const u = byId.get(r.userId); return { ...r, name: u ? [u.firstName, u.lastName].filter(Boolean).join(" ") : "Former student", studentId: u?.studentId || null }; };
 
@@ -79,6 +85,54 @@ exports.recentExports = async (req, res) => {
     const byId = new Map(people.map((u) => [String(u._id), [u.firstName, u.lastName].filter(Boolean).join(" ")]));
     res.json({
       exports: entries.map((e) => ({ id: String(e._id), at: e.at, examId: e.entityId, examTitle: e.meta?.examTitle || "Examination", rows: e.meta?.rowCount ?? 0, by: byId.get(String(e.actorId)) || "Former staff member", role: e.actorRole || null })),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong. Please try again." });
+  }
+};
+
+// GET /api/admin/analytics/exams/:examId/students (administrators only)
+// Every student's first submitted attempt with their score in each subject. Same ranking rules as the screen and CSV.
+// Subject scores are shown only when re-marking the paper matches the stored score; otherwise they are null.
+exports.examStudents = async (req, res) => {
+  try {
+    const { examId } = req.params;
+    if (!mongoose.isValidObjectId(examId)) return res.status(400).json({ error: "Invalid examination id." });
+    const exam = await Exam.findById(examId).lean();
+    if (!exam) return res.status(404).json({ error: "Examination not found." });
+
+    const attempts = await Attempt.find({ examId, status: "submitted" })
+      .select("userId status submittedAt autoSubmitted answers questionIds score totalMarks percentage correct incorrect unanswered")
+      .sort({ submittedAt: 1 }).limit(5000).lean();
+    const { firsts, ranking } = rankFirstAttempts(attempts);
+    const byAttempt = new Map(firsts.map((a) => [String(a._id), a]));
+    const found = ranking.length ? await people.list(ranking.map((r) => r.userId), { User, Guest }) : [];
+    const byUser = new Map(found.map((u) => [String(u._id), u]));
+
+    const subjectNames = [];
+    const students = ranking.map((r) => {
+      const a = byAttempt.get(r.attemptId), u = byUser.get(r.userId);
+      let subjects = null;
+      try {
+        const b = breakdownBySubject(servedQuestions(exam, a), toPlain(a.answers), exam.subject);
+        if (b.subjects.length && Math.abs(b.overall.score - (a.score ?? 0)) < 0.01 && Math.abs(b.overall.total - (a.totalMarks ?? 0)) < 0.01) {
+          subjects = {};
+          for (const s of b.subjects) { subjects[s.subject] = s.percentage; if (!subjectNames.includes(s.subject)) subjectNames.push(s.subject); }
+        }
+      } catch (e) { subjects = null; }
+      return {
+        attemptId: r.attemptId, rank: r.rank,
+        name: u ? [u.firstName, u.lastName].filter(Boolean).join(" ") : "Deleted account",
+        studentId: u && !u.guest ? u.studentId || null : null,
+        percentage: r.percentage, score: a.score ?? 0, totalMarks: a.totalMarks ?? 0,
+        subjects, submittedAt: a.submittedAt || null, timedOut: Boolean(a.autoSubmitted),
+      };
+    });
+    res.json({
+      generatedAt: new Date().toISOString(), truncated: attempts.length === 5000,
+      exam: { id: String(exam._id), title: exam.title, subject: exam.subject || null },
+      subjects: subjectNames, students,
     });
   } catch (err) {
     console.error(err);
