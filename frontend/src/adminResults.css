@@ -1,0 +1,14 @@
+.rs-wrap { overflow-x: auto; }
+.rs-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.rs-table th, .rs-table td { padding: .5rem .6rem; border-bottom: 1px solid #d9deea; text-align: left; white-space: nowrap; }
+.rs-table th.num, .rs-table td.num { text-align: right; }
+.rs-print-head { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  .rs-print, .rs-print * { visibility: visible; }
+  .rs-print { position: absolute; left: 0; top: 0; width: 100%; }
+  .no-print { display: none !important; }
+  .rs-print-head { display: block; margin-bottom: .5rem; }
+  .rs-wrap { overflow: visible; }
+  .rs-table { font-size: 11px; }
+}
