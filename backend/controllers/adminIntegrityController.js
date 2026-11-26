@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Exam = require("../models/Exam");
 const Attempt = require("../models/Attempt");
 const AttemptEvent = require("../models/AttemptEvent");
-const User = require("../models/User");
+const people = require("../utils/people");
 const { normalizePolicy } = require("../utils/guard");
 const { summarise } = require("../utils/integritySummary");
 const { retentionDays } = require("../utils/retention");
@@ -20,7 +20,7 @@ exports.exam = async (req, res) => {
     const exam = await Exam.findById(req.params.id).select("title guard").lean();
     if (!exam) return res.status(404).json({ error: "Examination not found" });
     const attempts = await Attempt.find({ examId: exam._id }).sort({ createdAt: -1 }).limit(500).lean();
-    const users = await User.find({ _id: { $in: attempts.map((a) => a.userId) } }).select("firstName lastName studentId").lean();
+    const users = await people.list(attempts.map((a) => a.userId));
     const byUser = new Map(users.map((u) => [String(u._id), u]));
 
     const sums = await AttemptEvent.aggregate([
@@ -41,8 +41,8 @@ exports.exam = async (req, res) => {
         const ev = byAttempt.get(String(a._id)) || { counts: {}, awayMs: 0 };
         return {
           id: String(a._id),
-          student: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Unknown",
-          studentId: u.studentId || "",
+          student: u.guest ? u.firstName : [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || "Deleted account",
+          studentId: u.guest ? "" : u.studentId || "",
           status: a.status, startedAt: a.startedAt, submittedAt: a.submittedAt,
           autoSubmitted: Boolean(a.autoSubmitted), submitReason: a.submitReason || null,
           score: a.score, totalMarks: a.totalMarks, percentage: a.percentage,
