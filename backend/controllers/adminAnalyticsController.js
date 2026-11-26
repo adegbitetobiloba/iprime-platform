@@ -55,8 +55,8 @@ exports.examCsv = async (req, res) => {
       .select("userId status submittedAt autoSubmitted score totalMarks percentage correct incorrect unanswered")
       .sort({ submittedAt: 1 }).limit(5000).lean();
     const ids = [...new Set(attempts.map((a) => String(a.userId)))];
-    const users = ids.length ? await User.find({ _id: { $in: ids } }).select("firstName lastName studentId").lean() : [];
-
+    const found = ids.length ? await people.list(ids, { User, Guest }) : [];
+    const users = found.map((u) => (u.guest ? { ...u, lastName: "", studentId: "" } : u));
     const rows = buildResultRows({ attempts, users });
     // Record the export BEFORE sending anything. If the audit entry cannot be written the download is refused,
     // so no export can happen without a trace. (The entry and the file are not one transaction.)
