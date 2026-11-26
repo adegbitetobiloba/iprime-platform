@@ -54,7 +54,7 @@ async function liveRows(filter, now = new Date()) {
     const total = a.totalQuestions ?? (Array.isArray(a.questionIds) && a.questionIds.length ? a.questionIds.length : e.n || 0);
     return {
       id: String(a._id), examId: String(a.examId), examTitle: e.title || "",
-      student: `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Unknown", studentId: u.studentId || "",
+      student: u.guest ? u.firstName : [u.firstName, u.lastName].filter(Boolean).join(" ").trim() || "Deleted account", studentId: u.guest ? "" : u.studentId || "",
       connection: connectionOf(a, now),
       lastSignalSeconds: Math.max(0, Math.round((now.getTime() - Math.max(...[a.lastSeenAt, a.lastSavedAt, a.startedAt].filter(Boolean).map((x) => new Date(x).getTime()))) / 1000)),
       answered: a.answers ? Object.keys(a.answers instanceof Map ? Object.fromEntries(a.answers) : a.answers).length : 0,
